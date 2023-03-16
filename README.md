@@ -12,7 +12,7 @@ Then, run the following command to open the interactive tutorial page.  For exam
 ``
 
 install.packages(c("remotes","learnr","ggplot2","PerformanceAnalytics","lattice","summarytools","Hmisc","table1","psych"))
-,,
+```
 
 ```
 library(statisticaldataanalysis)
