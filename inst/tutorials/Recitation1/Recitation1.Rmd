@@ -1,0 +1,1261 @@
+---
+title: "STAT 412-Recitation 1"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## [Introduction]{style="color:darkred"}
+
+In this part, we will go through some basic definitions as a reminder.
+
+![](https://onuduymustum.com/wp-content/uploads/kimse-bir-sey-bilmiyorsa-bir-insan-her-seyi-bilebilir.jpg){width="60%"}
+
+### [**What is Statistics?**]{style="color:darkred"}
+
+Data is a collection of information collected by observations,
+measurements, research or analysis. One of the main characteristics of
+today's world is to be data generative. According to the estimates, at
+least **2.5 quintillion bytes** of data is produced every day.
+
+**Question : How to make such an amount of data valuable?**
+
+**Answer: Statistics!**
+
+#### **What is Statistics?**
+
+There are several definitions of statistics in the literature.
+
+**Definition 1:**
+
+-   **Formally:** "Statistics" is the science of learning from data, and
+    of measuring, controlling and communicating uncertainty. (American
+    Statistical Association (ASA))
+
+-   **Informally:** Statistics is the art of learning from data.
+
+There are mainly two forms of the statistics.
+
+-   **Descriptive Statistics** is primarily about summarizing a given
+    data set through numerical summaries and graphs, and can be used for
+    exploratory analysis to visualize the information contained in the
+    data and suggest hypotheses etc.
+
+-   **Inferential Statistics** is concerned with methods for making
+    conclusions about a population using information from a sample, and
+    assessing the reliability of, and uncertainty in, these conclusions.
+
+### [**Data and Data Types**]{style="color:darkred"}
+
+The data types or groups are an important concept of statistics, which
+needs to be understood, to correctly apply statistical analysis to your
+data and therefore to correctly conclude certain assumptions about it.
+
+-   **Data** is plural of datum which is an abstraction.
+
+-   **Datum** is a single quantity or quality of a real-world entity
+    such as person, object and event.
+
+-   **A data set** consists of the data related to a collection of
+    entities which are described in terms of a set of attributes.
+
+Both **data** and **data set** can be categorized into several groups.
+
+The data types or groups are an important concept of statistics, which
+needs to be understood, to correctly apply statistical measurements to
+your data and therefore to correctly conclude certain assumptions about
+it.
+
+Understanding data types results in doing exploratory data analysis
+which the one of the important of the data analysis project.
+
+In general attribute, we can divide data as
+
+-   [**Quantitative data**]{style="color:darkred"} deals with numbers
+    and things you can measure objectively: dimensions such as height,
+    width, and length.
+
+-   [**Qualitative data**]{style="color:darkred"} data deals with
+    characteristics and descriptors that can't be easily measured, but
+    can be observed subjectively: smells, tastes.
+
+These two data attributes have **subgroups.**
+
+#### [**Quantitative Attribute**]{style="color:darkred"}
+
+-   **Discrete Data:** We speak of discrete data if its values are
+    distinct and separate. In other words: We speak of discrete data if
+    the data can only take on certain values. This type of data can not
+    be **measured but it can be counted.** For example, **Number of
+    defective item in a box**, **Number of children in a household**.
+
+-   **Continuous Data:** Continuous Data represents measurements and
+    therefore their values cannot be counted but they can be measured.
+    For example, **temperature, height, or weight**.
+
+-   **Interval Data** Interval values represent ordered units that have
+    the same difference. Therefore we speak of interval data when we
+    have a variable that contains numeric values that are ordered and
+    where we know the exact differences between the values. It can be
+    either discrete or continious.
+
+The problem about the interval data is zero have no real meaning. That's
+why a lot of descriptive and inferential statistics cannot be applied.
+For example, **Temperature**.
+
+-   **Ratio Data :** Ratio values are also ordered units that have the
+    same difference. Ratio values are the same as interval values, with
+    the difference that they do have an absolute zero. In other words,
+    zero has its real meaning. For example, **age, distance**
+
+[**Qualitative Attribute**]{style="color:darkred"}
+
+-   **Nominal Data:** Nominal values represent discrete units and are
+    used to label variables, that have no quantitative value. Just think
+    of them as labels. Note that nominal data that has no order. For
+    example, **Gender: Male, Female**
+
+-   **Binary Data:**
+
+    **Ordinal Data:** Ordinal values represent discrete and ordered
+    units. As you would guess from it's name, order have an importance.
+    For example,
+
+-   1- Totally disagree.
+
+-   2- Disagree.
+
+-   3- Neither agree nor disagree.
+
+-   4- Agree.
+
+-   5- Totally Agree.
+
+We can also categorized data set types into several groups, For example,
+
+-   **Cross-Sectional:** It is a collection of observations (behaviours)
+    for multiple subjects(entities) at single point in time.
+
+-   **Time Series:** It is a collection of observations (behaviours) for
+    a single subject(entity) at different time intervals (generally
+    equally spaced)
+
+-   **Panel Data:** It is usually called as Cross-sectional Time-series
+    data as it a combination of above mentioned types, i.e., collection
+    of observations for multiple subjects at different time points.
+
+-   **Circular Data:** It is the data that is measured on a circle in
+    degrees or radians.
+
+-   **Image Data:** Image data refers to a collection of numerical
+    values that represent the colors and intensities of pixels in an
+    image.
+
+and more...
+
+## [ **Exploratory Data Analysis (EDA)** ]{style="color:darkred"}
+
+It is a process of exploring your data set through some techniques such
+as visualization, transformation etc. It is called EDA.
+
+It has a iterative form.
+
+-   Generate questions about your data, called developing research
+    questions**(RQ)**.
+
+-   Search for answers by visualizing, transforming, and modelling your
+    data.
+
+-   Use what you learn to refine your questions and/or generate new
+    questions.
+
+The main purpose behind EDA is understand your data and draw a pattern
+for your upcoming analysis. In this process, a researcher should **feel free** to investigate every idea. In other words, EDA does not have any
+certain frame or rules. Thus, some of your idea will be dead and some of
+them will be alive after this which makes it an iterative process.
+
+The easiest way of doing EDA is to use questions as a guide of your
+investigation. Although EDA does not have any certain rules, there are
+some suggestions while generating a question because you can generate
+large amount of quantity by asking a qualified question. It also narrows
+down a broad topic of interest into specific area of study.
+
+**Two types** question will be useful while discovering your data.
+
+-   What type of variation occurs within variable?
+
+-   What type of covariance occurs between variables?
+
+However, you should consider more details to develop well research
+questions.
+
+As data and data types, RQ can be classified into different categories
+based on type of research to be done, which are quantitative research,
+qualitative research and mixed.
+
+[ **Quantitative Research & Questions** ]{style="color:orange"}
+
+It includes the population to be studied, dependent and independent
+variables, and the research design to be used. They are not answerable
+with Yes and No which results in such questions do not have words such
+as **Is, Are, Do, Does**.
+
+It can be further categorized into three types: descriptive,
+comparative, and relationship.
+
+-   **Descriptive research questions** aim to measure the responses of a
+    studys population to one or more variables or describe variables
+    that the research will measure. These questions typically begin with
+    what.
+
+-   **Comparative research questions** aim to discover the differences
+    between two or more groups for an outcome variable. These questions
+    can be causal, as well. For instance, the researcher may compare a
+    group where a certain variable is involved and another group where
+    that variable is not present.
+
+-   **Relationship research questions** seek to explore and define
+    trends and interactions between two or more variables. These
+    questions often include both dependent and independent variables and
+    use words such as association or trends.
+
+[ **Qualitative Research & Questions** ]{style="color:orange"}
+
+These questions generally aim to discover, explain, or explore. They
+have also subgroups. Here are some of them.
+
+-   Descriptive research questions attempt to describe a phenomenon.
+
+-   Explanatory research questions seek to expound on a phenomenon or
+    examine reasons for and associations between what exists.
+
+-   Ideological research questions are used in research that aims to
+    advance specific ideologies of a position.
+
+You can investigate some examples for quantitative and qualitative
+research questions.
+
+![Example for
+RQs](http://users.metu.edu.tr/ozancan/table.png){width="70%"}
+
+To understand the details of constructing an appropriate research
+question, you can have a look at the
+[blog.](https://www.guide2research.com/research/how-to-write-a-research-question)
+
+```{r quiz1}
+quiz(
+  question("Which question is a good research question to investigate?",
+    answer("Has there been an increase in childhood obesity in the US in the past 10 years?"),
+    answer("How have school intervention programs and parental education levels affected the rate of childhood obesity among 1st to 6th-grade students?", correct = TRUE)
+  )
+)
+``` 
+
+In data mining approach, EDA can be cross-classified into two ways.
+
+-   **Numerical and Graphical**
+
+Numerical means that you are investigating the variable/s using
+descriptive statistics like mean, standard deviation, median and IQR.
+
+Graphical implies that you are using plots to explore the properties of
+the variable/s.
+
+-   **Univariate and Multivariate**
+
+Univariate means that you are investigating one variable.
+
+Multivariate means that you are handling with two or more variables.
+Usually, two variables are considered in the multivariate EDA.
+
+**It is recommended to perform Univariate EDA, before applying
+multivariate EDA.**
+
+## [ **Application** ]{style="color:darkred"}
+
+Please install
+
+-   `summarytools`
+
+-   `Desctools`
+
+-   `table1`
+
+-   `lattice`
+
+-   `ggplot2` (It is used for the example dataset.)
+
+-   `Hmisc`
+
+-   `psych`
+
+Throughout this class, we will be working with the **diamonds** dataset,
+It is a dataset that comes with the ggplot2 package, which means it is
+readily available for use. Let's take some time to become acquainted
+with the dataset.
+
+```{r,message=FALSE,warning=FALSE}
+library(ggplot2)
+head(diamonds)
+```
+
+```
+library(ggplot2)
+head(diamonds)
+```
+
+[**The columns expressions**]{style="color:darkred"}
+
+| Name    | Expression                                                                                          |
+|---------|-----------------------------------------------------------------------------------------------|
+| price   | price in US dollars $\$326-\$18,823$                                                          |
+| carat   | weight of the diamond 0.2-5.01                                                                |
+| cut     | quality of the cut Fair, Good, Very Good, Premium, Ideal                                      |
+| color   |  diamond color J (worst) to D (best)                                                          |
+| clarity | measurement of how clear the diamond is I1 (worst), SI2, SI1, VS2, VS1, VVS2, VVS1, IF (best) |
+| x       | length in mm 0-10.74                                                                          |
+| y       | width in mm 0-58.9                                                                            |
+| z       | depth in mm 0-31.8 depth                                                                      |
+| total   | depth percentage 43-79                                                                        |
+| table   | width of top of diamond relative to widest point                                              |
+
+We can use `dim()` command to extract the dimension of the dataset. 
+
+```
+dim(diamonds)
+```
+
+```{r}
+dim(diamonds)
+```
+
+This dataset contains information about 53,940 round-cut diamonds measured by 10 variables.
+
+After this, we should check the class of the variables. The checking the class of variables in R is an essential step before proceeding to the analysis, because wrong class type may affect your analysis negatively. 
+
+```
+str(diamonds)
+```
+
+```{r}
+str(diamonds)
+```
+
+To find out the class of a specific variable, you can use `class()` command.
+
+```
+class(diamonds$price) #class function show the class of a variable 
+```
+
+```{r}
+class(diamonds$price) #class function show the class of a variable 
+```
+
+You can check whether the variable belongs to a specific class using `is.classname()` type function.
+
+```
+is.factor(diamonds$price)
+```
+
+
+```{r}
+is.factor(diamonds$price)
+```
+
+```
+is.integer(diamonds$price)
+```
+
+```{r}
+is.integer(diamonds$price)
+```
+
+You can change the class of object to the desired one by `as.` type functions. 
+
+```
+a<-as.factor(diamonds$price)
+is.factor(a)
+```
+
+```{r}
+a<-as.factor(diamonds$price)
+is.factor(a)
+```
+
+
+<span style="color:darkred">**Numerical Summary of Data**</span>
+  
+The information that gives a quick and simple description of the data including  mean, median, mode, minimum value, maximum value, range, standard deviation, etc are called summary statistics. It is an essential step to identify the certain pattern of your dataset like the presence of the missing observations or outliers. Looking at the descriptive statistics of all the data can also serve as a source for generating research questions.
+
+The easiest way to obtain of summary statistics of the variables in the dataset is to use Rs base ```summary()``` function whose output is not very nice. 
+
+You will get the mean, quantiles, and min/max for numeric variables, and get frequency table for categorical one, but thats all.
+
+```
+summary(diamonds)
+```
+
+```{r}
+summary(diamonds)
+```
+
+
+<span style="color:darkred"> Interpretation </span>
+  
+The average of carat concentration is 0.8.  The minimum of carat is 0.2, while its maximum is 5. The half of the carat is below or above 0.7. 25% of the carat is below 0.4 and above 1.04. Lastly, it can be said that the variable might have outlier observations since there is a considerable difference between third quartile and maximum value, which also indicates that the distribution of carat may seem right skewed. 
+
+Also, out of 53940 diamonds, 1610 of them have fair cut, 4906 of them good cut, 
+21551 of them have ideal, 13791 of them have premium cut and 12082 of them very good cut.
+
+The output of `summary` does not provide other useful statistics such as standard deviation or IQR, which are used to measure the spread. To spot more descriptive statistics, you should consider some additional packages. For example, 
+
+```
+summarytools::descr(diamonds)
+```
+
+```{r}
+summarytools::descr(diamonds)
+```
+
+```
+Hmisc::describe(diamonds)
+```
+
+```{r}
+Hmisc::describe(diamonds)
+```
+
+Considering two outputs above, please answer the following questions 
+
+```{r quiz2}
+quiz(
+  question("Which one of the following is True?",
+    answer("The spread of x and y around their mean are not close to each other. "),
+    answer("Mean and median of depth are not close to each other."),
+    answer("3% percentage of the diamonds are best in terms of cleaning.", correct = TRUE))
+)
+```
+
+
+```
+table1::table1(~ depth, data=diamonds)
+```
+
+```{r}
+table1::table1(~ depth, data=diamonds)
+```
+
+
+For more alternatives, please [visit](https://chrisdixonacademic.wordpress.com/2021/03/10/descriptive-statistics-in-r/)
+
+You can also check `sumtable`package from [here](https://cran.r-project.org/web/packages/vtable/vignettes/sumtable.html)
+
+```summary()``` has no group-by function, but you can use ```psych``` package to get some rudimentary statistics by group:
+
+```
+psych::describe(diamonds)
+```
+
+```{r}
+#psych::describe(diamonds)
+```
+
+This package also provides an opportunity that you can calculate these summary statistics by breaking down a categorical variable.
+
+```
+psych::describeBy(diamonds,diamonds$color)
+```
+
+```{r}
+psych::describeBy(diamonds,diamonds$color)
+```
+
+As you see, we can calculate each of summary statistics of the numerical variables by color type. 
+
+If you would like to calculate the descriptive statistics of a single numerical variable by a group, you can use ```aggregate()``` command. 
+
+**Research Question 1**
+
+What is the average depth of diamonds in the premium cut class compared to other classes within more than 50000 diamonds?
+  
+**Question: What is type of EDA and why it is called in that way?**
+  
+```{r}
+aggregate(cbind(depth) ~ cut, data = diamonds, mean)
+```
+
+<span style="color:darkred">Interpretation</span> 
+
+The average depth of premium cut diamond is 61.26. The table shows that the average depth of diamonds by their cut are close to each other, but the average depth of fair cut diamonds, which is 64.04, are slightly above the others on the average. 
+
+
+#### <span style="color:darkred">**Univariate EDA**</span>
+
+####  <span style="color:darkred">**Categorical Variables**</span>
+  
+<span style="color:darkred">**Frequency Table:**</span>Frequency refers to the number of times an event or a value occurs.  A frequency table is a table that lists items and shows the number of times the items occur. It is generally applied on categorical variables. 
+
+```
+table(diamonds$cut) #creates frequency table 
+```
+
+```{r}
+table(diamonds$cut) #creates frequency table 
+```
+
+Interpretation is above.
+
+```
+prop.table(table(diamonds$cut)) #shows proportions
+```
+
+```{r}
+prop.table(table(diamonds$cut)) #shows proportions
+```
+
+<span style="color:darkred">Interpretation</span> 
+
+The proportion of diamonds by their cut type indicates the distribution of diamonds across different cut categories.
+
+Fair cut diamonds represent 2.98% of the total diamonds in the dataset.
+Good cut diamonds represent 9.10% of the total diamonds in the dataset.
+Very Good cut diamonds represent 22.40% of the total diamonds in the dataset.
+Premium cut diamonds represent 25.57% of the total diamonds in the dataset.
+Ideal cut diamonds represent 39.95% of the total diamonds in the dataset.
+
+These proportions can be used to gain insights into the quality of diamonds in the dataset. For example, the relatively high proportion of premium and ideal cut diamonds suggests that the overall quality of diamonds in the dataset may be high, while the relatively low proportion of fair cut diamonds may suggest that the dataset contains fewer lower quality diamonds.
+
+<span style="color:darkred">**Bar Plot:**</span> A bar chart represents data in rectangular bars with length of the bar proportional to the value of the variable. It is used for the visualization of the categorical variable, i.e displaying the distribution of categorical variable.
+
+To create bar plot in R, you need to create the frequency table of the categorical variable at first. 
+
+**Research Question 2**
+  
+What is the frequency distribution of CUT?
+
+```
+c = table(diamonds$cut)
+barplot(c)
+```
+
+```{r}
+c = table(diamonds$cut)
+barplot(c)
+```
+
+```
+barplot(c,col=c("red","yellow","black","blue","orange"),main="Bar Plot of Cut")
+text(c,labels=c,col="white",pos=1)
+# col argument fills the bar
+# main argument adds title
+#ylim argument arranges the y-axis
+#names.arg argument changes the bar names
+#text argument shows the frequencies on the plot.  
+#chas is the name of the frequency table
+```
+
+
+```{r}
+barplot(c,col=c("red","yellow","black","blue","orange"),main="Bar Plot of Cut")
+text(c,labels=c,col="white",pos=1)
+# col argument fills the bar
+# main argument adds title
+#ylim argument arranges the y-axis
+#names.arg argument changes the bar names
+#text argument shows the frequencies on the plot.  
+#chas is the name of the frequency table
+```
+
+**Note:** Bar plots are sometimes are used in the illustration of numerical variable. 
+
+####  <span style="color:darkred">**Numerical Variables**</span>
+  
+As a numerical EDA, the summary statistics including mean, median, standard deviation etc. are considered. You can find how to do in R above.
+
+<span style="color:darkred">**Histogram:**</span> A histogram represents the frequencies of values of a variable bucketed into ranges. Histogram is similar to bar chat but the difference is it groups the values into continuous ranges. Each bar in histogram represents the height of the number of values present in that range.
+
+**Research Question 3**
+  
+What is the distribution of carat?
+
+```
+hist(diamonds$carat) #hist function is used to draw histogram
+```
+  
+```{r}
+hist(diamonds$carat) #hist function is used to draw histogram
+```
+
+```
+hist(diamonds$carat,col="red",main="Histogram of Carat",xlab="Frequency of Carat")
+#xlab changes the x axis name. 
+```
+
+```{r}
+hist(diamonds$carat,col="red",main="Histogram of Carat",xlab="Frequency of Carat")
+#xlab changes the x axis name. 
+```
+  
+
+**Same Histogram with different bin**
+  
+**Bin:** The bar in the histogram is called bin. 
+
+```
+hist(diamonds$carat,col="red",main="Histogram of Carat",xlab="Frequency of Carat",breaks = 20)
+#xlab changes the x axis name. 
+#breaks sets the number of bin in the histogram
+```
+
+```{r}
+hist(diamonds$carat,col="darkred",main="Histogram of Carat",xlab="Frequency of Carat",breaks = 20)
+#xlab changes the x axis name. 
+#breaks sets the number of bin in the histogram
+```
+
+Let's make it more informative by adding the central tendency measures to the histogram. 
+
+```
+hist(diamonds$carat,col="darkred",main="Histogram of Carat",xlab="Frequency of Carat",breaks = 20)
+abline(v = mean(diamonds$carat),col = "royalblue", lwd = 2) #abbline add the vertical or horizontal line
+abline(v = median(diamonds$carat),col = "orange",lwd = 2)
+legend(x = "topright", # location of legend within plot area
+ c("Mean", "Median"),
+ col = c("royalblue", "orange"),
+ lwd = c(2, 2, 2))
+```
+
+```{r}
+hist(diamonds$carat,col="darkred",main="Histogram of Carat",xlab="Frequency of Carat",breaks = 20)
+abline(v = mean(diamonds$carat),col = "royalblue", lwd = 2) #abbline add the vertical or horizontal line
+abline(v = median(diamonds$carat),col = "orange",lwd = 2)
+legend(x = "topright", # location of legend within plot area
+ c("Mean", "Median"),
+ col = c("royalblue", "orange"),
+ lwd = c(2, 2, 2))
+```
+
+
+The carat of diamonds has a multimodal and right skewed distribution. The average and median of carats are close to each other, and they show that the center of the carat of the diamonds is less than 1. The histogram shows that carat of the most of the diamonds are between 0-1 carat. The diamond database has a few number of valuable diamonds in terms of carat. 
+
+<span style="color:darkred">**Density Plot:**</span> A density plot is a representation of the distribution of a numeric variable. It uses a kernel density estimate to show the probability density function of the variable [see more](https://chemicalstatistician.wordpress.com/2013/06/09/exploratory-data-analysis-kernel-density-estimation-in-r-on-ozone-pollution-data-in-new-york-and-ozonopolis/). It is **a smoothed version** of the histogram and is used in the same concept.
+
+```
+d = density(diamonds$carat)
+print(d)
+#Bandwidth is a parameter used for arranging the degree of smoothness.
+```
+
+```{r}
+d = density(diamonds$carat)
+print(d)
+#Bandwidth is a parameter used for arranging the degree of smoothness.
+```
+
+```
+plot(d,col="red",main="Density Plot of Carat",type="l")
+```
+
+```{r}
+plot(d,col="red",main="Density Plot of Carat",type="l")
+```
+
+<span style="color:darkred">Interpretation</span> 
+
+It has a **multimodal** and **right** distribution.
+
+**Histogram with density plot**
+
+If you would like to draw a histogram with density plot, you should use ```prob=T``` argument.
+
+```
+hist(diamonds$carat,col="red",main="Histogram of Carat",xlab="Frequency of Carat",breaks = 20,prob=T)
+lines(density(diamonds$carat),col="blue",main="Density Plot of Carat",type="l")
+```
+
+```{r}
+hist(diamonds$carat,col="darkred",main="Histogram of Carat",xlab="Frequency of Carat",breaks = 20,prob=T)
+lines(density(diamonds$carat),col="orange",main="Density Plot of Carat",type="l")
+```
+
+```{r}
+plot(density(diamonds$x),col="darkblue",main="Distribution of Lenght of Diamonds(x)")
+```
+
+
+```{r quiz3}
+quiz(
+  question("How does the diamonds length distribute across 53894 diamonds?",
+    answer("Multimodal-Symmetric"),
+    answer("Multimodal-Right Skewed", correct = TRUE),
+    answer("Bimodal-Right Skewed"),
+    answer("Unimodal-Left Skewed")
+  )
+)
+```
+
+<span style="color:darkred">**Box and Whiskers Plot:**</span> It is created based on Tukeys Five Number Summary including minimum, maximum, median, first and third quartile. The box plot can be used for two main purposes,
+
++ To investigate the distribution of a univariate numerical variable and checking **the existence of outliers**. However, it is not a good idea for characterizing the distribution because it cannot visualize the peak points of the distribuion. 
+
++ To see the relationship between numerical variable and categorical variable with levels or compare a numerical variable with respect to a categorical variable.
+
+Therefore, it is suitable for both univariate and multivariate EDA.
+
+**Anatomy of Box Plot**
+  
+![Anatomy of Box Plot](https://miro.medium.com/max/18000/1*2c21SkzJMf3frPXPAR_gZA.png){width="80%"}
+
+
+**Research Question 3**
+
+Within more than 53000 diamonds, are diamonds with extremely valuable or unvaluable available?
+
+```
+boxplot(diamonds$carat)
+```
+
+```{r}
+boxplot(diamonds$carat)
+```
+
+```
+boxplot(diamonds$carat,main="Box Plot of Carat",xlab="Carat",col="red")
+```
+
+```{r}
+boxplot(diamonds$carat,main="Box Plot of Carat",xlab="Carat",col="red")
+```
+
+<span style="color:darkred">Interpretation:</span> The half of the carat of the diamonds is around 0.5. The variation in middle half of the carat of the diamond is not high. There are some precious diamonds based on their carat. 
+
+When your variable has outliers, you can use **median** as central of tendency measure, and **IQR** as the measure of variation. 
+
+**Box Plot on the top of the Histogram**
+
+```
+# Draw the boxplot and the histogram 
+layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,8))
+par(mar=c(0, 3.1, 1.1, 2.1))
+boxplot(diamonds$carat,main="Box Plot and Histogram of Carat ",col="red",horizontal=TRUE,frame=F)
+par(mar=c(1, 3.1, 1.1, 2.1))
+hist(diamonds$carat,col="red",xlab="Carat",main="")
+#xlab changes the x axis name. 
+```
+  
+```{r}
+# Draw the boxplot and the histogram 
+layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,8))
+par(mar=c(0, 3.1, 1.1, 2.1))
+boxplot(diamonds$carat,main="Box Plot and Histogram of Carat ",col="red",horizontal=TRUE,frame=F)
+par(mar=c(1, 3.1, 1.1, 2.1))
+hist(diamonds$carat,col="red",xlab="Carat",main="")
+#xlab changes the x axis name. 
+```
+
+
+<span style="color::darkred"> **Mid-Exercise 1** </span>
+
+**What is the variation of Price?**
+
+Type a R code to draw a histogram and density plot. Explain what you get.
+
+
+### <span style="color:darkred">**Multivariate EDA**</span>
+
+In order to do Multivariate EDA, we need to take more than one variable into the analysis.
+
+####  <span style="color:darkred">**Categorical Variables**</span>
+ 
+**Research Question 4**
+
+How does the color of diamonds changes over cut type among 53940 diamonds?
+
+If you are analyzing two categorical variables, we can still create a frequency table, called **contingency table.**
+
+
+**Contingency Table :** In statistics, a contingency table, also known as a cross tabulation or crosstab, is a type of table in a matrix format that displays the multivariate frequency distribution of the variables. They are heavily used in survey research, business intelligence, engineering and scientific research. -Vikipedia :)  
+
+You can create contingency table by using ```table()``` in R. 
+
+```
+table(diamonds$color,diamonds$cut)
+```
+
+```{r}
+table(diamonds$color,diamonds$cut)
+```
+
+You can display the contingency table in different formats. 
+
+<span style="color:darkred">Mosaic Plot:</span> A mosaic plot is a graphical display of the cell frequencies of a contingency table in which the area of boxes of the plot are proportional to the cell frequencies of the contingency table. This procedure can construct mosaic plots for up to four-way tables.
+
+```
+mosaicplot(~diamonds$color+diamonds$cut)
+```
+
+```{r}
+mosaicplot(~diamonds$color+diamonds$cut)
+```
+
+```{r}
+mosaicplot(~diamonds$color+diamonds$clarity,main = "The Association between Color and Cut",
+           col = c("darkred","orange"))
+```
+
+
+<span style="color:darkred">Interpretation</span>
+
+We can say that the mostly occurring color between ideal cut diamonds is G color.  This example also indicates the weakness of mosaic plot. The interpretation is harder when we have more than 3 levels for each variable.
+
+<span style="color:darkred">Grouped Bar Plot:</span> It is an efficient tool to display the association between two categorical variables.
+
+```
+counts = table(diamonds$color,diamonds$cut)
+barplot(counts, main="Color Distribution by Cut Type",
+  xlab="Median value of Income", col=c("grey","darkred","orange","black","maroon","gold1","darkgreen"),
+  legend = rownames(counts),beside=TRUE)
+```
+
+```{r}
+counts = table(diamonds$color,diamonds$cut)
+barplot(counts, main="Color Distribution by Cut Type",
+  xlab="Median value of Income", col=c("grey","darkred","orange","black","maroon","gold1","darkgreen"),
+  legend = rownames(counts),beside=TRUE)
+```
+
+<span style="color:darkred">Interpretation</span>
+
+It can be said that the frequency of color J increases as the quality of diamond cut increases. Also, the plot shows that most of the diamonds have color G. 
+
+What else? 
+
+<span style="color:darkred">Stacked Bar Plot:</span> A stacked barplot is very similar to the grouped barplot above. The subgroups are just displayed on top of each other, not beside. The stacked barchart is the default option of the ```barplot()``` function in base R, so you do not need to use the beside argument.
+
+
+```{r}
+counts = table(diamonds$color,diamonds$cut)
+barplot(counts, main="Color Distribution by Cut Type",
+  xlab="Cut Type", col=colors()[c(22,32,42,52,62,72,82)],
+  legend = rownames(counts))
+```
+
+The interpretation is in the previous plot.
+
+####  <span style="color:darkred">**Continuous Variables**</span>
+
+
+**Research Question 5**
+
+What is the association between carat and price within 53940 diamonds having different properties? 
+
+<span style="color:darkred">Scatter Plot: </span> Scatter plot is a graphical way used to display the relationship between two numeric variables by using dots.  Each dot represents an observation. Their position on the X (horizontal) and Y (vertical) axis represents the values of the 2 variables.
+
+```
+plot(diamonds$carat,diamonds$price)
+#logic-> plot(independent variable, dependent variable)
+```
+
+```{r}
+plot(diamonds$carat,diamonds$price)
+#logic-> plot(independent variable, dependent variable)
+```
+
+
+```
+plot(diamonds$carat,diamonds$price,main="The Association btw Carat and Price",xlab="Carat",ylab="Price",col="darkred",pch=12,cex=1)
+#cex=size of dots
+#pch=point type
+```
+
+```{r}
+plot(diamonds$carat,diamonds$price,main="The Association btw Carat and Price",xlab="Carat",ylab="Price",col="darkred",pch=12,cex=1)
+#cex=size of dots
+#pch=point type
+```
+
+The plot indicates the positive association between two attributes. It is seen that when the carat increases, the prices increases. However, it is also seen that there are some observations, which can be labelled as outlier, that distords the relationship.  
+
+**Scatter Plot with Polynomial Curve**
+
+```
+plot(diamonds$carat,diamonds$price,main="The Association btw Carat and Price",xlab="Carat",ylab="Price",col=rgb(0.4,0.4,0.8,0.6),pch=16,cex=1,ylim=c(-3500,17000))
+model <- lm(diamonds$price~diamonds$carat)
+ 
+# I can get the features of this model :
+#summary(model)
+#model$coefficients
+#summary(model)$adj.r.squared
+ 
+# For each value of x, I can get the value of y estimated by the model, and add it to the current plot !
+myPredict <- predict( model ) 
+ix <- sort(diamonds$carat,index.return=T)$ix
+lines(diamonds$carat[ix], myPredict[ix], col=2, lwd=0.5 )  
+
+# I add the features of the model to the plot
+coeff <- round(model$coefficients , 2)
+text(3, -2000 , paste("Model : ",coeff[1] , " + " , coeff[2] , "*x"  , "\n\n" , "P-value adjusted = ",round(summary(model)$adj.r.squared,2)))
+```
+
+```{r}
+plot(diamonds$carat,diamonds$price,main="The Association btw Carat and Price",xlab="Carat",ylab="Price",col=rgb(0.4,0.4,0.8,0.6),pch=16,cex=1,ylim=c(-3500,17000))
+model <- lm(diamonds$price~diamonds$carat)
+ 
+# I can get the features of this model :
+#summary(model)
+#model$coefficients
+#summary(model)$adj.r.squared
+ 
+# For each value of x, I can get the value of y estimated by the model, and add it to the current plot !
+myPredict <- predict( model ) 
+ix <- sort(diamonds$carat,index.return=T)$ix
+lines(diamonds$carat[ix], myPredict[ix], col=2, lwd=0.5 )  
+
+# I add the features of the model to the plot
+coeff <- round(model$coefficients , 2)
+text(3, -2000 , paste("Model : ",coeff[1] , " + " , coeff[2] , "*x"  , "\n\n" , "P-value adjusted = ",round(summary(model)$adj.r.squared,2)))
+```
+
+You can customize your scatter plot using the following arguments in the plot function.
+
++ cex = shape size
+
++ lwd = line width
+
++ col = control colors
+
++ lty = line type
+
++ pch = marker shape
+
++ type = link between dots
+
+####  <span style="color:darkred">**Categorical and Numerical Variables**</span>
+
+**Research Question 6**
+
+How cut types of the diamonds affected the prices for 53940 diamonds?
+
+<span style="color:darkred">Box and Whisker Plot</span> It is probably the most commonly used chart type to compare distribution of several groups.
+
+```
+boxplot(diamonds$price~diamonds$cut,main="The Boxplot of Diamond Prices by Cut",col=colors()[c(25,35,45,55,65)],xlab="Cut Type",ylab="Price",ylim=c(0,25000))
+
+legend("topleft", legend = levels(diamonds$cut) , 
+    col=colors()[c(25,35,45,55,65)] , bty = "n", pch=20 , pt.cex = 1, cex = 1, horiz = T, inset = c(0.01, 0.01))
+#inset set the position of legend
+#horiz = add legend horizontally
+```
+
+```{r}
+boxplot(diamonds$price~diamonds$cut,main="The Boxplot of Diamond Prices by Cut",col=colors()[c(25,35,45,55,65)],xlab="Cut Type",ylab="Price",ylim=c(0,25000))
+
+legend("topleft", legend = levels(diamonds$cut) , 
+    col=colors()[c(25,35,45,55,65)] , bty = "n", pch=20 , pt.cex = 1, cex = 1, horiz = T, inset = c(0.01, 0.01))
+#inset set the position of legend
+#horiz = add legend horizontally
+```
+
+
+<span style="color:darkred">Interpretation</span>
+
+The median prices for each cut type are close to each other, but upper tail of whiskers indices that the price of premium cut diamonds is the highest among them and it reduces as quality of cut type reduces. Thus, a visual association is detected, but it requires further analysis. 
+On the other hand, all of them have outlier observations and might have right skewed distribution but more visual technique should be considered. 
+
+
+<span style="color::darkred"> **Mid-Exercise 2** </span>
+
+**How diamonds prices distribute over color type?**
+
+**Research Question 7**
+
+How diamonds prices distribute over cut type and depth?
+
+Here, we need a transformation because we aim to analze a numerical variable(price) by two categorical variables(cut and depth). 
+
+```
+diamonds$depth_factor = ifelse(diamonds$depth<mean(diamonds$depth),"Below Average","Above Average")
+```
+
+```{r}
+diamonds$depth_factor = ifelse(diamonds$depth<mean(diamonds$depth),"Below Average","Above Average")
+```
+
+```
+# I make the boxplot, asking to use the 2 factors : depth factor and cut:
+par(mar=c(3,4,3,1))
+myplot <-
+boxplot(price ~ depth_factor*cut , data=diamonds,
+        boxwex=0.4 , ylab="Price",
+        main="The Box Plot of Price by Cut and Depth" , 
+        col=c("slateblue1" , "tomato") ,  
+        xaxt="n",ylim=c(0,30000))
+
+my_names <- sapply(strsplit(myplot$names , '\\.') , function(x) x[[2]] )
+my_names <- my_names[seq(1 , length(my_names) , 2)]
+
+axis(1, at =seq(0.5 , 10 , 2),labels = my_names , 
+     tick=FALSE , cex=0.3)
+
+# Add the grey vertical lines
+for(i in seq(0.5 ,10 , 2)){ 
+  abline(v=i,lty=1, col="grey")
+  }
+ 
+
+# Add a legend
+legend("topright", legend = c("Above", "Below"), 
+       col=c("slateblue1" , "tomato"),
+       pch = 15, bty = "n", pt.cex = 3, cex = 1.2,  horiz = F, inset = c(0.1, 0.1))
+
+
+```
+
+```{r}
+# I make the boxplot, asking to use the 2 factors : depth factor and cut:
+par(mar=c(3,4,3,1))
+myplot <-
+boxplot(price ~ depth_factor*cut , data=diamonds,
+        boxwex=0.4 , ylab="Price",
+        main="The Box Plot of Price by Cut and Depth" , 
+        col=c("slateblue1" , "tomato") ,  
+        xaxt="n",ylim=c(0,30000))
+
+my_names <- sapply(strsplit(myplot$names , '\\.') , function(x) x[[2]] )
+my_names <- my_names[seq(1 , length(my_names) , 2)]
+
+axis(1, at =seq(0.5 , 10 , 2),labels = my_names , 
+     tick=FALSE , cex=0.3)
+
+# Add the grey vertical lines
+for(i in seq(0.5 ,10 , 2)){ 
+  abline(v=i,lty=1, col="grey")
+  }
+ 
+
+# Add a legend
+legend("topright", legend = c("Above", "Below"), 
+       col=c("slateblue1" , "tomato"),
+       pch = 15, bty = "n", pt.cex = 3, cex = 1.2,  horiz = F, inset = c(0.1, 0.1))
+
+
+```
+
+
+<span style="color:darkred">Interpretation</span>
+
+The price of diamonds does not show a visual difference by their depth for each cut type. 
+
+**Research Question 8**
+
+How the carat of the diamonds related with the price of 539400 diamonds? 
+
+We are looking for the relationship between two quantitative behaviour. The fastest way to do is either drawing scatter plot or calculating correlation. 
+
+While answering this question, we will also check the association between other quantitative variables simultaneously. 
+
+<span style="color:darkred">**Scatter Plot Matrix:**</span> The graphical distribution of the data displays the story of the data by spending less cognitive effort. If your dataset has more than 2 quantitative variables, you can construct a scatter plot matrix to understand the underlying relationship between them instead of drawing a scatter plot for each pair of the variables one by one.
+
+In this analysis, we need to include only numerical columns. Thus, we will create an index which selects only numerical variables. 
+
+```
+index<- unlist(lapply(diamonds, is.numeric))  
+```
+
+```{r}
+index<- unlist(lapply(diamonds, is.numeric))  
+```
+
+
+```
+pairs(diamonds[,index])
+```
+
+```{r}
+pairs(diamonds[,index])
+```
+
+
+Let's make it more informative. 
+
+```
+library(PerformanceAnalytics)
+chart.Correlation(diamonds[,index])
+```
+
+```{r}
+library(PerformanceAnalytics)
+chart.Correlation(diamonds[,index])
+```
+
+<span style="color:darkred"> Interpretation </span> 
+
+The output shows that there is a strong linear association between carat and price of the 53940 diamonds. It also shows the association between pairs of the variables in both numerically and visually. 
+
+As you know, R has many number of packages for visualization, **better than Python.** We will cover some of those in this lab.
+
+
+#### <span style="color:darkred">**Lattice Plots**</span>
+
+It is a powerful and elegant high-level data visualization system, with an emphasis on multivariate data. **It generates a plot splitted into the level of a categorical variable. **
+
+What it has? 
+
+![](https://techvidvan.com/tutorials/wp-content/uploads/sites/2/2020/05/Graphs-in-Lattice-Package.jpg){width="50%"}
+
+**Research Question 9**
+
+How the cut type affected the association between price and carats of 539400 diamonds? 
+
+<span style="color:darkred">Scatter Plot in Lattice</span> ```lattice``` library offers the ```xyplot()``` function. It builds a scatterplot for each levels of a factor automatically.
+
+```
+library(lattice)
+xyplot(price ~ carat | cut , data=diamonds , pch=20 , cex=0.5 , col=rgb(0.2,0.4,0.8,0.5) )
+```
+
+```{r,message=FALSE,error=FALSE}
+library(lattice)
+xyplot(price ~ carat | cut , data=diamonds , pch=20 , cex=0.5 , col=rgb(0.2,0.4,0.8,0.5) )
+```
+
+<span style="color:darkred"> Interpretation </span> Carat and price have positive relationship in each cut type as we expected. However, it is also noted that some independent observations that brokes the relationship exist. 
+
+You can also make your scatter plot colorful by the level of one factor variable using ```xyplot()```.
+
+```
+xyplot(price ~ carat , data=diamonds,group = cut,auto.key = TRUE)
+```
+
+```{r}
+xyplot(price ~ carat , data=diamonds,group = cut,auto.key = TRUE)
+```
+
+
+```{r,warning=FALSE,message=FALSE}
+library(lattice)
+xyplot(price ~ carat | clarity , data=diamonds , pch=20 , cex=0.5 , col=rgb(0.2,0.4,0.8,0.5) )
+```
+
+```{r quiz44}
+quiz(
+  question("Which interpretation might be correct for the output above?",
+           answer("A different assocition between price and carat for each clarity type is observed they have strong negative and weak positive associations"),
+           answer("A similar assocition between price and carat for each clarity type is observed they have a weak and positive association "),
+           answer("A similar assocition between price and carat for each clarity type is observed they have a strong and positive association ", correct = TRUE),
+           answer("A similar assocition between price and carat for each clarity type is observed they have a weak but positive association")
+  )
+)
+```
+
+**Research Question 10?**
+
+How does the price of diamonds distribute by color of diamonds? 
+
+There are several ways to answer this question, and see the possible solutions below. 
+
+<span style="color:darkred">Histogram</span>
+
+```
+histogram(~ price | color, data = diamonds, breaks = 20)
+```
+
+
+```{r}
+histogram(~ price | color, data = diamonds, breaks = 20)
+```
+
+
+<span style="color:darkred"> Interpretation </span> We can say that price has multimodal distribution for color H, I and J and right skewed distribution for the rest of the colors. 
+
+<span style="color:darkred">Density Plot</span>
+
+```
+densityplot(~ price | color, data = diamonds)
+```
+
+```{r}
+densityplot(~ price | color, data = diamonds)
+```
+
+```
+densityplot(~price ,group=color, data = diamonds,auto.key = TRUE)
+```
+
+
+```{r}
+densityplot(~price ,group=color, data = diamonds,auto.key = TRUE)
+```
+
+<span style="color:darkred">Box and Violin Plot</span>
+
+```
+bwplot(~ price | color, data = diamonds)
+```
+
+```{r}
+bwplot(~ price | color, data = diamonds)
+```
+
+<span style="color:darkred">**Violin Plot:**</span> Violin plots are similar to box plots, except that they also show the kernel probability density of the data at different values.
+
+```
+bwplot(~ price | color, data = diamonds,panel = panel.violin)
+```
+
+
+```{r}
+bwplot(~ price | color, data = diamonds,panel = panel.violin)
+```
+
+**Recall Research Question 6**
+
+```
+bwplot(price ~  cut, data = diamonds)
+```
+
+```{r}
+bwplot(price ~  cut, data = diamonds)
+```
+
+**Recall Research Question 4**
+
+<span style="color:darkred"> Heat Map</span>
+
+```
+df<-table(diamonds$color,diamonds$cut)
+levelplot(df)
+```
+
+```{r}
+df<-table(diamonds$color,diamonds$cut)
+levelplot(df)
+```
+
+###  Exercise 
+
+<span style="color:red"> **Mid-Exercise 1**</span>
+
+**How the cut type affected the association between price and carats of 539400 diamonds?**
+
+Please click [here](http://users.metu.edu.tr/ozancan/exercise1.zip) to download your exercise.
+
+
+
+**References**
+
++ https://r4ds.had.co.nz/exploratory-data-analysis.html#covariation
+
++ https://www.r-graph-gallery.com/
+
++ https://www.guide2research.com/research/how-to-write-a-research-question
+
+
