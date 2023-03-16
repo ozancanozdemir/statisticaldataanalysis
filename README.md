@@ -9,6 +9,11 @@ remotes::install_github("ozancanozdemir/statisticaldataanalysis")
 ```
 Then, run the following command to open the interactive tutorial page.  For example, 
 
+``
+
+install.packages(c("remotes","learnr","ggplot2","PerformanceAnalytics","lattice","summarytools","Hmisc","table1","psych"))
+,,
+
 ```
 library(statisticaldataanalysis)
 learnr::run_tutorial("Recitation1",package = "statisticaldataanalysis")
