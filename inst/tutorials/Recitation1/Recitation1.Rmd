@@ -840,6 +840,13 @@ What else?
 
 <span style="color:darkred">Stacked Bar Plot:</span> A stacked barplot is very similar to the grouped barplot above. The subgroups are just displayed on top of each other, not beside. The stacked barchart is the default option of the ```barplot()``` function in base R, so you do not need to use the beside argument.
 
+```
+counts = table(diamonds$color,diamonds$cut)
+barplot(counts, main="Color Distribution by Cut Type",
+  xlab="Cut Type", col=colors()[c(22,32,42,52,62,72,82)],
+  legend = rownames(counts))
+```
+
 
 ```{r}
 counts = table(diamonds$color,diamonds$cut)

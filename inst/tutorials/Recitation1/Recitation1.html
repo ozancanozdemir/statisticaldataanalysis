@@ -710,6 +710,8 @@ questions</p>
 </div>
 <p>For more alternatives, please <a
 href="https://chrisdixonacademic.wordpress.com/2021/03/10/descriptive-statistics-in-r/">visit</a></p>
+<p>You can also check <code>sumtable</code>package from <a
+href="https://cran.r-project.org/web/packages/vtable/vignettes/sumtable.html">here</a></p>
 <p><code>summary()</code> has no group-by function, but you can use
 <code>psych</code> package to get some rudimentary statistics by
 group:</p>
@@ -1163,6 +1165,10 @@ barplot is very similar to the grouped barplot above. The subgroups are
 just displayed on top of each other, not beside. The stacked barchart is
 the default option of the <code>barplot()</code> function in base R, so
 you do not need to use the beside argument.</p>
+<pre><code>counts = table(diamonds$color,diamonds$cut)
+barplot(counts, main=&quot;Color Distribution by Cut Type&quot;,
+  xlab=&quot;Cut Type&quot;, col=colors()[c(22,32,42,52,62,72,82)],
+  legend = rownames(counts))</code></pre>
 <p><img src="Recitation1_files/figure-html/unnamed-chunk-34-1.png" width="624" /></p>
 <p>The interpretation is in the previous plot.</p>
 </div>
@@ -1462,12 +1468,12 @@ session$onSessionEnded(function() {
  
 <script type="application/shiny-prerendered" data-context="server">
 learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz1-1", question = structure("Which question is a good research question to investigate?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_cc82e1d", 
+"character")), answers = list(structure(list(id = "lnr_ans_6993a60", 
     option = "Has there been an increase in childhood obesity in the US in the past 10 years?", 
     value = "Has there been an increase in childhood obesity in the US in the past 10 years?", 
     label = structure("Has there been an increase in childhood obesity in the US in the past 10 years?", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_73f260a", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_52fd4a4", 
     option = "How have school intervention programs and parental education levels affected the rate of childhood obesity among 1st to 6th-grade students?", 
     value = "How have school intervention programs and parental education levels affected the rate of childhood obesity among 1st to 6th-grade students?", 
     label = structure("How have school intervention programs and parental education levels affected the rate of childhood obesity among 1st to 6th-grade students?", html = TRUE, class = c("html", 
@@ -1479,7 +1485,7 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
 "character")), message = NULL, post_message = NULL), ids = list(
     answer = "quiz1-1-answer", question = "quiz1-1"), loading = NULL, 
-    random_answer_order = FALSE, allow_retry = FALSE, seed = 14135309.9934177, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 26095984.9878481, 
     options = list()), class = c("learnr_radio", "tutorial_question"
 )), session = session)
 </script>
@@ -1487,17 +1493,17 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 
 <script type="application/shiny-prerendered" data-context="server">
 learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz2-1", question = structure("Which one of the following is True?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_6da5a56", 
+"character")), answers = list(structure(list(id = "lnr_ans_97b017f", 
     option = "The spread of x and y around their mean are not close to each other. ", 
     value = "The spread of x and y around their mean are not close to each other. ", 
     label = structure("The spread of x and y around their mean are not close to each other.", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_9adf2e4", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_b01de51", 
     option = "Mean and median of depth are not close to each other.", 
     value = "Mean and median of depth are not close to each other.", 
     label = structure("Mean and median of depth are not close to each other.", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_b37bad9", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_425330a", 
     option = "3% percentage of the diamonds are best in terms of cleaning.", 
     value = "3% percentage of the diamonds are best in terms of cleaning.", 
     label = structure("3% percentage of the diamonds are best in terms of cleaning.", html = TRUE, class = c("html", 
@@ -1509,26 +1515,26 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
 "character")), message = NULL, post_message = NULL), ids = list(
     answer = "quiz2-1-answer", question = "quiz2-1"), loading = NULL, 
-    random_answer_order = FALSE, allow_retry = FALSE, seed = 1226361485.42893, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 228008745.393825, 
     options = list()), class = c("learnr_radio", "tutorial_question"
 )), session = session)
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
 learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz3-1", question = structure("How does the diamonds length distribute across 53894 diamonds?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_ce99df5", 
+"character")), answers = list(structure(list(id = "lnr_ans_8439d6f", 
     option = "Multimodal-Symmetric", value = "Multimodal-Symmetric", 
     label = structure("Multimodal-Symmetric", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_e7dd839", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_36e5c3b", 
     option = "Multimodal-Right Skewed", value = "Multimodal-Right Skewed", 
     label = structure("Multimodal-Right Skewed", html = TRUE, class = c("html", 
     "character")), correct = TRUE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_6d0ab1c", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_6426975", 
     option = "Bimodal-Right Skewed", value = "Bimodal-Right Skewed", 
     label = structure("Bimodal-Right Skewed", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_2aac6d9", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_96ce458", 
     option = "Unimodal-Left Skewed", value = "Unimodal-Left Skewed", 
     label = structure("Unimodal-Left Skewed", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
@@ -1539,7 +1545,7 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
 "character")), message = NULL, post_message = NULL), ids = list(
     answer = "quiz3-1-answer", question = "quiz3-1"), loading = NULL, 
-    random_answer_order = FALSE, allow_retry = FALSE, seed = 30267801.9859055, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 1527179196.28885, 
     options = list()), class = c("learnr_radio", "tutorial_question"
 )), session = session)
 </script>
@@ -1547,22 +1553,22 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 
 <script type="application/shiny-prerendered" data-context="server">
 learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz44-1", question = structure("Which interpretation might be correct for the output above?", html = TRUE, class = c("html", 
-"character")), answers = list(structure(list(id = "lnr_ans_f57fa02", 
+"character")), answers = list(structure(list(id = "lnr_ans_abc664c", 
     option = "A different assocition between price and carat for each clarity type is observed they have strong negative and weak positive associations", 
     value = "A different assocition between price and carat for each clarity type is observed they have strong negative and weak positive associations", 
     label = structure("A different assocition between price and carat for each clarity type is observed they have strong negative and weak positive associations", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_da0c5a8", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_a096320", 
     option = "A similar assocition between price and carat for each clarity type is observed they have a weak and positive association ", 
     value = "A similar assocition between price and carat for each clarity type is observed they have a weak and positive association ", 
     label = structure("A similar assocition between price and carat for each clarity type is observed they have a weak and positive association", html = TRUE, class = c("html", 
     "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_a5dc7f8", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_ee1a6a0", 
     option = "A similar assocition between price and carat for each clarity type is observed they have a strong and positive association ", 
     value = "A similar assocition between price and carat for each clarity type is observed they have a strong and positive association ", 
     label = structure("A similar assocition between price and carat for each clarity type is observed they have a strong and positive association", html = TRUE, class = c("html", 
     "character")), correct = TRUE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
-"tutorial_quiz_answer")), structure(list(id = "lnr_ans_be75fe3", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_22815e7", 
     option = "A similar assocition between price and carat for each clarity type is observed they have a weak but positive association", 
     value = "A similar assocition between price and carat for each clarity type is observed they have a weak but positive association", 
     label = structure("A similar assocition between price and carat for each clarity type is observed they have a weak but positive association", html = TRUE, class = c("html", 
@@ -1574,7 +1580,7 @@ learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label 
 "character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
 "character")), message = NULL, post_message = NULL), ids = list(
     answer = "quiz44-1-answer", question = "quiz44-1"), loading = NULL, 
-    random_answer_order = FALSE, allow_retry = FALSE, seed = 2052350888.5443, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 1110725651.48278, 
     options = list()), class = c("learnr_radio", "tutorial_question"
 )), session = session)
 </script>
