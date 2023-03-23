@@ -26,3 +26,15 @@ install.packages(c("remotes","learnr","ggplot2","PerformanceAnalytics","lattice"
 ```
 
 Exploratory Data Analysis with base R command.
+
+### Recitation 2 
+
+Install the following packages before running the tutorial.
+
+
+```
+install.packages(c("ggplot2","gridExtra","ggforce","statsExpressions","ggalt","bbplot","leaflet","ggcorplot","izmir","mlbench"))
+```
+Fundamentals of the ggplot2
+Exploratory Data Analysis using ggplot2.
+Creating an interactive map with leaflet. 
