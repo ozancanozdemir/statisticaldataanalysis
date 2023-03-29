@@ -1,0 +1,105 @@
+Mobil Oyun Tercihleri Anketi;;;;;;;;;
+Bu veri seti veri temizleme pratiði için bilinçli olarak daðýnýk dizayn edilmiþtir;;;;;;;;;
+;;;;;;;;;
+"*?CinSiyet""";Yaþ-?/;"""Sistem""";ZAMAN;BR;"SATIN_alma""";HARCANAN ;Kazanilan;NeT;Dates
+Erkek;35 - 50;  IOS;2;saat;Evet;13;1;-12;26.02.2019
+Erkek;25 - 35;  IOS;1;saat;Hayýr;16;3;-13;26 Feb 2019
+Erkek;25 - 35; IOS;4;saat; EVET;15;2;-11;26.02.2019
+Erkek;18 - 25; IOS;2;saat;EVET;20;6;-14;26.02.2019
+ERKEK;18 - 25; Ios;1,5;saat;Hayýr;18;7;-15;26.02.2019
+Erkek;18 - 25;iphone;2;saat;  Hayýr;11;9;-2;26.02.2019
+Erkek;18 - 25; IOS;2;saat;Hayýr;15;10;-5;26.02.2019
+K;18 - 25; IOS;60;dakika;Evet;11;5;-6;26.02.2019
+K;18 - 25;ýOS;1;saat;Hayýr;14;1;-13;26.02.2019
+KADIN;18 - 25; IOS;3;saat;Hayýr;19;7;-12;26.02.2019
+Erkek;35 - 50;Android;2;saat;Evet;16;3;-13;26.02.2019
+Erkek;35 - 50;Android;1;saat;Hayýr;20;4;-16;26.02.2019
+Erkek;35 - 50;Android;3;saat;Hayýr;16;1;-15;26.02.2019
+Erkek;35 - 50;ANDROID;1;saat;Evet;18;4;-14;26.02.2019
+Erkek;35 - 50;Android;2;saat;  Hayýr;16;6;-10;26.02.2019
+Erkek;35 - 50;Android;3;saat;Hayýr;19;10;-9;26.02.2019
+Erkek;35 - 50;Android;120;dakika;Hayýr;18;2;-16;26.02.2019
+Erkek;35 - 50;Android;1;saat;Hayýr;18;9;-9;26.02.2019
+Kadýn;35 - 50;Android;5;saat;Evet;18;10;-8;26.02.2019
+E;25 - 35;Android;90;dakika;Evet;12;4;-8;26.02.2019
+Erkek;25 - 35;Android;2;saat; Hayýr;16;9;-7;26.02.2019
+Erkek;25 - 35;Android;1;saat;Evet;16;2;-14;26.02.2019
+Erkek;25 - 35;Android;4;saat;Hayýr;17;5;-12;26 Feb 2019
+Erkek;25 - 35;Android;2;saat;Hayýr;12;3;-9;26.02.2019
+Erkek;25 - 35;Android;1,5;saat;Hayýr;11;9;-2;26.02.2019
+E;25 - 35;Android;2;saat;Hayýr;11;2;-9;26.02.2019
+Erkek;25 - 35;Android;2;saat;Hayýr;19;5;-14;26.02.2019
+Erkek;25 - 35;Android;1;saat;Evet;12;8;-4;26.02.2019
+Erkek;25 - 35;Android;1;saat;Evet;19;4;-15;26.02.2019
+Erkek;25 - 35;Android;3;saat;Hayýr;18;1;-17;26.02.2019
+Erkek;25 - 35;Android;2;saat;Hayýr;14;1;-13;26.02.2019
+Erkek;25 - 35;Android;60;dakika;Evet;10;3;-7;26.02.2019
+Erkek;25 - 35;Android;3;saat;Evet;12;1;-11;26.02.2019
+Erkek;25 - 35;Android;1;saat;Evet;18;7;-11;26.02.2019
+Erkek;25 - 35;Android;2;saat;Evet;10;9;-1;26.02.2019
+Erkek;25 - 35;Android;3;saat;Hayýr;17;1;-16;26.02.2019
+Erkek;25 - 35;ANDROID;2;saat;Hayýr;18;1;-17;26.02.2019
+Erkek;25 - 35;ANDROID;1;saat;Evet;19;4;-15;26.02.2019
+Erkek;25 - 35;ANDROID;5;saat;Hayýr;12;7;-5;26.02.2019
+Erkek;25 - 35;ANDROID;3600;saniye;Evet;16;10;-6;26.02.2019
+E;18 - 25;ANDROID;1,5;saat;Hayýr;18;1;-17;26 Feb 2019
+E;18 - 25;ANDROID;1,5;saat;Hayýr;16;8;-8;26.02.2019
+E;18 - 25;ANDROID;1,5;saat;Hayýr;18;8;-10;26.02.2019
+E;18 - 25;ANDROID;90;dakika;Hayýr;10;3;-7;26.02.2019
+E;18 - 25;ANDROID;1;saat;Hayýr;18;9;-9;26.02.2019
+Erkek;18 - 25;ANDROID;1;saat;Evet;11;8;-3;26.02.2019
+Erkek;18 - 25;ANDROID;3;saat;HAYIR;20;9;-11;26.02.2019
+Erkek;18 - 25;ANDROID;120;dakika;HAYIR;16;4;-12;26.02.2019
+ERKEK;18 - 25;ANDROID;1;saat;HAYIR;17;7;-10;26 Feb 2019
+ERKEK;18 - 25;ANDROID;3;saat;Evet;20;3;-17;26.02.2019
+ERKEK;18 - 25;ANDROID;1;saat;Hayýr;14;7;-7;26.02.2019
+ERKEK;18 - 25;Android;5;saat;Evet;12;4;-8;26.02.2019
+ERKEK;18 - 25;Android;0;saat;Evet;12;8;-4;26.02.2019
+ERKEK;18 - 25;Android;2;saat;Evet;14;9;-5;26.02.2019
+ERKEK;18 - 25;Android;1;saat;Evet;10;2;-8;26.02.2019
+Erkek;18 - 25;Android;4;saat;Hayýr;11;5;-6;26.02.2019
+Erkek;18 - 25;Android;2;saat;Evet;10;2;-8;26.02.2019
+Erkek;18 - 25;Android;1,5;saat;Evet;16;4;-12;26 Feb 2019
+Erkek;18 - 25;Android;2;saat;Evet;11;1;-10;26.02.2019
+Erkek;18 - 25;Android;7200;saniye;Evet;16;10;-6;26.02.2019
+Erkek;18 - 25;Android;1;saat;Evet;16;4;-12;26.02.2019
+Erkek;18 - 25;Android;1;saat;Evet;15;4;-11;26.02.2019
+Erkek;18 - 25;Android;3;saat;Evet;14;5;-9;26.02.2019
+Erkek;18 - 25;Android;2;saat;Hayýr;18;9;-9;26.02.2019
+Erkek;18 - 25;Android;0;saat;Hayýr;10;8;-2;26.02.2019
+Erkek;18 - 25;Android;3;saat;Hayýr;11;4;-7;26.02.2019
+Erkek;18 - 25;Android;1;SAAT;Hayýr;16;8;-8;26.02.2019
+Erkek;18 - 25;Android;2;saat;Hayýr;13;2;-11;26.02.2019
+Erkek;18 - 25;Android;3;saat;Hayýr;20;5;-15;26 Feb 2019
+Erkek;18 - 25;Android;2;saat;Hayýr;14;4;-10;26.02.2019
+Erkek;18 - 25;Android;0;saat;Hayýr;18;6;-12;26.02.2019
+Erkek;18 - 25;Android;5;saat;Hayýr;15;7;-8;26.02.2019
+Kadýn;18 - 25;Huawei;2;saat;Hayýr;13;2;-11;26.02.2019
+K;18 - 25;Android;1;saat;Hayýr;13;3;-10;26.02.2019
+K;18 - 25;Android;2;saat;Hayýr;18;5;-13;26.02.2019
+K;18 - 25;Android;2;saat;Evet;14;3;-11;26.02.2019
+KADIN;18 - 25;Sony;1;saat;Hayýr;19;3;-16;26 Feb 2019
+KADIN;18 - 25;Android;4;saat;Hayýr;12;5;-7;26.02.2019
+KADIN;18 - 25;Android;2;saat;Hayýr;13;3;-10;26.02.2019
+KADIN;18-  25;Android;90;dakika; Hayýr;20;10;-10;26.02.2019
+E;25 - 35;Apple;2;saat;Hayýr;19;4;-15;26.02.2019
+E;25 - 35;Apple;2;saat;Evet;20;3;-17;26.02.2019
+Erkek;25 - 35;Apple;0;saat;Evet;19;6;-13;26.02.2019
+Erkek;25 - 35;Apple;1;saat;Evet;14;5;-9;26.02.2019
+Erkek;25 - 35;Apple;180;dakika;Hayýr;19;7;-12;26.02.2019
+Erkek;25 - 35;Apple;2;saat;Evet;10;5;-5;26.02.2019
+Erkek;25 - 35;Apple;1;saat;Evet;15;8;-7;26.02.2019
+Erkek;25 - 35;Apple;3;saat;Evet;11;7;-4;26 Feb 2019
+E;18 - 25;Apple;1;SAAT;Hayýr;13;9;-4;26.02.2019
+E;18 - 25;Apple;2;saat;Hayýr;10;8;-2;26.02.2019
+E;18 - 25;Apple;3;saat;Hayýr;12;3;-9;26.02.2019
+ERKEK;18 - 25;Apple;2;saat;Hayýr;13;3;-10;26.02.2019
+ERKEK;18 - 25;Apple;0;saat;Hayýr;13;8;-5;26.02.2019
+ERKEK;18 - 25;Apple;5;saat;Evet;16;9;-7;26.02.2019
+ERKEK;18 - 25;Apple;1,5;saat;Hayýr;12;8;-4;26.02.2019
+ERKEK;35 - 50;Apple IOS;3;saat;Hayýr;10;1;-9;26.02.2019
+ERKEK;35 - 50;Apple IOS;2;SAAT;Evet;18;5;-13;26.02.2019
+K;25 - 35;Apple IOS;2;saat;Hayýr;15;8;-7;26.02.2019
+Kadýn;25 - 35;Apple IOS;1;saat;Evet;12;6;-6;26.02.2019
+Kadýn;18 - 25;Apple IOS;1;saat;Hayýr;16;10;-6;26.02.2019
+Kadýn;18 - 25;Apple IOS;0;saat;Hayýr;16;5;-11;26 Feb 2019
