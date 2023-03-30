@@ -1,0 +1,12 @@
+#convert dakika
+if (Birim=="dakika"){
+Zaman<-Zaman/60
+}
+#convert saniye
+if (Birim=="saniye"){
+Zaman<-Zaman/3600
+}
+if (Birim=="saat"){
+Zaman<-Zaman
+}
+Birim="saat"

@@ -1,0 +1,1299 @@
+---
+title: "STAT 412-Recitation 3"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+#![](https://onuduymustum.com/wp-content/uploads/kimse-bir-sey-bilmiyorsa-bir-insan-her-seyi-bilebilir.jpg){width="60%"}
+```
+
+
+## <span style="color:darkred"> **Reminder** </span>
+
+Last week, we talked about
+
++ Drawing plots using ```ggplot2``` package
+
++ Creating an interactive map with ```leaflet```
+
+Before starting the lab, please install the following packages using the given code line. 
+
++ dplyr
+
++ stringr
+
++ editrules
+
++ deducorrect
+
++ lubridate
+
++ ggplot2
+
++ assertive
+
++ gapminder 
+
+```
+install.packages(c("dplyr","stringr","editrules","deducorrect","lubridate","assertive","gapminder"))
+```
+## <span style="color:darkred"> **Data Cleaning** </span>
+
+Data cleansing or data cleaning is the process of detecting and correcting (or removing) corrupt or inaccurate records from a record set, table, or database and refers to identifying incomplete, incorrect, inaccurate or irrelevant parts of the data and then replacing, modifying, or deleting the dirty or coarse data. Data cleansing may be performed interactively with data wrangling tools, or as batch processing through scripting. (Wikipedia, 2020)
+
+It takes 80% percentage of the data analysis process, and it can cause seriously wrong insights in the data analysis pipeline if it is not done. If data is incorrect, outcomes and algorithms are unreliable, even though they may look correct. There is no one absolute way to prescribe the exact steps in the data cleaning process because the processes will vary from dataset to dataset. But it is crucial to establish a template for your data cleaning process so you know you are doing it the right way every time.
+
+![](https://pbs.twimg.com/media/Eb63HKNXYAAS-ik.jpg){width="%20"}
+
+### <span style="color:darkred"> How do you clean data? </span>
+
++ **Step 1**: Remove duplicate or irrelevant observations
+
++ **Step 2**: Fix structural errors
+
++ **Step 3**: Filter unwanted outliers
+
++ **Step 4**: Handle missing data
+
+### <span style="color:darkred"> Components of quality data  </span>
+
++ **Validity.** The degree to which your data conforms to defined business rules or constraints.
+
++ **Accuracy.** Ensure your data is close to the true values.
+
++ **Completeness.** The degree to which all required data is known.
+
++ **Consistency.** Ensure your data is consistent within the same dataset and/or across multiple data sets. It means that your data values do not conflict with other values in the data.
+
++ **Uniformity.** The degree to which the data is specified using the same unit of measure.
+
+R programming is a great tool for data cleaning, because it provides several packages used for several purposes. 
+
+
+Before data cleaning can properly be done, it is important to understand how it got dirty in the first place. Then, you determine your actions for cleaning.
+
+In this class, we will focus on the categorical and text data cleaning. 
+
+
+## <span style="color:darkred"> **```stringr()``` Package** </span>
+
+It is a set of simple wrappers that makes string functions more consistent, simpler and easier to use. It does this by ensuring that: function and argument names (and positions) are consistent, all functions deal with NAs and zero length character appropriately, and the output data structures from each function matches the input data structures of other functions.
+
+"stringr" provides functions for both
+
++ basic manipulations and 
+
++ for regular expression operations.
+
+
+Let us see how the package works. 
+
+<span style="color:orange"> **Todays Guest**</span>
+
+![Mauro Emanuel Icardi Rivero](https://i4.hurimg.com/i/hurriyet/75/750x422/63dc2f444e3fe022942705d8.jpg)
+
+Load the package.
+
+```
+library(stringr)
+```
+
+```{r,error=FALSE,message=FALSE}
+library(stringr)
+```
+
+
+In this package, all funciton starts with ```str_``` and take a vector of strings as the first argument.
+
++ ```str_c()``` : 	string concatenation	
+
+
+```
+str_c("Mauro","Emanuel","Icardi" ,"Rivero")
+```
+
+```{r}
+str_c("Mauro","Emanuel","Icardi" ,"Rivero")
+```
+
++ ```str_length()```:	returns the number of characters in the string
+
+```
+striker<-"Mauro Emanuel Icardi Rivero"
+str_length(striker) #evaluate the space between words
+```
+
+```{r}
+striker<-"Mauro Emanuel Icardi Rivero"
+str_length(striker) #evaluate the space between words
+```
+
++ ```str_detect(x, pattern)``` :It tells you if there is any match to the pattern.
+
+```
+r <-c("Mauro","Emanuel","Icardi" ,"Rivero")
+str_detect(r,"R")
+```
+
+```{r}
+r <-c("Mauro","Emanuel","Icardi" ,"Rivero")
+str_detect(r,"R")
+```
+
++ ```str_count(x, pattern)```: counts the number of specificly defined patterns.
+
+```
+str_count(r,"a")
+```
+
+```{r}
+str_count(r,"a")
+```
+
++ ```str_sub()```: 	extracts substrings	from the string 
+
+```
+#str_sub(word,start,end)
+striker<-"Mauro Emanuel Icardi Rivero"
+name<-str_sub(striker,start=1,end = 14)
+name
+```
+
+```{r}
+#str_sub(word,start,end)
+striker<-"Mauro Emanuel Icardi Rivero"
+name<-str_sub(striker,start=1,end = 14)
+name
+```
+
++ ```str_subset(x, pattern)```: extracts the matching components.
+
+```
+str_subset(r,"F")
+```
+
+```{r}
+str_subset(r,"F")
+```
+
++ ```str_locate(x, pattern)```: It gives the position of the match.
+
+
+```
+str_locate(r,"r")
+```
+
+```{r}
+str_locate(r,"r")
+```
+
+
++ ```str_replace(x, pattern, replacement)``` :  replaces the matches with new text.
+
+```
+team<-"Galatasaray"
+str_replace(team,"a","A")
+```
+
+```{r}
+team<-"Galatasaray"
+str_replace(team,"a","A")
+```
+
+```{r}
+team<-"Galatasaray"
+str_replace_all(team,"a","A")
+```
+
+```{r}
+team<-"Galatasaray"
+str_replace_all(team,"a","A")
+```
+
++```str_remove(x,pattern)``` : alias for ```str_replace```
+
+```
+team<-"Galatasaray"
+str_remove(team,"a")
+```
+
+```{r}
+team<-"Galatasaray"
+str_remove(team,"a")
+```
+```
+team<-"Galatasaray"
+str_remove_all(team,"a")
+```
+
+```{r}
+team<-"Galatasaray"
+str_remove_all(team,"a")
+```
+
++ ```str_dup()```:	duplicates characters	
+
+```
+# default usage
+str_dup(striker, 3)
+```
+
+```{r}
+# default usage
+str_dup(striker, 3)
+```
+
+```
+#use with different n times
+str_dup(striker,1:4)
+```
+
+```{r}
+#use with different n times
+str_dup(striker,1:4)
+```
+
+```
+#use with a string vector
+striker_name<-c("Mauro","Emanuel","Icardi" ,"Rivero")
+str_dup(striker_name,2)
+```
+
+```{r}
+#use with a string vector
+striker_name<-c("Mauro","Emanuel","Icardi" ,"Rivero")
+str_dup(striker_name,2)
+```
+
+```
+str_dup(striker_name,1:4)
+```
+
+
+```{r}
+str_dup(striker_name,1:4)
+```
+
+
++ ```str_trim()```:	removes leading and trailing white space	
+
+```
+name<-" Mauro Icardi"
+name
+#we have whitespace at the beginning of the object.
+```
+
+```{r}
+name<-" Mauro Icardi"
+name
+#we have whitespace at the beginning of the object.
+```
+
+To remove the white space, we need to prop word to left. 
+
+```
+str_trim(name,side="left")
+#side="left","right","both"
+```
+
+
+```{r}
+str_trim(name,side="left")
+#side="left","right","both"
+```
+
++ ```str_pad()```:	pads a string
+
+The idea of str_pad() is to take a string and pad it with leading or trailing characters to a specified total width
+
+```
+#str_pad(string, width, side = "left", pad = " ")
+name<-"Mauro Icardi"
+name
+```
+
+```{r}
+#str_pad(string, width, side = "left", pad = " ")
+name<-"Mauro Icardi"
+name
+```
+```
+str_length(name)
+```
+
+```{r}
+str_length(name)
+```
+
+The length of the object is 12. 
+
+```
+str_pad(name,width=16,side="both")
+```
+
+
+```{r}
+str_pad(name,width=16,side="both")
+```
+
+```
+str_length(str_pad(name,width=16,side="both"))
+```
+
+```{r}
+str_length(str_pad(name,width=16,side="both"))
+```
+
+Alternatively,
+
+```
+str_pad(name,width=16,side="both")
+```
+
+```{r}
+str_pad(name,width=16,side="both")
+```
+
+Now, I add two white spaces, which are at the beginning and end, respectively.
+
++ ```str_wrap()```:	wraps a string paragraph
+
+```
+sana_soz <- c(
+  "sana soz baharlar gelecek",
+  "sana soz isik sonmeyecek", 
+  "olum yok ki tuana uyan",
+  "simdi yasanacak")
+# some_quote in a single paragraph
+some_quote <- paste(sana_soz , collapse = " ")
+some_quote
+```
+
+```{r}
+sana_soz <- c(
+  "sana soz baharlar gelecek",
+  "sana soz isik sonmeyecek", 
+  "olum yok ki tuana uyan",
+  "simdi yasanacak")
+# some_quote in a single paragraph
+some_quote <- paste(sana_soz , collapse = " ")
+some_quote
+```
+
+```
+# display paragraph with width=28
+cat(str_wrap(some_quote, width =28))
+```
+
+```{r}
+# display paragraph with width=28
+cat(str_wrap(some_quote, width =28))
+```
+
+<span style="color:darkred"> **Case Transformation Functions**</span>
+
+```str_to_upper(string, locale = "en")```
+
+```
+name
+```
+
+```{r}
+name
+```
+
+```
+str_to_upper(name)
+```
+
+```{r}
+str_to_upper(name)
+```
+
+```str_to_lower(string, locale = "en")```
+
+
+```
+str_to_lower(name)
+```
+
+```{r}
+str_to_lower(name)
+```
+
+```str_to_title(string, locale = "en")```
+
+
+```
+name1<-"mauro icardi"
+name1
+```
+
+
+```{r}
+name1<-"mauro icardi"
+name1
+```
+
+```
+str_to_title(name1)
+```
+
+```{r}
+str_to_title(name1)
+```
+
+```str_to_sentence(string, locale = "en")```
+
+```
+str_to_sentence(name1)
+```
+
+```{r}
+str_to_sentence(name1)
+```
+
+
+**Regular Expressions (Regex)**
+
+Regular expressions are a way to describe patterns in text. In R programming, regular expressions are often used for tasks like searching for specific patterns in text or replacing certain patterns with other text.
+
+
+
+$(,),[,],\$,.,+,*$
+
+
+
+```stringr``` functions use regular expressions. `fixed()` can be used to search these characters. 
+
+```
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_detect(exp, fixed(")"))
+```
+
+```{r}
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_detect(exp, fixed(")"))
+```
+
+```
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_remove(exp, fixed(")"))
+```
+
+```{r}
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_remove(exp, fixed(")"))
+```
+
+```
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_remove(exp, ")")
+```
+
+```
+Error in stri_replace_first_regex(string, pattern, fix_replacement(replacement), : 
+Incorrectly nested parentheses in regex pattern. (U_REGEX_MISMATCHED_PAREN, context=`)`)
+```
+
+```{r}
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_replace(exp, fixed(")"),"]")
+```
+
+```
+exp <- "(Speaker 1): Hi, it is good to see you."
+str_replace(exp, fixed(")"),"]")
+```
+
+For more, please have a look at [here](https://r4ds.had.co.nz/strings.html)
+
+You should look at the cheat sheet of the package if you like it. Click [here](https://evoldyn.gitlab.io/evomics-2018/ref-sheets/R_strings.pdf)
+
+![Tw/@rstatmemes](https://pbs.twimg.com/media/DGLJelyXsAAnFTj?format=jpg&name=medium){width="60%"}
+
+
+
+```{r quiz44}
+quiz(
+  question("Which command can you use to remove the white space? ",
+           answer("str_remove"),
+           answer("str_remove_all"),
+           answer("str_trim", correct = TRUE),
+           answer("str_white_space")
+  )
+)
+```
+
+```
+maLe 5
+MAle 4
+feMale 3
+female  8
+``` 
+
+```{r quiz45}
+quiz(
+  question("How to solve the consistency in the output above?",
+           answer("str_view"),
+           answer("str_c"),
+           answer("str_to_lower", correct = TRUE),
+           answer("str_wrap")
+  )
+)
+```
+
+```{r quiz46}
+quiz(
+  question("Which of the following statements is true about using the fixed() function in combination with stringr functions in R?",
+           answer("fixed() is not compatible with stringr functions."),
+           answer("fixed() can be used with stringr functions to match fixed substrings within a string.", correct = TRUE),
+           answer("fixed() can be used with stringr functions to create a fixed width format for output."),
+           answer("fixed() can be used with stringr functions to remove leading or trailing whitespace from a string.")
+  )
+)
+```
+
+
+**Exercise** 
+
+Please click [here](http://users.metu.edu.tr/ozancan/stringr.zip) to download your exercise.
+
+## <span style="color:darkred"> **Application** </span>
+
+
+Consider ```ornek1.csv``` file. 
+
+Please open the excel file, and explain the problems that you see.
+
+![](http://users.metu.edu.tr/ozancan/data.png){width="100%"}
+
+Lets clean the data, but first.
+
+Install the packages!
+
+```
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(editrules)
+library(deducorrect)
+library(knitr)
+library(gapminder)
+```
+
+```{r,warning=FALSE,message=FALSE}
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(editrules)
+library(deducorrect)
+library(knitr)
+library(gapminder)
+library(ggplot2)
+library(assertive)
+```
+
+Read the data, since it is a ```csv``` file, we will use ```read.csv()``` function.
+
+```
+ornek=read.csv("https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/ornek1.csv",sep=";")
+ornek
+```
+
+```{r}
+ornek=read.csv("https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/ornek1.csv",sep=";")
+ornek
+```
+
+As you see, the empty line and unnecessary information are in the object. We should remove them. 
+
+```
+ornek1=read.csv("https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/ornek1.csv",sep=";",skip=3) 
+#skip argument in read.csv  function. 
+#we can ignore some part of the data with this argument.
+head(ornek1)
+```
+
+
+```{r}
+ornek1=read.csv("https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/ornek1.csv",sep=";",skip=3) 
+#skip argument in read.csv  function. 
+#we can ignore some part of the data with this argument.
+head(ornek1)
+```
+
+
+Firstly, we should arrange column names of the data. We have upper&lower case problem (letter inconsistency) and have some unnecessary punctuation and letters (notation inconsistency).
+
+```
+colnames(ornek1)
+```
+
+```{r}
+colnames(ornek1)
+```
+
+```
+cn1<-str_remove(colnames(ornek1),"X.")
+cn1
+```
+
+```{r}
+cn1<-str_remove(colnames(ornek1),"X.")
+cn1
+```
+
+```
+cn2<-str_remove_all(cn1,"\\.")
+cn2
+```
+
+```{r}
+cn2<-str_remove_all(cn1,"\\.")
+cn2
+```
+```
+cn3<-str_to_sentence(cn2)
+cn3
+```
+
+
+```{r}
+cn3<-str_to_sentence(cn2)
+cn3
+```
+
+```
+colnames(ornek1) <- cn3
+colnames(ornek1)[c(5,10)] <- c("Birim","Tarih")
+head(ornek1)
+```
+
+```{r}
+colnames(ornek1) <- cn3
+colnames(ornek1)[c(5,10)] <- c("Birim","Tarih")
+head(ornek1)
+```
+
+
+Check the dimension of the data. 
+
+```
+dim(ornek1)
+```
+
+```{r}
+dim(ornek1)
+```
+No problem.
+
+After fixing the inconsistency in column names, we will start with checking the data type constraints. Data type constraints is one of the common problem that occurs in data cleaning. 
+
+```
+str(ornek1)
+```
+
+```{r}
+str(ornek1)
+```
+
+Alternatively,
+
+```
+dplyr::glimpse(ornek1)
+```
+
+```{r}
+dplyr::glimpse(ornek1)
+```
+
+When we look at the output, **Zaman** variable should have been numeric, but it is considered as factor. 
+
+**Be Careful, we cannot use** ```as.numeric()``` directly. Lets see what happens if we use.
+
+```
+as.numeric(ornek1$Zaman)
+```
+
+```{r}
+as.numeric(ornek1$Zaman)
+```
+
+
+Because some numbers have **(Comma)** sign, we cannot apply the function directly. 
+
+Also, the categorical variables like **Cinsiyet**, **yas_grubu** etc has more level than we want to have. In other words, we have some observations that may not belong to the group member. 
+
+
+In this case, although we detected the mark of the dirty data when the dataset was shown. In order to see them in details, I will use ```count``` function from dplyr package.
+
+
+```count()``` : Used to know how many observations you have for a specific variable. Thereby, you can also check the members in a categorical variables. 
+
+```
+ornek1%>%count(Cinsiyet)
+```
+
+
+```{r}
+library(dplyr)
+ornek1%>%count(Cinsiyet)
+```
+
+
+In this output, n represents the number of observation for the corresponding level.
+
+```
+ornek1%>%count(Sistem)
+```
+
+```{r}
+ornek1%>%count(Sistem)
+```
+
+```
+ornek1%>%count(Satin_alma)
+```
+
+
+```{r}
+ornek1%>%count(Satin_alma)
+```
+
+```
+ornek1%>%count(Birim)
+```
+
+```{r}
+ornek1%>%count(Birim)
+```
+
+
+All levels suffer capital and small letter problem. Also, **sistem** and **satin_alma** variables have empty space problems.
+
+
+Thus, we can say that almost all categorical variables suffer capital and small letter problem. Also, **sistem** and **satin_alma** variables have white space problems.
+
+To remove the whitespace,
+
+```
+ornek1%>%count(Sistem)
+```
+
+```{r}
+ornek1%>%count(Sistem)
+```
+
+
+```
+ornek1$Sistem=str_trim(ornek1$Sistem,side="left")
+ornek1%>%count(Sistem)
+
+```
+
+
+```{r}
+ornek1$Sistem=str_trim(ornek1$Sistem,side="left")
+ornek1%>%count(Sistem)
+
+```
+
+As you see, IOS objects are evaluated together. 
+
+```
+ornek1%>%count(Satin_alma)
+```
+
+
+```{r}
+ornek1%>%count(Satin_alma)
+```
+
+
+```{r}
+ornek1$Satin_alma=str_trim(ornek1$Satin_alma,side="left")
+ornek1%>%count(Satin_alma)
+```
+
+```
+ornek1$Satin_alma=str_trim(ornek1$Satin_alma,side="left")
+ornek1%>%count(Satin_alma)
+```
+
+
+As you see, EVET-HAYIR problem because of whitespace is solved.
+
+After this, I would like to change the ```comma``` signs with ```dots``` in the sure column using ```gsub``` function.
+
+```gsub()``` function replaces all matches of a string, if the parameter is a string vector, returns a string vector of the same length and with the same attributes.
+
+**You can use ```str_replace``` for the same purpose.**
+
+```
+#gsub(old,new,object)
+ornek1$Zaman=gsub("\\.", "", ornek1$Zaman)
+ornek1$Zaman
+```
+
+  
+  
+```{r}
+#gsub(old,new,object)
+ornek1$Zaman=gsub("\\.", "", ornek1$Zaman)
+ornek1$Zaman
+```
+
+
+
+```
+ornek1$Zaman<-gsub(",", ".",ornek1$Zaman)
+ornek1$Zaman
+```
+
+
+```{r}
+ornek1$Zaman<-gsub(",", ".",ornek1$Zaman)
+ornek1$Zaman
+```
+
+After this replacement, ```as.numeric```  function works well.
+
+```
+ornek1$Zaman<-as.numeric(ornek1$Zaman)
+```
+
+```{r}
+ornek1$Zaman<-as.numeric(ornek1$Zaman)
+```
+
+As you see, class problem of Zaman variable is solved. Now, consider capital letter-small letter problems in the variables. 
+
+Remember that **Cinsiyet**, **sistem**, **satin_alma**, and **Birim** suffer from this problem. I would like to transform all inputs into small letter version. Then, I would like to create my new dataset.  
+
+
+
+```
+ornek_kucuk1 <- ornek1 %>% mutate(Zaman = as.numeric(Zaman),
+                                  Cinsiyet = str_to_lower(Cinsiyet), 
+                                  Sistem = str_to_lower(Sistem), 
+                                  Satin_alma = str_to_lower(Satin_alma),Birim=str_to_lower(Birim))
+```
+
+
+```{r}
+ornek_kucuk1 <- ornek1 %>% mutate(Zaman = as.numeric(Zaman),
+                                  Cinsiyet = str_to_lower(Cinsiyet), 
+                                  Sistem = str_to_lower(Sistem), 
+                                  Satin_alma = str_to_lower(Satin_alma),Birim=str_to_lower(Birim))
+```
+
+In the ```mutate``` function used for creating a new column, if you write an existing column name as new one, you will replace the column observations with the new ones.
+
+
+
+```
+kable(head(ornek_kucuk1))
+```
+
+
+```{r}
+knitr::kable(head(ornek_kucuk1))
+```
+
+Now, lets see the distribution of the levels for categorical variable.
+
+```
+ornek_kucuk1%>%count(Cinsiyet)
+```
+
+```{r}
+ornek_kucuk1%>%count(Cinsiyet)
+```
+
+```
+ornek_kucuk1%>%count(Sistem)
+```
+
+```{r}
+ornek_kucuk1%>%count(Sistem)
+```
+
+
+```
+ornek_kucuk1%>%count(Satin_alma)
+```
+
+
+```{r}
+ornek_kucuk1%>%count(Satin_alma)
+```
+
+
+```
+ornek_kucuk1%>%count(Birim)
+```
+
+
+```{r}
+ornek_kucuk1%>%count(Birim)
+```
+
+The outputs above show that we have character problem such as kadin-kadin for **Cinsiyet**, **satin_alma** and **sistem** variable. Also, we have coding problem for **sistem** variable. In other words, for example, sony is supposed to be android. Lastly, we have unit problem for the **Birim** variable. In other words, the time unit should be in common for all observations. 
+
+**We have problems, but we have solutions!**
+  
+**Character Problem**
+  
+  
+
+```
+ornek_kucuk1$Cinsiyet=str_replace(ornek_kucuk1$Cinsiyet,"i", "ı")
+ornek_kucuk1%>%count(Cinsiyet)
+```
+
+
+```{r}
+ornek_kucuk1$Cinsiyet=str_replace(ornek_kucuk1$Cinsiyet,"i", "ı")
+ornek_kucuk1%>%count(Cinsiyet)
+```
+
+```
+ornek_kucuk1$Satin_alma=str_replace(ornek_kucuk1$Satin_alma,"i", "ı")
+ornek_kucuk1%>%count(Satin_alma)
+```
+
+
+```{r}
+ornek_kucuk1$Satin_alma=str_replace(ornek_kucuk1$Satin_alma,"i", "ı")
+ornek_kucuk1%>%count(Satin_alma)
+```
+
+<span style="color:darkred"> They are solved. :) </span>
+  
+Now, we consider coding problem. We need to recode some inputs. For example, e is erkek, k is kadin. To do so, consider ```recode``` function from dplyr package. 
+
+```recode()``` : You can replace numeric values based on their position or their name, and character or factor values only by their name.
+
+```
+ornek_kucuk1<-ornek_kucuk1 %>% mutate(Sistem = recode(Sistem, "iphone"="ios", "apple" = "ios","apple ios"="ios","ıos" ="ios","huawei"="android","sony"="android"),Cinsiyet = recode(Cinsiyet, "e"="erkek","k"="kadın"))
+```
+
+
+```{r}
+ornek_kucuk1<-ornek_kucuk1 %>% mutate(Sistem = recode(Sistem, "iphone"="ios", "apple" = "ios","apple ios"="ios","ıos" ="ios","huawei"="android","sony"="android"),Cinsiyet = recode(Cinsiyet, "e"="erkek","k"="kadın"))
+```
+
+```
+ornek_kucuk1%>%count(Cinsiyet)
+```
+
+```{r}
+ornek_kucuk1%>%count(Cinsiyet)
+```
+
+```
+ornek_kucuk1%>%count(Sistem)
+```
+
+```{r}
+ornek_kucuk1%>%count(Sistem)
+```
+
+
+<span style="color:darkred">They were solved, too. </span>
+  
+  Now, we have date problem, time problem and calculation of net value problem. Lets consider date problem at first. To change the date structure, consider **lubridate** package. According to its definition, the **lubridate** package has a consistent and memorable syntax that makes working with dates easy and fun.
+
+The dates in R should be in Date or POSIXct class. However, it is factor in our dataset. To transform **tarih** object, we will consider ```dmy``` function which transforms dates stored in character and numeric vectors to Date or POSIXct objects. 
+
+
+**Why should I prefer dmy?**
+  
+  d<-day
+
+m<-month
+
+y<-year
+
+Because the date was recorded as day.month.year (26.02.2020) 
+
+The function has several versions such as ymd,myd etc.
+
+```
+colnames(ornek_kucuk1)[length(colnames(ornek_kucuk1))]="Tarih"
+```
+
+```{r,echo=F}
+colnames(ornek_kucuk1)[length(colnames(ornek_kucuk1))]="Tarih"
+```
+
+```
+library(lubridate)
+ornek_kucuk1<-ornek_kucuk1 %>% mutate(Tarih=dmy(Tarih))
+kable(head(ornek_kucuk1))
+```
+
+```{r,warning=F,message=FALSE}
+library(lubridate)
+ornek_kucuk1<-ornek_kucuk1 %>% mutate(Tarih=dmy(Tarih))
+kable(head(ornek_kucuk1))
+```
+
+```
+class(ornek_kucuk1$Tarih)
+```
+
+```{r}
+class(ornek_kucuk1$Tarih)
+```
+
+After the transformation, tarih is a date object.
+
+Now, consider time problem. 
+
+```
+ornek_kucuk1%>%count(Birim)
+```
+
+```{r}
+ornek_kucuk1%>%count(Birim)
+```
+
+The table shows that the usage duration of the game was recorded in dakika, saat and saniye. I would like to have a duration in one unit which is hour.
+
+This can be also observed from the dot plot of Zaman variable. 
+
+```
+library(ggplot2)
+ggplot(ornek1,aes(x = 1:nrow(ornek1),y=Zaman,color=ifelse(Zaman>50,"extreme","not_extreme")))+geom_point()
+```
+
+```{r}
+library(ggplot2)
+ggplot(ornek_kucuk1,aes(x = 1:nrow(ornek1),y=Zaman,color=ifelse(Zaman>50,"extreme","not_extreme")))+geom_point()
+```
+You can also detect a range inconsistency using ```assertive``` package. 
+
+```
+library(assertive)
+assert_all_are_in_closed_range(ornek1$Zaman,0,20)
+```
+
+```{r,error=TRUE}
+library(assertive)
+assert_all_are_in_closed_range(ornek_kucuk1$Zaman,0,20)
+```
+
+To make such a correction, we will consider **deducorrect** package. It is a package including a collection of methods for automated data cleaning where all actions are logged.
+
+In order to apply a transformation, you need to create a transformation file as txt file. Please open convert.txt file.
+
+```
+#convert dakika
+if (Birim=="dakika"){
+  Zaman<-Zaman/60
+}
+#convert saniye
+if (Birim=="saniye"){
+  Zaman<-Zaman/3600
+}
+if (Birim=="saat"){
+  Zaman<-Zaman
+}
+Birim="saat"
+```
+
+Then, read this file with ```correctionRules``` function.
+
+correctionRules: Rules for deterministic correction.
+
+
+```
+library(deducorrect)
+rule<-correctionRules("https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/convert.txt")
+rule
+```
+
+
+```{r}
+library(deducorrect)
+rule<-correctionRules("https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/convert.txt")
+#rule<-correctionRules("convert.txt")
+rule
+```
+
+Then, apply the rule with ```correctWithRules```.
+
+correctWithRules: Applies the deterministic correciton defined by correctionRules.
+
+```
+#correctWithRules(rule,data)
+correction<-correctWithRules(rule,ornek_kucuk1)
+correction$corrections #check whether there is correction
+```
+
+
+```{r}
+#correctWithRules(rule,data)
+correction<-correctWithRules(rule,ornek_kucuk1)
+correction$corrections #check whether there is correction
+```
+
+See the corrected data.
+
+```
+correction$corrected
+```
+
+```{r}
+correction$corrected
+```
+
+
+Replace the data with the corrected one.
+
+```
+ornek_kucuk1<-correction$corrected
+```
+
+```{r}
+ornek_kucuk1<-correction$corrected
+```
+
+See, no range inconsistency in Zaman. 
+
+```
+library(ggplot2)
+ggplot(ornek_kucuk1,aes(x = 1:nrow(ornek1),y=Zaman,color=ifelse(Zaman>50,"extreme","not_extreme")))+geom_point()
+```
+
+```{r}
+library(ggplot2)
+ggplot(ornek_kucuk1,aes(x = 1:nrow(ornek1),y=Zaman,color=ifelse(Zaman>50,"extreme","not_extreme")))+geom_point()
+```
+
+Lets consider calculation problem. For fixing the problem, we will consider **editrules** package. The package allows us to define on categorical, numerical or mixed-type data sets which each record must obey. 
+
+```
+library(editrules)
+rule1<-editmatrix(expression( Kazanilan - Harcanan == Net))
+```
+
+```{r}
+library(editrules)
+rule1<-editmatrix(expression( Kazanilan - Harcanan == Net))
+```
+
+Since we define a linear rule, we can apply this rule with ```correctRounding``` function that corrects records under linear restrictions for rounding errors.
+
+```
+#correctRounding(rule,data)
+correction2<-correctRounding(rule1,ornek_kucuk1)
+correction2$corrections #check whether there is correction
+```
+
+```{r}
+#correctRounding(rule,data)
+correction2<-correctRounding(rule1,ornek_kucuk1)
+correction2$corrections #check whether there is correction
+```
+
+```
+correction2$corrected
+```
+
+```{r}
+correction2$corrected
+```
+
+
+After solving this problem, I have still some problems, unfortunately. I would like to be sure that all time values should be greater than 0. If one of them is zero, it should be replaced with 1. 
+
+```
+library(editrules)
+E<-editset("Zaman>0")
+violation<-violatedEdits(E,ornek_kucuk1)
+#violatedEdits shows the index of the observations which violates the rule. 
+```
+
+```{r}
+library(editrules)
+E<-editset("Zaman>0")
+violation<-violatedEdits(E,ornek_kucuk1)
+#violatedEdits shows the index of the observations which violates the rule. 
+```
+
+```
+summary(violation)
+```
+
+```{r}
+summary(violation)
+```
+
+```
+plot(violation)
+```
+
+
+```{r}
+plot(violation)
+```
+
+
+As you see, there are 6 observations being equal to 0. 
+
+```
+which(ornek_kucuk1$Zaman==0)
+```
+
+```{r}
+which(ornek_kucuk1$Zaman==0)
+```
+
+```
+ornek_kucuk1$Zaman[which(ornek_kucuk1$Zaman==0)]=1
+```
+
+```{r}
+ornek_kucuk1$Zaman[which(ornek_kucuk1$Zaman==0)]=1
+```
+
+Check it again!
+
+```
+violation1<-violatedEdits(E,ornek_kucuk1)
+summary(violation1)
+```
+  
+```{r}
+violation1<-violatedEdits(E,ornek_kucuk1)
+summary(violation1)
+```
+
+The problem is solved. The data is ready to analyze. 
+
+```
+kable(ornek_kucuk1)
+```
+
+```{r}
+kable(ornek_kucuk1)
+```
+
+**References**
+
++  [Tableau](https://www.tableau.com/learn/articles/what-is-data-cleaning)
+
+
