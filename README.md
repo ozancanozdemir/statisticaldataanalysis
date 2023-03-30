@@ -38,3 +38,12 @@ install.packages(c("ggplot2","gridExtra","ggforce","statsExpressions","ggalt","b
 Fundamentals of the ggplot2
 Exploratory Data Analysis using ggplot2.
 Creating an interactive map with leaflet. 
+
+### Recitation 3 
+
+Install the following packages before running the tutorial.
+
+
+```
+install.packages(c("dplyr","stringr","editrules","deducorrect","lubridate","assertive","gapminder"))
+```
