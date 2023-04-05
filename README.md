@@ -35,9 +35,11 @@ Install the following packages before running the tutorial.
 ```
 install.packages(c("ggplot2","gridExtra","ggforce","statsExpressions","ggalt","bbplot","leaflet","ggcorplot","izmir","mlbench"))
 ```
-Fundamentals of the ggplot2
-Exploratory Data Analysis using ggplot2.
-Creating an interactive map with leaflet. 
++ Fundamentals of the ggplot2
+
++ Exploratory Data Analysis using ggplot2.
+
++ Creating an interactive map with leaflet. 
 
 ### Recitation 3 
 
@@ -47,3 +49,8 @@ Install the following packages before running the tutorial.
 ```
 install.packages(c("dplyr","stringr","editrules","deducorrect","lubridate","assertive","gapminder"))
 ```
++ Data Cleaning 
+
++ Text and Categorical Data Cleaning with `stringr`
+
++ Example for `editrules`
