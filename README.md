@@ -35,6 +35,7 @@ Install the following packages before running the tutorial.
 ```
 install.packages(c("ggplot2","gridExtra","ggforce","statsExpressions","ggalt","bbplot","leaflet","ggcorplot","izmir","mlbench"))
 ```
+
 + Fundamentals of the ggplot2
 
 + Exploratory Data Analysis using ggplot2.
