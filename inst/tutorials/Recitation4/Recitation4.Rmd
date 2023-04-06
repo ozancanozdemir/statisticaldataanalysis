@@ -1,0 +1,992 @@
+---
+title: "STAT 412-Recitation 4"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## <span style="color:darkred"> **Reminder** </span>
+
+Last week, we talked about data cleaning using
+
++ ```stringr``` package
+
++ ```deducorrect``` package
+
++ ```editrules``` package
+
+Install the packages using the code line given below. 
+
++ ```ISLR```
+
++ ```dplyr```
+
++ ```corrplot```
+
++ ```PerformanceAnalytics```
+
++ ```glmnet```
+
+
++ ```GGally```
+
++ ```car```
+
+
+
+```
+install.packages(c("ISLR","dplyr","corrplot","PerformanceAnalytics","glmnet","GGally","car"))
+```
+
+
+
+## <span style="color:darkred"> **Some Problems Appear in Data / Multicollinearity** </span>
+
+### <span style="color:darkred"> **Multicollinearity** </span>
+
+Linear regression is one of the most widely used modelling technique in the prediction or forecasting area. (```lm()```  used for application in R.) When you are playing with this method, you should be aware of the fact that the model should satisfy some theoretical assumptions. One of the assumption of a linear model is that the predictors, also called features, have to be **linearly independent.**
+
+<span style="color:darkred"> **What if they are not independent?**</span>
+
+If you have at least two variables that are highly correlated ($r>=0.7$), we have a collinearity or a multicollinearity problem.
+
+**What is collinearity?**
+
+If two predictors have a considerable linear relationship between them, it is called **collinearity**. 
+
+**Multicollinearity refers to a situation in which two or more explanatory variables in a multiple regression model are highly linearly related.**
+
+Perfect multicollinearity appears when you the model has a independent variable which is a linear combination of other variables in the model. For example, you have a linear model 
+
+$\hat{y}=\hat{x1}+\hat{x2}+\hat{x3}$ where;
+
+$\hat{x3}= a*\hat{x1}+b*\hat{x2}$ where $a$ and $b$ are constants. 
+
+The variable , $\hat{x3}$, does not add any significant or different value than provided by $\hat{x1}$ or $\hat{x2}$. The model can adjust itself to set the parameters that this combination is taken care of while determining the coefficients.
+
+However, the appearance of a perfect multicollinearity rarely occurs. Instead, imperfect or less than perfect multicollinearity, which is two or more of the explanatory variables have **approximate** linear association,  usually occur in the practice. 
+
+**What Problems Do Multicollinearity Cause?**
+
+The existence of a little bit multicollinearity is not a necessarily a big problem. However, strong multicollinearity is a problem which should be dealt with. 
+
+The problems that multicollinearity can cause the following problems in the model. 
+
++ The model coefficients have incredibly high variance which makes them unstable.
+
++ The coefficient with wrong sign might appear in the model. For example, you expect that when the job level increase, the salary increase. In other words, we expect that job level increase has a positive effect on the salary. However, the job level variable might have negative sign in the model.
+
++ It reduces the precision of the estimate coefficients, which weakens the statistical power of your regression model. You might not be able to trust the p values to identify independent variables that are statistically significant. In other words, a variable which does not have significant effect on the response seems statistically significant or vice versa.
+
++ The coefficent with unreasonable value might be also appear in the model if such a problem exists.  
+
++ You can have more than one model which fits well to the same data. 
+
+#### <span style="color:darkred"> **How to check multicollinearity?** </span>
+
+We have both informal and formal ways to detect multicollinearity in the regression model.
+
+<span style="color:blue"> **Informal Ways** </span>
+
++ **Scatter Plot**
+
+You can observe the existence of the relationship among **numerical** variables through scatter plot or scatter plot matrix. 
+
++ **Correlation Matrix**
+
+The Pearson Correlation Coefficient, which measures the degree of the linear association between two numerical quantities, help you to find out the existence of the relationship.
+
++ **Removing or adding predictor/s to the model**
+
+When you remove or add a predictor or predictors to the model, if you observe a **sharp** change in the value of coefficients, this might be hint for collinearity. 
+
+<span style="color:darkred"> **Formal Ways** </span>
+
++ **Variance Inflation Factor**
+
+![](https://storage.googleapis.com/onlinebilet/firma/mersin-vif-turizm-otobus-firmasi.jpg){width="100%"}
+
+
+The variance inflation factor (VIF) evaluates the extent of correlation between one predictor and the other predictors in a model. **It estimates how much the variance of regression coefficient is inflated due to multicollinearity in the model.** It is used for diagnosing collinearity/multicollinearity. Higher values signify that it is difficult to impossible to assess accurately the contribution of predictors to a model.
+
+If VIF value is greater than **10**, then you have multicollinearity problem. According to the some notes, $VIF>5$ is a clue for multicollinearity. 
+
+```{r quiz44}
+quiz(
+  question("Which of the following statements best describes multicollinearity in linear regression? ",
+           answer(" It occurs when the dependent variable is strongly correlated with one of the independent variables"),
+           answer("It occurs when there is a perfect linear relationship between the dependent variable and one of the independent variables"),
+           answer("It occurs when there is a high degree of correlation between two or more independent variables.", correct = TRUE),
+           answer("It occurs when the residuals of the regression model are not normally distributed.")
+  )
+)
+```
+
+```{r quiz45}
+quiz(
+  question("Which of the following methods can be used to detect multicollinearity in a linear regression model?",
+           answer(" Scatter plots of the dependent variable against each independent variable."),
+           answer("Calculation of the VIF (variance inflation factor) for each independent variable.", correct = TRUE),
+           answer("Checking the residuals of the regression model for normality."),
+           answer("Fitting the model with a different set of independent variables and comparing the results.")
+  )
+)
+```
+
+<span style="color:darkred">**Reference**</span>
+
+[Jim Frost -Multicollinearity in Regression Analysis: Problems, Detection, and Solutions](https://statisticsbyjim.com/regression/multicollinearity-in-regression-analysis/)
+
+## <span style="color:darkred"> **Application** </span>
+
+Please call ```ISLR``` package to use data of ```Hitters```.
+
+```
+library(ISLR)
+data(Hitters)
+head(Hitters)
+```
+
+```{r,error=FALSE,message=FALSE,warning=FALSE}
+library(ISLR)
+data(Hitters)
+head(Hitters)
+```
+
+```
+dim(Hitters)
+```
+
+
+```{r}
+dim(Hitters)
+```
+
+
+```
+names(Hitters)
+#Functions to get or set the names of an object.
+```
+
+```{r}
+names(Hitters)
+#Functions to get or set the names of an object.
+```
+
+***
+
+<span style="color:darkred"> Description </span>
+
+It is a data frame having 322 rows and 20 variables
+
++ LEAGUE : Players league
+
++ ATBAT : Times at Bat: Number of official plate appearances by a hitter. It counts as an official at bat as long as the batter does not walk, sacrifice, get hit by a pitch or reach base due to catchers interference.
+
++ HITS : Hits
+
++ HMRUN : Home Runs
+
++ RUNS : The number of runs scored by a player. A run is scored by an offensive player who advances from batter to runner and touches first, second, third and home base in that order without being put out.
+
++ RBI Runs Batted In: A hitter earns a run batted in when he drives in a run via a hit, walk, sacrifice (bunt or fly) fielders choice, hit batsman or on an error (when the official scorer rules that the run would have scored anyway).
+
++ WALKS : Walks: A walk  base on balls is an award of first base granted to a batter who receives four pitches outside the strike zone.
+
++ YEARS : Years in the Major Leagues. As far as we can tell, this counts all years a player has actually played in the Major Leagues, not necessarily consectutive. Rookie contracts  4Yrs.
+
++ CATBAT : Career Times at Bat
+
++ CHITS : Career Hits
+
++ CHMRUN : Career Home Runs
+
++ CRUNS : Career Runs Scored
+
++ CRBI : Career Runs Batted In POSITION Players position(s). See list of codes used below under Coding for some of the variables. (You are free to recode these as you see fit.)
+
++ PUTOUTS : Put Outs. A put out is credited when a fielder causes a batter or runner to be, well, put out; e.g., catches the batters fly ball, tags a base runner out before he reaches the base, etc.
+
++ ASSISTS : An assist is credited when a fielder assists in a play causing a player to be put out; e.g.,
+
++ ERRORS : Errors
+
++ SALARY : 1987 Annual salary on opening day (in 1000$)  **Variable of Interest!/Target Variable**
+
+***
+
+First of all, we note that the Salary variable is missing for some of the
+players. The ```is.na()``` function can be used to identify the missing observations. It returns a vector of the same length as the input vector, with a TRUE for any elements that are missing, and a FALSE for non-missing elements. ```sum()``` function can then be used to count all of the missing elements.
+
+
+```
+sum(is.na(Hitters$Salary))
+```
+
+```{r}
+sum(is.na(Hitters$Salary))
+```
+
+Hence we see that Salary is missing for 59 players. The ```na.omit()``` function removes all of the rows that have missing values in any variable. (Note that we have better ways for handling missingness.)
+
+```
+Hitters = na.omit(Hitters)
+dim(Hitters)
+```
+
+```{r}
+Hitters = na.omit(Hitters)
+dim(Hitters)
+```
+```
+sum(is.na(Hitters$Salary))
+```
+
+```{r}
+sum(is.na(Hitters$Salary))
+```
+
+No missing observation. 
+
+**Before applying shrinkage methods, we need to be sure that the data has no missing observation. **
+
+After get rid of the missing observations, check the class of columns in the data.
+
+```
+str(Hitters)
+```
+
+```{r}
+str(Hitters)
+```
+
+Since our main job today is to deal with multicollinearity, I would like to omit the categorical variable.
+
+```
+library(dplyr)
+Hitters<-Hitters%>%select(-League,-Division,-NewLeague)
+head(Hitters)
+```
+
+```{r,message=F,warning=FALSE}
+library(dplyr)
+Hitters<-Hitters%>%select(-League,-Division,-NewLeague)
+head(Hitters)
+```
+
+Start with informal ways.
+
+**Checking Correlation and Scatter Plot Between Predictors**
+
+Correlation is a statistic that measures the degree to which two variables move in relation to each other. Large correlation is an indication of multicollinearity. 
+
+```
+CorrTable<-cor(Hitters)
+CorrTable
+```
+
+```{r}
+CorrTable<-cor(Hitters)
+CorrTable
+```
+
+The output is called as correlation matrix having symmetry property. As you see from the table, the model has several predictors having large correlation between each other. For example, the correlation between **AtBat** and **Hits** is 0.963 which indicates almost perfect linear relationship among the variables. 
+
+You can visualize this matrix to observe the relationships easily. 
+
+```
+library(corrplot)
+corrplot(CorrTable)
+#in the function we put the correlation matrix object
+
+```
+
+```{r,error=FALSE,message=FALSE,warning=FALSE}
+library(corrplot)
+corrplot(CorrTable)
+#in the function we put the correlation matrix object
+
+```
+
+As seen, mainly we have two groups of variables that are highly correlated with each other. 
+
+Also, you can draw a scatter plot of matrix with the corresponding correlation values between the variables. There are several way to do this, some of them are given below.
+
+Note that the scatter plot matrix is an efficient tool especially you have $p<10$, where $p$ is the number of numerical variables. 
+
+```
+library(GGally)
+ggpairs(Hitters, title="correlogram with ggpairs()") 
+```
+
+```{r,message=FALSE,warning=FALSE,error=F}
+library(GGally)
+ggpairs(Hitters, title="correlogram with ggpairs()") 
+```
+
+
+
+```
+library(PerformanceAnalytics)
+chart.Correlation(Hitters)
+#we put the dataset in the function.
+```
+
+
+```{r,message=FALSE,warning=FALSE}
+library(PerformanceAnalytics)
+chart.Correlation(Hitters)
+#we put the dataset in the function.
+```
+
+
+Despite the output is not clear, we can still say that there are several predictors having strong relationship.
+
+Both correlation and scatter plot matrices tell us that it will not be surprise that we may have multicollinearity in linear model.
+
+
+```
+fit1<-lm(Salary~.,data=Hitters)
+#~. -> consider all variables in the data
+```
+
+```{r}
+fit1<-lm(Salary~.,data=Hitters)
+#~. -> consider all variables in the data
+```
+
+
+```
+summary(fit1)
+```
+
+```{r}
+summary(fit1)
+```
+
+We can say that the model is significant on the average. (**pvalue: < 2.2e16**) 
+
+The 49.7% of the variability of salary can be explained by the predictors. (Look at Adjusted R Squared Values). 
+
+Atbat, Hits, Walks, Cruns, Cwalks and Putouts are the significant predictors due to having pvalue being less than 0.05. 
+
+Look at the coefficient of CHmRun which is the number of home runs during his career. 
+
+We expect a positive sign in front of the variable, but it has negative sign. This makes us suspicious about the existence of multicollinearity. In this case, please avoid interpreting the model coefficients. 
+
+Continue to seek the multicollinearity in the model via **informal ways**.
+
+**Removing one or more than predictor from the model**
+
+When you remove one or more than one predictor from the model, you observe a sharp change for the coefficents of the predictors. You might have a multicollinearity problem.
+
+```
+fit2<-lm(Salary~. -AtBat,data=Hitters)
+#please be careful about the empty space between dot and - sign after ~ sign.
+```
+
+```{r}
+fit2<-lm(Salary~. -AtBat,data=Hitters)
+#please be careful about the empty space between dot and - sign after ~ sign.
+```
+
+```
+summary(fit2)
+```
+
+
+```{r}
+summary(fit2)
+```
+
+If you look at the summary table of **fit1**, you can see that the coefficient fo **Hits** is **7.82776155**. 
+
+However,  when we remove the **AtBat** variable from the model, the corresponding coefficient for **Hits** is **1.88520** and it becomes **insignificant**. 
+
+Such a sharp change might be indication of multicollinearity.
+
+To be ensure the appearance of multicollinearity in the analysis, we have to use one formal way.
+
+#### <span style="color:darkred"> Variance Inflation Factor (VIF) </span>
+
+The variance inflation factor (VIF) evaluates the extent of correlation between one predictor and the other predictors in a model. **It estimates how much the variance of regression coefficient is inflated due to multicollinearity in the model.** 
+
+It is used for diagnosing collinearity/multicollinearity. Higher values signify that it is difficult to impossible to assess accurately the contribution of predictors to a model.
+
+If $\text{VIF} > 10$, then you have a multicollinearity problem. In some sources, $>5$ might be accepted as a multicollinearity treshold. 
+
+Go back and consider **fit 1.**
+
+To calculate VIF values without spending time by executing its mathematical formula, use ```car``` package.
+
+```
+library(car)
+vif(fit1)
+```
+
+```{r,message=FALSE,warning=FALSE}
+library(car)
+vif(fit1)
+```
+
+As you see, the model suffers from the multicollinearity problem seriously. We have VIF values which is 495. It is incredible! 
+
+## <span style="color:darkred"> **Remedies** </span>
+
+Although we suffer from multicollinearity, we have many number of solutions, luckily.
+
+<span style="color:darkred"> **Solutions** </span>
+
+
++ Transformation on the dataset 
+ 
+    + Application of centering, scaling etc. 
+
++ Dropping one or more predictors by intuition.
+
+    + Remove one variable of the related couple variables from the model. 
+
++ Dropping one or more predictors by technique which are **backward elimination, stepwise selection or best subset method**.
+
++ Principle Component Analysis
+
+    + It produces uncorrelated components by rotation. 
+
++ Shrinkage Methods
+
+### <span style="color:darkred"> **Shrinkage/Regularization Method** </span>
+
+The coefficient estimates in Linear Regression is generally obtained by minimizing the residual sum of squares denoted as $RSS$.
+
+$\text{RSS}(\boldsymbol{\beta})=\sum_{i=1}^n(Y_i-\beta_0-\beta_1X_{i1}-\ldots-\beta_pX_{ip})^2.$
+
+The estimates by this optimization method denoted by $\hat{\beta}$ are unbiased if the necessary assumption is satisfied. In other words $\hat{\beta}$ does not make any systematic error in the estimation. However, bias is only one part of the quality of an estimate: variance is also important. Indeed, the bias-variance trade-off arises from the bias variance decomposition of the Mean Squared Error (MSE) of an estimate.
+
+The bias-variance trade-off is a fundamental concept in machine learning that refers to the trade-off between two sources of error that can occur when training a model: bias and variance.
+
+Bias refers to the error that is introduced by a model's tendency to consistently underestimate or overestimate the true values of the target variable. High bias can result in a model that is too simple and unable to capture the underlying patterns in the data.
+
+Variance, on the other hand, refers to the error that is introduced by a model that is overly complex and that has learned to fit the noise in the data, rather than the underlying patterns. High variance can result in a model that is overfit to the training data and that does not generalize well to new, unseen data.
+
+The bias-variance trade-off occurs because reducing one type of error often leads to an increase in the other. The goal in building a machine learning model is to find the right balance between bias and variance that results in the best overall performance on the task at hand.
+
+![CS109](https://raw.githubusercontent.com/ozancanozdemir/ozancanozdemir.github.io/master/biasvariance.png)
+
+
+Shrinkage methods involve altering the loss function of a model by introducing an additional penalty term that discourages certain characteristics of the model parameters. 
+
+Actually, it adds an amount of smart bias to  $\hat{\beta}$ in order to reduce its variance, in such a way that we obtain simpler model and interpretations from the biased version of $\hat{\beta}$. Also, it prevents model from overfitting. 
+
+The Ridge and Lasso Methods are the shrinkage or regularization methods used this idea in different ways. 
+
+<span style="color:darkred"> **Ridge Regression (L2 Regularization)** </span>
+
+Ridge regression is similar to least squares except that the coefficients are estimated by minimizing a slightly different quantity, a loss function with a penalty term that is proportional to the square of the parameters. Ridge regression, like OLS, seeks coefficient estimates that reduce RSS, however they also have a shrinkage penalty when the coefficients come closer to zero.
+
+$\text{RSS}(\boldsymbol{\beta})+\lambda\sum_{j=1}^p \beta_j^2=\text{RSS}(\boldsymbol{\beta})+\lambda\|\boldsymbol\beta_{-1}\|_2^2$
+
+where $\lambda$ is penalty parameter.
+
+This penalty has the effect of shrinking the coefficient estimates towards zero. Thus, we obtain simpler model with less weights. A parameter, $\lambda$ , controls the impact of the shrinking. While small value of $\lambda$ may result in overfitting, a large value of $\lambda$ will yield underfitting, which refers to a model cannot capture the pattern in the data properly.  $\lambda = 0$  will behave exactly like OLS regression and $\lambda = \infty$ will produce all 0 coefficients, except intercept.  Note that the behaviour of $\lambda$ is valid for both lasso and ridge. 
+
+Note that the shrinkage does not apply to the intercept.
+
+**Why is ridge regression better than least squares?**
+
+The advantage is apparent in the bias variance tradeoff. As $\lambda$ increases, the flexibility of the ridge regression fit decreases. This leads to decrease variance, but increased bias. Regular OLS regression is fixed with high variance, but no bias. However, the lowest test MSE tends to occur at the intercept between variance and bias. Thus, by properly tuning $\lambda$ and acquiring less variance at the cost of a small amount of bias, we can find a lower potential MSE.
+
+Ridge regression works best in situations for least squares estimates have high variance. Ridge regression is also much more computationally efficient that any subset method, since it is possible to simultaneously solve for all values of $\lambda$.
+
+
+**How to fit RR in R?**
+
+We will use the ```glmnet``` package in order to perform ridge regression and the lasso. The main function in this package is ```glmnet()```, which can be used to fit ridge regression models, lasso models, and more. This function has slightly different syntax from other model fitting functions that you have seen so far. 
+
+In particular, we must pass in an **x matrix** as well as a **y vector**, and we do not use the **y ~ x** syntax. 
+
+We will now perform ridge regression and the lasso in order to predict Salary on the Hitters data. As we stated, the data has no missing values to perform ridge regression. 
+
+```
+x=model.matrix (Salary ∼.,Hitters )[,-1]
+#minus sign is for removing the intercept
+y=Hitters$Salary
+```
+
+```{r}
+x=model.matrix (Salary ∼.,Hitters )[,-1]
+#minus sign is for removing the intercept
+y=Hitters$Salary
+```
+
+The ```model.matrix()``` function is particularly useful for creating x, not only does it produce a matrix corresponding to the all predictors but it also automatically transforms any qualitative variables into dummy variables.
+The latter property is important because ```glmnet()``` can only take numerical, quantitative inputs.
+
+The ```glmnet()``` function has an alpha argument that determines what type of model is fit. If **alpha=0** then a ridge regression model is fit.
+
+```
+library(glmnet)
+grid =10^ seq (10,-2, length =100)
+ridge.mod =glmnet (x,y,alpha =0, lambda =grid)
+```
+
+```{r,message=FALSE,warning=FALSE}
+library(glmnet)
+grid =10^ seq (10,-2, length =100)
+ridge.mod =glmnet (x,y,alpha =0, lambda =grid)
+```
+
+By default the ```glmnet()``` function performs ridge regression for an automatically selected range of $\lambda$ values. However, here we have chosen to implement the function over a grid of values ranging from $\lambda$ = $10^{10}$ to  $\lambda$ = $10^{-2}$, essentially covering the full range of scenarios from the null model containing only the intercept, to the least squares fit. As we will see, we can also compute model fits for a particular value of $\lambda$ that is not one of the original grid values.
+
+Note that by default, the ```glmnet()``` function standardizes the variables so that they are on the same scale. To turn off this default setting, use the argument ```standardize=FALSE```
+
+Associated with each value of $\lambda$ is a vector of ridge regression coefficients, stored in a matrix that can be accessed by ```coef()```.
+
+```
+dim(coef(ridge.mod))
+```
+
+```{r}
+dim(coef(ridge.mod))
+```
+
+We expect the coefficient estimates to be much smaller, in terms of $l_2$ norm, when a large value of $\lambda$ is used, as compared to when a small value of $\lambda$ is used. 
+
+These are the coefficients when $\lambda  = 11498$, along with their $l_2$ norm.
+
+```
+ridge.mod$lambda[50]
+```
+
+```{r}
+ridge.mod$lambda[50]
+```
+
+
+```
+coef(ridge.mod)[,50]
+```
+
+```{r}
+coef(ridge.mod)[,50]
+```
+
+In contrast, here are the coefficients when $\lambda  =  705$, along with their $l_2$ norm. Note the much larger $l_2$ norm of the coefficients associated with this smaller value of $\lambda$.
+
+```
+ridge.mod$lambda[60]
+```
+
+```{r}
+ridge.mod$lambda[60]
+```
+
+```
+coef(ridge.mod)[,60]
+```
+
+```{r}
+coef(ridge.mod)[,60]
+```
+
+So, we have 100 times $\lambda$ values, and 100 models. How to find the best $\lambda$ values.  Cross validation is perhaps the simplest and most widely used method for that task.  ```cv.glmnet``` is the main function to do cross validation here, along with various supporting methods such as plotting and prediction. We still act on the sample data loaded before.
+
+```
+set.seed(123)
+cv_fit <- cv.glmnet(x, y, alpha = 0, lambda = grid)
+```
+
+```{r}
+set.seed(123)
+cv_fit <- cv.glmnet(x, y, alpha = 0, lambda = grid)
+```
+
+
+```
+opt_lambda <- cv_fit$lambda.min
+opt_lambda
+```
+
+```{r}
+opt_lambda <- cv_fit$lambda.min
+opt_lambda
+```
+
+The optimum $\lambda$ value for the model is `opt_lambda`. In other words, the $\lambda$ value where the model error is minimum is `opt_lambda`. 
+
+If you run the cross validation without seed, you may get different values for each run. 
+
+```
+plot(cv_fit)
+```
+
+```{r}
+plot(cv_fit)
+```
+
+```
+fit3 <- glmnet(x, y, alpha = 0, lambda = opt_lambda) #best_ridge
+coef(fit3)
+```
+
+```{r}
+fit3 <- glmnet(x, y, alpha = 0, lambda = opt_lambda) #best_ridge
+coef(fit3)
+```
+
+As expected, none of the coefficients are zero—ridge regression does not perform variable selection.  However, we can see how the estimated coefficients change compared to linear model due to the regularization. 
+
+
+```
+y_predicted <- predict(fit3, s = opt_lambda, newx = x)
+
+# Sum of Squares Total and Error
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+
+```
+
+```{r}
+y_predicted <- predict(fit3, s = opt_lambda, newx = x)
+
+# Sum of Squares Total and Error
+sst <- sum((y - mean(y))^2)
+sse <- sum((y_predicted - y)^2)
+
+```
+
+```
+sst
+```
+
+```{r}
+sst
+```
+
+```
+sse
+```
+
+```{r}
+sse
+```
+
+Although ridge regression is very efficient tool against multicollinearity, it has one important drawback. It includes all predictors in the model. Although the penalty term will set many of them close to zero, but never exactly equals to zero.  This is not generally a problem for prediction accuracy, but it can make the model more difficult to interpret the results. Hence, we can consider another technique. 
+
+<span style="color:darkred"> **Lasso Regression (L1 Regularization)** </span>
+
+The penalizing equation for lasso is given below. Instead of adding a penalty term being proportional to regression coefficients, it adds a penalty term that is proportional to the absolute value of the parameters, Lasso overcomes disadvantage mentioned above and is capable of forcing some of the coefficients to zero granted that is large enough. Thus, Lasso regression also performs variable selection.
+
+$\text{RSS}(\boldsymbol{\beta})+\lambda\sum_{j=1}^p |\beta_j|=\text{RSS}(\boldsymbol{\beta})+\lambda\|\boldsymbol\beta_{-1}\|_1.$ where $\lambda$ is penalty parameter.
+
+In order to fit a lasso model, we once again use the ```glmnet()``` function; however, this time we use the argument `alpha=1.`
+Other than that change, we proceed just as we did in fitting a ridge model.
+
+```
+lasso.mod =glmnet (x,y,alpha =1, lambda =grid)
+plot(lasso.mod)
+```
+
+```{r}
+lasso.mod =glmnet (x,y,alpha =1, lambda =grid)
+plot(lasso.mod)
+```
+
+We can see from the coefficient plot that depending on the choice of tuning parameter, some of the coefficients will be exactly equal to zero. We now perform cross validation to find the optimal $\lambda$ value and compute the associated test error. 
+
+```
+set.seed(123)
+cv.out =cv.glmnet (x,y,alpha =1, lambda =grid)
+```
+
+```{r}
+set.seed(123)
+cv.out =cv.glmnet (x,y,alpha =1, lambda =grid)
+```
+
+
+```
+opt_lambda <- cv.out$lambda.min
+opt_lambda
+```
+
+```{r}
+opt_lambda <- cv.out$lambda.min
+opt_lambda
+```
+
+The optimum $\lambda$ value for the model is `opt_lambda`. In other words, the $\lambda$ value where the model error is minimum is `opt_lambda`.
+
+```
+plot(cv.out)
+```
+
+```{r}
+plot(cv.out)
+```
+
+
+```
+fit4 <- glmnet(x, y, alpha = 1, lambda = opt_lambda) #best_lasso
+coef(fit4)
+```
+
+
+```{r}
+fit4 <- glmnet(x, y, alpha = 1, lambda = opt_lambda) #best_lasso
+coef(fit4)
+```
+
+```
+y_predicted_2 <- predict(fit4, s = opt_lambda, newx = x)
+
+# Sum of Squares Total and Error
+sse_2 <- sum((y_predicted_2 - y)^2)
+sse_2
+```
+
+
+```{r}
+y_predicted_2 <- predict(fit4, s = opt_lambda, newx = x)
+
+# Sum of Squares Total and Error
+sse_2 <- sum((y_predicted_2 - y)^2)
+sse_2
+```
+
+As you see, the prediction error among the models belong to Lasso Regression. However, this method has also a drawback, unfortunately. 
+
+LASSO selects at most n variables for the dataset with small n and large p. (n is the sample size, p is the number of variables in the dataset.) It also selects only one variable among the a group of correlated variables.  
+
+
+<span style="color:darkred"> **Elastic Net Regression**</span>
+
+Elastic Net Regression (Friedman, Hastie, and Tibshirani 2010) is a penalized linear modeling approach that is a mixture of ridge regression (Hoerl and Kennard 1970), and least absolute shrinkage and selection operator (LASSO) regression (Tibshirani 1996). Ridge regression reduces the impact of collinearity on model parameters and LASSO reduces the dimensionality of the support by shrinking some of the regression coefficients to zero. Elastic net does both of these by solving the following equation (for Gaussian responses):
+
+$\text{RSS}(\boldsymbol{\beta})+\lambda \left[ \left(1 - \alpha \right) \frac{\left \lVert \beta \right \rVert_{2}^{2}}{2} + \alpha
+\left \lVert \beta \right \rVert_{1} \right]$
+
+
+One of the challenges of using elastic net regression compared to ridge and lasso regression is that it involves an additional hyperparameter, $\alpha$, which is between 0 and 1, and needs to be tuned. However, this challenge can be overcome by using the ```cv.glmnet``` function and testing a wide range of alpha values. One way to accomplish this is to use a for loop to iterate over a set of alpha values and then evaluate the performance of the model for each alpha value using cross-validation. By doing so, we can find the optimal alpha value that provides the best trade-off between bias and variance in our model.
+
+It is also possible to consider different packages like `caret` but we try to be in  ```glmnet()``` package. 
+```
+lambda <- c()
+mse<-c()
+alpha<-c()
+for (i in 0:20) {
+  alpha[i+1] <- paste0("alpha", i/20)
+  set.seed(123)
+  opt_lambda_val <-cv.glmnet(x,y, alpha=i/20)$lambda.min
+  lambda[i+1]<-opt_lambda_val
+  fit<-glmnet(x, y, alpha = i/20, lambda = opt_lambda_val)
+  predicted<-predict(fit, s = opt_lambda_val, newx = x)
+  mse[i+1]<-mean((y - predicted)^2)
+}
+comp_table<-data.frame(lambda,mse,alpha)
+```
+
+
+```{r}
+lambda <- c()
+mse<-c()
+alpha<-c()
+for (i in 0:20) {
+  alpha[i+1] <- paste0("alpha", i/20)
+  set.seed(123)
+  opt_lambda_val <-cv.glmnet(x,y, alpha=i/20)$lambda.min
+  lambda[i+1]<-opt_lambda_val
+  fit<-glmnet(x, y, alpha = i/20, lambda = opt_lambda_val)
+  predicted<-predict(fit, s = opt_lambda_val, newx = x)
+  mse[i+1]<-mean((y - predicted)^2)
+}
+comp_table<-data.frame(lambda,mse,alpha)
+```
+
+
+```
+comp_table
+```
+
+```{r}
+comp_table
+```
+
+```
+best_alpha<- comp_table$alpha[which.min(comp_table$mse)]
+```
+
+
+```{r}
+best_alpha<- comp_table$alpha[which.min(comp_table$mse)]
+best_alpha
+```
+
+Here, the best result uses $\alpha=$ `best_alpha`, so this result is somewhere between ridge and lasso, but closer to ridge.
+
+```
+el.mod =glmnet (x,y,alpha =0.35, lambda =grid)
+plot(el.mod)
+```
+
+```{r,warning=F,message=FALSE}
+el.mod =glmnet (x,y,alpha =0.35, lambda =grid)
+plot(el.mod)
+```
+
+We can see from the coefficient plot that depending on the choice of tuning parameter, some of the coefficients will be exactly equal to zero. We now perform cross validation and compute the associated test error.
+
+```
+set.seed(123)
+cv.out_1 =cv.glmnet (x,y,alpha =0.35, lambda =grid)
+```
+
+```{r}
+set.seed(123)
+cv.out_1 =cv.glmnet (x,y,alpha =0.35, lambda =grid)
+```
+
+```
+opt_lambda_e <- cv.out_1$lambda.min
+opt_lambda_e
+```
+
+```{r}
+opt_lambda_e <- cv.out_1$lambda.min
+opt_lambda_e
+```
+
+The optimum $\lambda$ value for the model is `opt_lambda_e` . In other words, the $\lambda$ value where the model error is minimum is `opt_lambda_e`.
+
+```
+plot(cv.out_1)
+```
+
+```{r}
+plot(cv.out_1)
+```
+
+
+```
+fit5 <- glmnet(x, y, alpha = 0.35, lambda = opt_lambda_e) #best_elastic
+coef(fit5)
+```
+
+```{r}
+fit5 <- glmnet(x, y, alpha = 0.35, lambda = opt_lambda_e) #best_elastic
+coef(fit5)
+```
+
+
+```
+y_predicted_3 <- predict(fit5, s = opt_lambda_e, newx = x)
+
+# Sum of Squares Total and Error
+sse_3 <- sum((y_predicted_3 - y)^2)
+sse_3
+```
+
+```{r}
+y_predicted_3 <- predict(fit5, s = opt_lambda_e, newx = x)
+
+# Sum of Squares Total and Error
+sse_3 <- sum((y_predicted_3 - y)^2)
+sse_3
+```
+
+<span style="color:darkred"> **Comparison** </span>
+
+
+```
+coefmatrix<-data.frame(as.matrix(coef(fit3)),as.matrix(coef(fit4)),as.matrix(coef(fit5)))
+colnames(coefmatrix)<-c("Ridge","Lasso","Elastic")
+coefmatrix
+```
+
+```{r}
+coefmatrix<-data.frame(as.matrix(coef(fit3)),as.matrix(coef(fit4)),as.matrix(coef(fit5)))
+colnames(coefmatrix)<-c("Ridge","Lasso","Elastic")
+coefmatrix
+```
+
+```
+sse_model<-data.frame(sse,sse_2,sse_3)
+colnames(sse_model)<-c("Ridge","Lasso","Elastic")
+sse_model
+```
+
+```{r}
+sse_model<-data.frame(sse,sse_2,sse_3)
+colnames(sse_model)<-c("Ridge","Lasso","Elastic")
+sse_model
+```
+
+As seen, Elastic Net provides a model which has less error and ease in interpretability. 
+
+**Which method is the best?**
+
+Actually, it depends your purposes. 
+
+If you are interested in having less complex and more interpretable model Lasso can be favorable. 
+
+If you are working with data with less number of variables which are highly correlated, ridge can be appropriate. 
+
+If you would like to have a model that has the property of both lasso and ridge, elastic net is an alternative. 
+
+If you are interested in having a model with accurate prediction, then all of them are involved in the process.
+
+
+```{r quiz46}
+quiz(
+  question("The lasso, relative to least squares, is:",
+           answer("More flexible and hence will give improved prediction accuracy
+when its increase in bias is less than its decrease in
+variance."),
+           answer("More flexible and hence will give improved prediction accuracy
+when its increase in variance is less than its decrease
+in bias."),
+           answer("Less flexible and hence will give improved prediction accuracy
+when its increase in bias is less than its decrease in
+variance.", correct = TRUE),
+           answer("Less flexible and hence will give improved prediction accuracy
+when its increase in variance is less than its decrease
+in bias.")
+  )
+)
+```
+
+$\sum_{i=1}^n\left(y_i-\beta_0-\sum_{j=1}^p \beta_j x_{i j}\right)^2+\lambda \sum_{j=1}^p \beta_j^2$
+
+```{r quiz47}
+quiz(
+  question("Suppose we estimate the regression coefficients in a linear regression
+model by minimizing the quantity above for a particular value of lambda. As we increase lambda from 0, the training RSS will:",
+           answer("Increase initially, and then eventually start decreasing in an
+inverted U shape"),
+           answer("Decrease initially, and then eventually start increasing in a
+U shape."),
+           answer("Steadily decrease."),
+           answer("Steadily increase.",correct = TRUE)
+  )
+)
+```
+
+**Exercise**
+
+Please click [here](http://users.metu.edu.tr/ozancan/e1.zip) to download your exercise.
+
+<span style="color:darkred"> **Reference** </span>
+
++ Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani. (2013). An introduction to statistical learning : with applications in R. New York :Springer.
+
+<span style="color:darkred"> **Quiz 3** </span>
+
+![](https://media.makeameme.org/created/something-is-coming-b69bb58577.jpg)
