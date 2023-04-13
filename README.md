@@ -55,3 +55,35 @@ install.packages(c("dplyr","stringr","editrules","deducorrect","lubridate","asse
 + Text and Categorical Data Cleaning with `stringr`
 
 + Example for `editrules`
+
+
+### Recitation 4 
+
+Install the following packages before running the tutorial.
+
+```
+install.packages(c("ISLR","dplyr","corrplot","PerformanceAnalytics","glmnet","GGally","car"))
+```
+
++ Lasso Regression 
+
++ Ridge Regression 
+
++ Elastic Net 
+
+### Recitation 5 
+
+Install the following packages before running the tutorial.
+
+```
+install.packages(c("interaction"))
+```
+
++ Confounding
+
++ Interaction
+
+
+
+
+
