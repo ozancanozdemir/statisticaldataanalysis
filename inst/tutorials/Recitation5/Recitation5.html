@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Ozancan Ozdemir" />
+
+
+<meta name="progressive" content="false" />
+<meta name="allow-skip" content="false" />
+<meta name="learnr-version-prerender" content="0.11.2" />
+
+<title>STAT 412-Recitation 5</title>
+
+<!-- header-includes START -->
+<!-- HEAD_CONTENT -->
+<!-- header-includes END -->
+<!-- HEAD_CONTENT -->
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+<!-- taken from https://github.com/rstudio/rmarkdown/blob/de8a9c38618903627ca509f5401d50a0876079f7/inst/rmd/h/default.html#L293-L343 -->
+<!-- tabsets -->
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+<!-- end tabsets -->
+
+
+</head>
+
+<body>
+<a class='sr-only sr-only-focusable visually-hidden-focusable' href='#learnr-tutorial-content'>Skip to Tutorial Content</a>
+
+
+
+<div class="pageContent band">
+<main class="bandContent page">
+
+<article class="topics" id="learnr-tutorial-content">
+
+<div id="section-reminder" class="section level2">
+<h2><span style="color:darkred"><strong>Reminder</strong></span></h2>
+<p>Last week, we talk about the multicollinearity problem arising in the
+statistical analysis and regularization techniques, which are</p>
+<ul>
+<li><p>Lasso</p></li>
+<li><p>Ridge</p></li>
+<li><p>Elastic Net</p></li>
+</ul>
+<p>Today, we are talk about other important concepts for statistical
+analysis.</p>
+<p>Install the packages using the code line given below.</p>
+<p><code>install.packages("interaction")</code></p>
+<p>We assume that you have already installed <code>ggplot2</code>,
+<code>GGally</code>, <code>dplyr</code>,
+<code>car</code>,<code>gapminder</code> packages.</p>
+</div>
+<div id="section-confounding" class="section level2">
+<h2><span style="color:darkred"><strong>Confounding</strong></span></h2>
+<p>Confounding variables or confounders are often defined as the
+variables correlate (positively or negatively) with both the dependent
+variable and the independent variable. A confounder is an extraneous
+variable whose presence affects the variables being studied so that the
+results do not reflect the actual relationship between the variables
+under study.They lead to overestimate or underestimate the relationship
+between independent and dependent variable. In other words, a
+confounding variable is an important variable that should be included in
+the predictive model but you omit it. Naive interpretation of such
+models can lead to invalid conclusions.</p>
+<div class="figure">
+<img
+src="https://ars.els-cdn.com/content/image/3-s2.0-B9780124157668000033-f03-10-9780124157668.jpg"
+alt="" />
+<p class="caption">Science Direct</p>
+</div>
+<p>When the inclusion or exclusion of a variable in an analysis leads to
+different results, it indicates the presence of confounding. To
+determine the presence of confounding, multiple linear regression can be
+used. After including a variable that is suspected to be a confounding
+variable, if the coefficients in the regression change significantly,
+then the added variable is indeed a confounding variable.</p>
+<p>Recognizing the presence of a confounding factor in a study allows
+for adjustments in the study design or data analysis to eliminate the
+confounding effects from the final results. Simpson’s paradox, which is
+another instance of confounding, occurs when combining data from
+multiple groups into a single group causes a reversal in the direction
+of an association. I leave my article that explains the Simpson’s
+paradox by a real life example.</p>
+<p><a
+href="https://sarkac.org/2021/09/covid-19-asilari-ve-simpson-paradoksu/">Covid-19
+Aşıları ve Simpson Paradoksu</a></p>
+<p><strong>Strategies to reduce confounding are:</strong></p>
+<p>We can take precautions against confounding at design phase or
+analysis phase. The possible solutions are listed below.</p>
+<ul>
+<li><p>randomization (aim is random distribution of confounders between
+study groups)</p></li>
+<li><p>restriction (restrict entry to study of individuals with
+confounding factors - risks bias in itself)</p></li>
+<li><p>matching (of individuals or groups, aim for equal distribution of
+confounders)</p></li>
+<li><p>stratification (confounders are distributed evenly within each
+stratum)</p></li>
+<li><p>adjustment (usually distorted by choice of standard)</p></li>
+<li><p>multivariate analysis (only works if you can identify and measure
+the confounders)</p></li>
+</ul>
+<p><strong>Quiz</strong></p>
+<p>A study was done to compare the lung capacity of coal miners to the
+lung capacity of farm workers. The researcher studied 200 workers of
+each type. Other factors that might affect lung capacity are smoking
+habits and exercise habits. The smoking habits of the two worker types
+are similar, but the coal miners generally exercise less than the farm
+workers.</p>
+<div class="panel-heading tutorial-quiz-title"><span data-i18n="text.quiz">Quiz</span></div>
+<div class="panel panel-default tutorial-question-container">
+<div data-label="quiz44-1" class="tutorial-question panel-body">
+<div id="quiz44-1-answer_container" class="shiny-html-output"></div>
+<div id="quiz44-1-message_container" class="shiny-html-output"></div>
+<div id="quiz44-1-action_button_container" class="shiny-html-output"></div>
+<script>if (Tutorial.triggerMathJax) Tutorial.triggerMathJax()</script>
+</div>
+</div>
+<div class="panel-heading tutorial-quiz-title"><span data-i18n="text.quiz">Quiz</span></div>
+<div class="panel panel-default tutorial-question-container">
+<div data-label="quiz45-1" class="tutorial-question panel-body">
+<div id="quiz45-1-answer_container" class="shiny-html-output"></div>
+<div id="quiz45-1-message_container" class="shiny-html-output"></div>
+<div id="quiz45-1-action_button_container" class="shiny-html-output"></div>
+<script>if (Tutorial.triggerMathJax) Tutorial.triggerMathJax()</script>
+</div>
+</div>
+<p><span style="color:darkred"><strong>References</strong></span></p>
+<ul>
+<li><p>Pourhoseingholi, M. A., Baghestani, A. R., &amp; Vahedi, M.
+(2012). How to control confounding effects by statistical analysis.
+Gastroenterology and hepatology from bed to bench, 5(2), 79 83.</p></li>
+<li><p><a href="https://www.statsdirect.com/help/basics/confounding.htm"
+class="uri">https://www.statsdirect.com/help/basics/confounding.htm</a></p></li>
+</ul>
+<div id="section-application-1" class="section level3">
+<h3><span style="color:darkred"><strong>Application
+1</strong></span></h3>
+<p>Read the <code>conf_ex.csv</code> dataset.</p>
+<pre><code>df&lt;-read.csv(&quot;https://users.metu.edu.tr/ozancan/conf_ex.csv&quot;,header=T,sep=&quot;,&quot;)
+head(df)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["X"],"name":[1],"type":["int"],"align":["right"]},{"label":["SalePrice"],"name":[2],"type":["int"],"align":["right"]},{"label":["LotArea"],"name":[3],"type":["int"],"align":["right"]},{"label":["OverallQual"],"name":[4],"type":["int"],"align":["right"]},{"label":["TotRmsAbvGrd"],"name":[5],"type":["int"],"align":["right"]},{"label":["GarageCars"],"name":[6],"type":["int"],"align":["right"]},{"label":["GarageArea"],"name":[7],"type":["int"],"align":["right"]}],"data":[{"1":"1","2":"208500","3":"8450","4":"7","5":"8","6":"2","7":"548","_rn_":"1"},{"1":"2","2":"181500","3":"9600","4":"6","5":"6","6":"2","7":"460","_rn_":"2"},{"1":"3","2":"223500","3":"11250","4":"7","5":"6","6":"2","7":"608","_rn_":"3"},{"1":"4","2":"140000","3":"9550","4":"7","5":"7","6":"3","7":"642","_rn_":"4"},{"1":"5","2":"250000","3":"14260","4":"8","5":"9","6":"3","7":"836","_rn_":"5"},{"1":"6","2":"143000","3":"14115","4":"5","5":"5","6":"2","7":"480","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Before proceeding, we start with calculating descriptive statistics
+as an initial step.</p>
+<pre><code>summary(df)</code></pre>
+<pre><code>##        X            SalePrice         LotArea        OverallQual    
+##  Min.   :   1.0   Min.   : 34900   Min.   :  1300   Min.   : 1.000  
+##  1st Qu.: 365.8   1st Qu.:129975   1st Qu.:  7554   1st Qu.: 5.000  
+##  Median : 730.5   Median :163000   Median :  9478   Median : 6.000  
+##  Mean   : 730.5   Mean   :180921   Mean   : 10517   Mean   : 6.099  
+##  3rd Qu.:1095.2   3rd Qu.:214000   3rd Qu.: 11602   3rd Qu.: 7.000  
+##  Max.   :1460.0   Max.   :755000   Max.   :215245   Max.   :10.000  
+##   TotRmsAbvGrd      GarageCars      GarageArea    
+##  Min.   : 2.000   Min.   :0.000   Min.   :   0.0  
+##  1st Qu.: 5.000   1st Qu.:1.000   1st Qu.: 334.5  
+##  Median : 6.000   Median :2.000   Median : 480.0  
+##  Mean   : 6.518   Mean   :1.767   Mean   : 473.0  
+##  3rd Qu.: 7.000   3rd Qu.:2.000   3rd Qu.: 576.0  
+##  Max.   :14.000   Max.   :4.000   Max.   :1418.0</code></pre>
+<pre><code>GGally::ggscatmat(df)</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
+##   method from   
+##   +.gg   ggplot2</code></pre>
+<pre><code>## Warning: The dot-dot notation (`..scaled..`) was deprecated in ggplot2 3.4.0.
+## i Please use `after_stat(scaled)` instead.
+## i The deprecated feature was likely used in the GGally package.
+##   Please report the issue at &lt;https://github.com/ggobi/ggally/issues&gt;.</code></pre>
+<p><img src="Recitation5_files/figure-html/unnamed-chunk-3-1.png" width="624" /></p>
+<p>The scatter plot matrix with corresponding pearson correlation <span
+class="math inline">\(r\)</span> shows that sale price and overall
+quality are positively correlated. Thus, we will start with a simple
+linear regression model, where the dependent variable is the house sale
+price and the independent variable is the overall quality in this
+example. The association between these individual pair is illustrated
+below.</p>
+<pre><code>library(ggplot2)
+ggplot(df,aes(x=OverallQual,y=SalePrice))+geom_point()+geom_smooth()+scale_y_continuous(labels = scales::comma)
+#scale_y_continuous transforms the e type representation to the decimal representation </code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 4.1.3</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula = &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<p><img src="Recitation5_files/figure-html/unnamed-chunk-4-1.png" width="624" /></p>
+<pre><code>model1&lt;-lm(formula = SalePrice ~ OverallQual, data = df)
+summary(model1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = SalePrice ~ OverallQual, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -198152  -29409   -1845   21463  396848 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -96206.1     5756.4  -16.71   &lt;2e-16 ***
+## OverallQual  45435.8      920.4   49.36   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 48620 on 1458 degrees of freedom
+## Multiple R-squared:  0.6257, Adjusted R-squared:  0.6254 
+## F-statistic:  2437 on 1 and 1458 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>We found the parameter estimate of <span
+class="math inline">\(45435.8 \pm 920.4\)</span> for overall quality,
+which can be interpreted to mean that for every one unit increase in
+overall quality, we expect the house price to increase by 45435.8 USD,
+on average.</p>
+<p>Now, I will include other predictors which are GarageArea. Then, fit
+a multiple linear regression.</p>
+<pre><code>model2&lt;-lm(formula = SalePrice ~ OverallQual + GarageArea , data = df)
+summary(model2) #see the details</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = SalePrice ~ OverallQual + GarageArea, data = df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -257038  -27185   -3518   17747  394895 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -90671.695   5400.290  -16.79   &lt;2e-16 ***
+## OverallQual  36994.424   1041.328   35.53   &lt;2e-16 ***
+## GarageArea      97.155      6.736   14.42   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 45500 on 1457 degrees of freedom
+## Multiple R-squared:  0.6724, Adjusted R-squared:  0.672 
+## F-statistic:  1495 on 2 and 1457 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>We found a parameter estimate for overall quality of <span
+class="math inline">\(36994.424 \pm 1041.328\)</span>, which can be
+interpreted to mean that for every 1 unit increase in overall quality,
+we expect the house price to to increase by 36994 USD, adjusting for
+garage area.</p>
+<p>When we compare the outputs from model 1 and model 2, we see that
+there is a change for the coefficient of the overall quality. Lets count
+the this change in terms of percentage. If the change in percentage
+exceeds 10%, then we can say that overall quality might be a confounding
+factor that should be considered in the model.</p>
+<pre><code>Percentage_Change = (model1$coefficients[2] - model2$coefficients[2])/model1$coefficients[2]*100
+Percentage_Change</code></pre>
+<pre><code>## OverallQual 
+##    18.57869</code></pre>
+<p>Since the percentage change is 18.58%, which is greater than 10%.
+Thus, this model can suffer from the confounding effect, but what if it
+suffers from multicollinearity. Note that the linear association between
+Overall Quality and GarageArea is <span
+class="math inline">\(0.56&gt;0.5\)</span>, and this may lead to
+multicollinearity problem as well. So, we need to look at the VIF values
+before making our final decision.</p>
+<pre><code>car::vif(model2)</code></pre>
+<pre><code>## OverallQual  GarageArea 
+##    1.461707    1.461707</code></pre>
+<p>As seen that VIF values are less than <span
+class="math inline">\(10\)</span>, so there is no multicollinearity
+problem. Consequently, we see that the model shows association between
+house price and overall quality is confounded by overall quality.</p>
+<p>Also, adding those variables to the model the R square increase from
+0.62 to 0.67, which means that these new variables are explaining
+approximately 67% of the variance in the house sale price.</p>
+<p>Since confounding is present, we should present the results from the
+adjusted analysis</p>
+<p><strong>Exercise 1</strong></p>
+<p>Please click <a
+href="http://users.metu.edu.tr/ozancan/e2.zip">here</a> for your first
+exercise.</p>
+</div>
+</div>
+<div id="section-interaction" class="section level2">
+<h2><span style="color:darkred"><strong>Interaction</strong></span></h2>
+<p>A regression model takes some independent predictors, and establishes
+the association between them and target variable to make a prediction.
+In general, we assume that those predictors are independent but they are
+not, in general. There are cases where among two associated predictors,
+the effect of one predictor on the target variable (y) depends on the
+value of another predictor variable. If this is the case, we say that
+there is an interaction effect in the model. The interaction between the
+predictors can occur in three different types.</p>
+<ul>
+<li><p>Interactions between two binary variables.</p></li>
+<li><p>Interactions between a binary and a continuous variable.</p></li>
+<li><p>Interactions between two continuous variables.</p></li>
+</ul>
+<p>For instance, you want to predict a person’s income based on years of
+experience. At the same time, the effect of years of experience on the
+income can change the education level of the person. In such cases,
+there is a join effect of these two predictors on the income.
+Mathematically, this effect can be written as follows,</p>
+<p><span class="math inline">\(Income = \beta_0 + \beta_1 (education) +
+\beta_2 (experience) + \beta_3 (education × experience) +
+\epsilon\)</span></p>
+<p>The interaction term <span class="math inline">\(\beta_3\)</span>
+captures the joint effect of education and experience on income, which
+cannot be captured by considering each variable separately. It tells you
+whether the effect of education on income changes depending on the level
+of experience, or vice versa.</p>
+<p><img
+src="https://www.mememaker.net/static/images/memes/4833048.jpg" /></p>
+<p>You can include 3 or more than 3 variables to your interaction term,
+but it makes your problem more complex. There is no time in life to deal
+with more complex problem.</p>
+<div class="figure">
+<img
+src="https://i1.imgiz.com/rshots/10413/self-control-esliginde-alem-yapip-secim-kutlayan-yurdum-insani_10413500-900_747x420.jpg"
+alt="" />
+<p class="caption"><a href="https://www.youtube.com/watch?v=Ucmo6hDZRSY"
+class="uri">https://www.youtube.com/watch?v=Ucmo6hDZRSY</a></p>
+</div>
+<p><strong>Why we need interaction terms?</strong></p>
+<p>In a regular regression model, we assume that the effect of each
+predictor on the response is independent. If two variables among the
+predictors interact with each other, that is the impact of one variable
+on the outcome is affected by the presence or level of the other
+variable, we cannot consider their effects on the response independently
+as it doesn’t make sense anymore to interpret the effect of one while
+holding the other constant.</p>
+<p><strong>When we need interaction terms?</strong></p>
+<ul>
+<li><strong>The effect of one variable is enhanced or reduced by the
+presence or level of the another variable.</strong></li>
+</ul>
+<p>The effect of interaction between two variables can manifest in two
+ways: either as an opposite effect for each subgroup of the other
+variable, or as the same effect with different intensity between
+subgroups of the other variable. It is important to study the
+interaction between two variables when there is a suspicion that a
+change in one variable will affect the effectiveness of another variable
+in the model.</p>
+<p>There are several signs that a variable has an influence on the
+effect of another variable, such as when knowing the value of one
+variable is necessary to estimate the effect of the other, or when it is
+difficult to separate the effects of both variables, such as in the case
+of genetic and environmental factors on the risk of developing cancer.
+Additionally, when a particular treatment is beneficial for certain
+categories of patients but not for others, this may also indicate the
+presence of an interaction between variables.</p>
+<p>The example is given at the beginning of the interaction title; years
+of experience and level of education on the income.</p>
+<ul>
+<li><strong>They have a large main effect on the response</strong></li>
+</ul>
+<p>The variables having a large impact on the response variable are more
+likely to have a statistically significant interaction with other
+factors that also affect the response.</p>
+<p><a href="https://academic.oup.com/cid/article/46/10/1582/294025">For
+example, nutrition is a significant factor on the infection, so you may
+include the interaction with nutrition and other factors on the
+infection in the several studies.</a></p>
+<ul>
+<li><strong>When you know that the interaction between two variables
+from previously conducted studies or feedbacks from domain
+experts</strong></li>
+</ul>
+<p><a
+href="https://onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2486.2011.02593.x">A
+study</a> proves that climate and habitat loss effects interacts with
+each other on biodiversity. Thus, when you conduct a study investigating
+the factor on the biodiversity, you may include the interaction between
+these two variables into your analysis.</p>
+<ul>
+<li><strong>When you would like to test the hypothesis</strong></li>
+</ul>
+<p>Adding an interaction term expands your understanding about the model
+and allows you test more hypothesis since you increase the number of
+factors which might influence the response.</p>
+<p><strong>References</strong></p>
+<p><a
+href="https://quantifyinghealth.com/why-and-when-to-include-interactions-in-a-regression-model/"
+class="uri">https://quantifyinghealth.com/why-and-when-to-include-interactions-in-a-regression-model/</a></p>
+<div id="section-application-2" class="section level3">
+<h3><span style="color:darkred"><strong>Application
+2</strong></span></h3>
+<p>Please import the <code>video_games.csv</code>data.</p>
+<pre><code>vg&lt;-read.csv(&quot;https://users.metu.edu.tr/ozancan/video_games.csv&quot;,header=T,sep=&quot;,&quot;)
+head(vg)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["aggress"],"name":[2],"type":["int"],"align":["right"]},{"label":["vid_game"],"name":[3],"type":["int"],"align":["right"]},{"label":["caunts"],"name":[4],"type":["int"],"align":["right"]}],"data":[{"1":"41xb","2":"13","3":"16","4":"0","_rn_":"1"},{"1":"g4x6","2":"38","3":"12","4":"0","_rn_":"2"},{"1":"31c4","2":"30","3":"32","4":"0","_rn_":"3"},{"1":"63ao","2":"23","3":"10","4":"1","_rn_":"4"},{"1":"s17f","2":"25","3":"11","4":"1","_rn_":"5"},{"1":"6qm9","2":"46","3":"29","4":"1","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>In this example, we are looking at whether playing violent video
+games leads to antisocial behavior in youths. Previous research has
+suggested that video games can increase aggression in young people.
+Another factor that can contribute to aggression and conduct problems is
+caunts-unemotional traits, such as a lack of empathy, guilt, or using
+others for personal gain. To investigate this relationship, a scientist
+measured the number of hours per week that 442 youths spent playing
+video games (<strong>vid_game</strong>), as well as their levels of
+aggressive behavior(<strong>aggress</strong>) and
+caunts-traits(<strong>caunts</strong>).</p>
+<p>Our hypothesis is that the association between playing video games
+(the predictor) and aggressive behavior (the outcome) is influenced by
+the level of caunts-unemotional traits (the moderator). This is referred
+to as a moderation effect, which occurs when the effect of the predictor
+on the outcome depends on the level of the moderator. Mathematically,
+this moderation effect is represented by the interaction between the
+predictor and moderator, and can be calculated as the product of the
+predictor and moderator scores on the outcome variable of aggressive
+behavior. Therefore, the model we want to build is:</p>
+<p><span class="math inline">\(Aggression = \beta_0 + \beta_1Gaming+
+\beta_2Caunts + \beta_3(Gaming\times Caunts) + \epsilon\)</span></p>
+<pre><code>dplyr::glimpse(vg)</code></pre>
+<pre><code>## Rows: 442
+## Columns: 4
+## $ id       &lt;chr&gt; &quot;41xb&quot;, &quot;g4x6&quot;, &quot;31c4&quot;, &quot;63ao&quot;, &quot;s17f&quot;, &quot;6qm9&quot;, &quot;b74b&quot;, &quot;w2l6~
+## $ aggress  &lt;int&gt; 13, 38, 30, 23, 25, 46, 41, 22, 35, 23, 32, 34, 35, 33, 21, 3~
+## $ vid_game &lt;int&gt; 16, 12, 32, 10, 11, 29, 23, 15, 20, 20, 27, 27, 29, 13, 15, 1~
+## $ caunts   &lt;int&gt; 0, 0, 0, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4~</code></pre>
+<pre><code>summary(vg)</code></pre>
+<pre><code>##       id               aggress         vid_game         caunts    
+##  Length:442         Min.   : 9.00   Min.   : 1.00   Min.   : 0.0  
+##  Class :character   1st Qu.:32.00   1st Qu.:17.00   1st Qu.:11.0  
+##  Mode  :character   Median :40.00   Median :22.00   Median :18.0  
+##                     Mean   :40.05   Mean   :21.84   Mean   :18.6  
+##                     3rd Qu.:48.00   3rd Qu.:26.00   3rd Qu.:26.0  
+##                     Max.   :82.00   Max.   :38.00   Max.   :43.0</code></pre>
+<pre><code>cor(vg[,-1])
+ </code></pre>
+<pre><code>##            aggress   vid_game     caunts
+## aggress  1.0000000 0.13180573 0.58753058
+## vid_game 0.1318057 1.00000000 0.04822492
+## caunts   0.5875306 0.04822492 1.00000000</code></pre>
+<p>The correlation matrix shows that the predictors are not linearly
+associated, but this result is expected since <code>caunts</code> is a
+discrete variable that tends to be an ordinal variable.</p>
+<p>Now, explore the association between these three variables
+visually.</p>
+<pre><code>p&lt;- ggplot(vg,aes(x=vid_game,y=aggress,colour = caunts))+geom_point()+scale_colour_gradient(low=&quot;darkorange&quot;,high = &quot;steelblue&quot;)
+#orange-blue gradient (orange for lowest, blue is highest)
+print(p)</code></pre>
+<p><img src="Recitation5_files/figure-html/unnamed-chunk-13-1.png" width="624" /></p>
+<p>The plot shows that there is a positive association between hours
+spent for playing video game and aggress. However, the effect of this
+changes by the value of counts. The effect of video game becomes higher
+as the level of caunts increases. This is an indication of
+<strong>interaction.</strong></p>
+<p><img
+src="https://media.tenor.com/EtBNOFsjvxIAAAAM/ross-phoebe.gif" /></p>
+<p>Before the inclusion of the interaction, we fit a regression model
+only with main factors.</p>
+<pre><code>fit1&lt;-lm(aggress~ caunts+vid_game, data = vg)
+summary(fit1)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = aggress ~ caunts + vid_game, data = vg)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -27.952  -6.696  -0.168   7.022  32.499 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 21.76433    1.80731  12.042  &lt; 2e-16 ***
+## caunts       0.76312    0.05024  15.191  &lt; 2e-16 ***
+## vid_game     0.18769    0.06940   2.705  0.00711 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 10.13 on 439 degrees of freedom
+## Multiple R-squared:  0.3559, Adjusted R-squared:  0.353 
+## F-statistic: 121.3 on 2 and 439 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>The model is significant on the average, and all predictors
+significantly influence the model. No multicollinearity treat.</p>
+<p>As previously mentioned, in linear models, moderation is represented
+by the interaction between the predictor and moderator variables.
+Mathematically, this is calculated by multiplying the scores of the two
+variables together. In the example of the relationship between playing
+video games, caunts-unemotional traits, and aggressive behavior, the
+interaction term would be the product of the time spent gaming and
+caunts-unemotional traits scores.</p>
+<p>In R, we can specify an interaction term within a model formula in
+two ways. The first way, in general form, is:</p>
+<pre><code>var_1:var_2</code></pre>
+<p>This is the interaction between variables <span
+class="alt">var_1</span> and <span class="alt">var_2</span>.</p>
+<p>If we wanted a model that predicts <strong>aggress</strong> from
+<strong>caunts_cent</strong>, <strong>vid_game_cent</strong> and their
+interaction we could specify this as:</p>
+<pre><code>aggress ~ caunts + vid_game + caunts:vid_game</code></pre>
+<p>In this case, the interaction term is specified using <a
+href=".alt">caunts_cent:vid_game_cent</a>. There is also a shorthand for
+adding all main effects and their interactions, which is:</p>
+<pre><code>var_1*var_2</code></pre>
+<p>This code will introduce the main effect of <span
+class="alt">var_1</span>, the main effect of <span
+class="alt">var_2</span> and their interaction.</p>
+<p>Therefore, to specify the same model as before that predicts aggress
+from caunts_cent, vid_game_cent and their interaction we could specify
+this as:</p>
+<pre><code>aggress ~ caunts*vid_game</code></pre>
+<p>The two methods are comparable.</p>
+<pre><code>fit2&lt;-lm(aggress ~ caunts + vid_game + caunts:vid_game,data = vg)
+summary(fit2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = aggress ~ caunts + vid_game + caunts:vid_game, data = vg)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -29.7144  -6.9087  -0.1923   6.9036  29.2290 
+## 
+## Coefficients:
+##                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)     33.120233   3.427254   9.664  &lt; 2e-16 ***
+## caunts           0.168949   0.161049   1.049 0.294731    
+## vid_game        -0.333597   0.150826  -2.212 0.027495 *  
+## caunts:vid_game  0.027062   0.006981   3.877 0.000122 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 9.976 on 438 degrees of freedom
+## Multiple R-squared:  0.3773, Adjusted R-squared:  0.373 
+## F-statistic: 88.46 on 3 and 438 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>The model summary shows that the model is significant on the average
+<span class="math inline">\((p&lt; 2.2e-16)\)</span>, and the
+interaction term is also significant. <span class="math inline">\((p
+=0.000122&lt;0.05)\)</span>. On the other hand, the effect of caunts
+becomes insignificant, and the effect of vid_game on the aggress changes
+after including the interaction term although it keeps significant.</p>
+<p><strong>When you include the interaction term between two variables,
+please DO NOT remove the main effect of the variable although they are
+insignificant.</strong></p>
+<pre><code>coef(fit1)</code></pre>
+<pre><code>## (Intercept)      caunts    vid_game 
+##  21.7643277   0.7631167   0.1876863</code></pre>
+<pre><code>coef(fit2)</code></pre>
+<pre><code>##     (Intercept)          caunts        vid_game caunts:vid_game 
+##     33.12023276      0.16894909     -0.33359731      0.02706219</code></pre>
+<p>Once you add interaction effects to your model, the main effects may
+or may not be particularly interesting, at least as they stand, and you
+should be careful in how you interpret them. If you want results that
+are a little more meaningful and easy to interpret, one approach is to
+center your numeric variables, and then compute the interaction term and
+estimate the model.</p>
+<p><strong>Why centring is important?</strong></p>
+<p>Centring is important when working with models containing an
+interaction term because it allows for the interpretation of lower-order
+effects. While significant higher-order interactions may make
+lower-order effects unimportant, centring allows for easier
+interpretation of main effects when the interaction is not significant.
+With centred variables, the estimates for individual predictors have two
+interpretations: the effect of the predictor at the mean value of the
+sample, and the average effect of the predictor across the range of
+scores for the other predictors. Centring allows for an average estimate
+to be obtained for each level of the predictor, which can be useful in
+interpreting the main effects of the model.</p>
+<div class="panel panel-default tutorial-question-container">
+<div data-label="gmc_quiz" class="tutorial-question panel-body">
+<div id="gmc_quiz-answer_container" class="shiny-html-output"></div>
+<div id="gmc_quiz-message_container" class="shiny-html-output"></div>
+<div id="gmc_quiz-action_button_container" class="shiny-html-output"></div>
+<script>if (Tutorial.triggerMathJax) Tutorial.triggerMathJax()</script>
+</div>
+</div>
+<p>Thus, add the centered predictors to the model and fit the regression
+model again.</p>
+<pre><code>library(dplyr)
+vg&lt;-vg%&gt;%mutate(vid_game_center = vid_game - mean(vid_game), caunts_center = caunts - mean(caunts))
+head(vg)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 4.1.3</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["id"],"name":[1],"type":["chr"],"align":["left"]},{"label":["aggress"],"name":[2],"type":["int"],"align":["right"]},{"label":["vid_game"],"name":[3],"type":["int"],"align":["right"]},{"label":["caunts"],"name":[4],"type":["int"],"align":["right"]},{"label":["vid_game_center"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["caunts_center"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"41xb","2":"13","3":"16","4":"0","5":"-5.843891","6":"-18.59502","_rn_":"1"},{"1":"g4x6","2":"38","3":"12","4":"0","5":"-9.843891","6":"-18.59502","_rn_":"2"},{"1":"31c4","2":"30","3":"32","4":"0","5":"10.156109","6":"-18.59502","_rn_":"3"},{"1":"63ao","2":"23","3":"10","4":"1","5":"-11.843891","6":"-17.59502","_rn_":"4"},{"1":"s17f","2":"25","3":"11","4":"1","5":"-10.843891","6":"-17.59502","_rn_":"5"},{"1":"6qm9","2":"46","3":"29","4":"1","5":"7.156109","6":"-17.59502","_rn_":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre><code>fit3&lt;-lm(aggress ~ caunts_center + vid_game_center + caunts_center:vid_game_center,data = vg)
+summary(fit3)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = aggress ~ caunts_center + vid_game_center + caunts_center:vid_game_center, 
+##     data = vg)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -29.7144  -6.9087  -0.1923   6.9036  29.2290 
+## 
+## Coefficients:
+##                                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                   39.967108   0.475057  84.131  &lt; 2e-16 ***
+## caunts_center                  0.760093   0.049458  15.368  &lt; 2e-16 ***
+## vid_game_center                0.169625   0.068473   2.477 0.013616 *  
+## caunts_center:vid_game_center  0.027062   0.006981   3.877 0.000122 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 9.976 on 438 degrees of freedom
+## Multiple R-squared:  0.3773, Adjusted R-squared:  0.373 
+## F-statistic: 88.46 on 3 and 438 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>The summary shows a significant interaction effect, and that’s what
+we’ve got here, <span class="math inline">\(\beta = 0.027\)</span>, 95%
+CI [0.013, 0.041], <em>t</em> = 3.88, <span class="math inline">\((p
+&lt; 0.001)\)</span> indicating that the relationship between the time
+spent gaming and aggression is moderated by caunts traits. (Remember
+that <span class="adj">1.221295e-04</span> is <span
+class="math inline">\(1.22 \times 10^{-4}\)</span> or 0.000122.)</p>
+<pre><code>coef(fit1)</code></pre>
+<pre><code>## (Intercept)      caunts    vid_game 
+##  21.7643277   0.7631167   0.1876863</code></pre>
+<pre><code>coef(fit3)</code></pre>
+<pre><code>##                   (Intercept)                 caunts_center 
+##                   39.96710840                    0.76009260 
+##               vid_game_center caunts_center:vid_game_center 
+##                    0.16962470                    0.02706219</code></pre>
+<p>As see centring kept the estimates same regardless of whether the
+interaction is included.</p>
+<p><strong>Plotting and Interpreting simple slopes</strong></p>
+<p><img src="Recitation5_files/figure-html/unnamed-chunk-26-1.png" width="624" /></p>
+<p>The plot shows that the effect of the <code>vid_game</code> changes
+by <code>caunts</code>. The model <code>fit3</code> shows that this
+interaction between them is significant on the average. We will
+separately examine the statistical significance of the varying effects
+between these two variables. To interpret the interaction effect we
+examine the simple slopes and Johnson-Neyman interval. We can obtain
+both of these using the <code>sim_slopes()</code> function from the
+interactions package.</p>
+<pre><code>interactions::sim_slopes(
+  my_model,
+  pred = name_of_predictor,
+  modx = name_of_moderator,
+  jnplot = FALSE,
+  jnalpha = 0.05,
+  robust = FALSE,
+  digits = 2,
+  confint = FALSE,
+  ci.width = 0.95
+  )</code></pre>
+<pre><code>interactions::sim_slopes(
+  fit3,
+  pred = vid_game_center,
+  modx = caunts_center,
+  jnplot = FALSE,
+  jnalpha = 0.05,
+  robust = FALSE,
+  digits = 2,
+  confint = FALSE,
+  ci.width = 0.95
+)</code></pre>
+<pre><code>## JOHNSON-NEYMAN INTERVAL 
+## 
+## When caunts_center is OUTSIDE the interval [-16.12, -1.22], the slope of
+## vid_game_center is p &lt; .05.
+## 
+## Note: The range of observed values of caunts_center is [-18.60, 24.40]
+## 
+## SIMPLE SLOPES ANALYSIS 
+## 
+## Slope of vid_game_center when caunts_center = -9.617693e+00 (- 1 SD): 
+## 
+##    Est.   S.E.   t val.      p
+## ------- ------ -------- ------
+##   -0.09   0.10    -0.91   0.36
+## 
+## Slope of vid_game_center when caunts_center =  3.375882e-16 (Mean): 
+## 
+##   Est.   S.E.   t val.      p
+## ------ ------ -------- ------
+##   0.17   0.07     2.48   0.01
+## 
+## Slope of vid_game_center when caunts_center =  9.617693e+00 (+ 1 SD): 
+## 
+##   Est.   S.E.   t val.      p
+## ------ ------ -------- ------
+##   0.43   0.09     4.64   0.00</code></pre>
+<p>The Johnson-Neyman interval output says that the boundaries of the
+zone of significance are <span class="math inline">\(-16.12\)</span> and
+<span class="math inline">\(-1.22\)</span>. These are the values of the
+centred version of the caunts-unemotional traits variable, and define
+regions within which the relationship between the time spent gaming and
+aggression is significant.</p>
+<p>The simple slopes analysis reports three models: the model for time
+spent gaming as a predictor of aggression (1) when caunts traits are low
+(to be precise when the value of caunts traits is <span
+class="math inline">\(-9.62\)</span>); (2) at the mean value of caunts
+traits (because we centred caunts traits its mean value is 0, as
+indicated in the output); and (3) when the value of caunts traits is
+9.62 (i.e., high). We interpret these models as we would any other
+linear model by looking at the value of b (called Est. in the output),
+and its significance. We can interpret the three models as follows:</p>
+<ol style="list-style-type: decimal">
+<li><p>When caunts traits are low, there is a non-significant negative
+relationship between time spent gaming and aggression, <span
+class="math inline">\(\beta = -0.09\)</span>, <span
+class="math inline">\(t = -0.91\)</span>, <span class="math inline">\(p
+= 0.36\)</span>.</p></li>
+<li><p>At the mean value of caunts traits, there is a significant
+positive relationship between time spent gaming and aggression, <span
+class="math inline">\(\beta = 0.17\)</span>, <span
+class="math inline">\(t = 2.48\)</span>, <span class="math inline">\(p =
+0.01\)</span>.</p></li>
+<li><p>When caunts traits are high, there is a significant positive
+relationship between time spent gaming and aggression, <span
+class="math inline">\(\beta = 0.43\)</span>, <span
+class="math inline">\(t = 4.64\)</span>, <span class="math inline">\(p
+&lt; 0.01\)</span>.</p></li>
+</ol>
+<p>These results tell us that the relationship between time spent
+playing violent video games and aggression only really emerges in people
+with average or greater levels of caunts-unemotional traits.</p>
+<p>We can visualise the simple slopes models (or interaction effect)
+using the <code>interactions::interact_plot()</code> function, which
+takes the general form:</p>
+<pre><code>interactions::interact_plot(
+  my_model,
+  pred = name_of_predictor,
+  modx = name_of_moderator,
+  interval = FALSE,
+  int.width = 0.95,
+  x.label = &quot;label_for_x_axis&quot;,
+  y.label = &quot;label_for_y_axis&quot;,
+  main.title = &quot;title_for_plot&quot;
+  legend.main = &quot; label_for_legend&quot;
+  )</code></pre>
+<pre><code># Label the legend (solution)
+interactions::interact_plot(
+  fit3,
+  pred = vid_game_center,
+  modx = caunts_center,
+  interval = TRUE,
+  x.label = &quot;Time playing video games per week (hours)&quot;,
+  y.label = &quot;Predicted aggression&quot;,
+  legend.main = &quot;Caunts unemotional traits&quot;
+  )</code></pre>
+<p><img src="Recitation5_files/figure-html/unnamed-chunk-28-1.png" width="624" /></p>
+<p>The resulting plot shows what we found from the simple slopes
+analysis. When caunts traits are low (one standard deviation below the
+mean, labelled as <span class="math inline">\(-1\)</span> SD) there is a
+non-significant negative relationship between time spent gaming and
+aggression; at the mean value of caunts traits (the line labelled Mean)
+there is small positive relationship between time spent gaming and
+aggression; and this relationship gets even stronger at high levels of
+caunts traits (one standard deviation above the mean, labelled as +1
+SD).</p>
+<p><strong>Exercise 2</strong></p>
+<p>Please click <a
+href="http://users.metu.edu.tr/ozancan/r5exercise2.zip">here</a> for
+your second exercise.</p>
+<div class="panel-heading tutorial-quiz-title"><span data-i18n="text.quiz">Quiz</span></div>
+<div class="panel panel-default tutorial-question-container">
+<div data-label="quiz444-1" class="tutorial-question panel-body">
+<div id="quiz444-1-answer_container" class="shiny-html-output"></div>
+<div id="quiz444-1-message_container" class="shiny-html-output"></div>
+<div id="quiz444-1-action_button_container" class="shiny-html-output"></div>
+<script>if (Tutorial.triggerMathJax) Tutorial.triggerMathJax()</script>
+</div>
+</div>
+<p><strong>References</strong></p>
+<ul>
+<li>Discovering Statistics Using R and RStudio (Field, 2023)</li>
+</ul>
+<p>
+<script type="application/shiny-prerendered" data-context="server-start">
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+
+
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::prepare_tutorial_state(session)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::i18n_observe_tutorial_language(input, session)
+</script>
+
+
+<script type="application/shiny-prerendered" data-context="server">
+session$onSessionEnded(function() {
+        learnr:::event_trigger(session, "session_stop")
+      })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz44-1", question = structure("Which of the following is the explanatory variable in this study?", html = TRUE, class = c("html", 
+"character")), answers = list(structure(list(id = "lnr_ans_b012516", 
+    option = "Exercise", value = "Exercise", label = structure("Exercise", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_b404f8", 
+    option = "Lung capacity", value = "Lung capacity", label = structure("Lung capacity", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_6a8be15", 
+    option = "Smoking or not", value = "Smoking or not", label = structure("Smoking or not", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_f648ba3", 
+    option = "Occupation", value = "Occupation", label = structure("Occupation", html = TRUE, class = c("html", 
+    "character")), correct = TRUE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer"))), button_labels = list(submit = structure("<span data-i18n=\"button.questionsubmit\">Submit Answer<\u002fspan>", html = TRUE, class = c("html", 
+"character")), try_again = structure("<span data-i18n=\"button.questiontryagain\">Try Again<\u002fspan>", html = TRUE, class = c("html", 
+"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
+"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), message = NULL, post_message = NULL), ids = list(
+    answer = "quiz44-1-answer", question = "quiz44-1"), loading = NULL, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 443110545.293661, 
+    options = list()), class = c("learnr_radio", "tutorial_question"
+)), session = session)
+</script>
+
+
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz45-1", question = structure("Which of the following is the confounding variable in this study?", html = TRUE, class = c("html", 
+"character")), answers = list(structure(list(id = "lnr_ans_6a6d25a", 
+    option = "Exercise", value = "Exercise", label = structure("Exercise", html = TRUE, class = c("html", 
+    "character")), correct = TRUE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_b40d5bb", 
+    option = "Lung capacity", value = "Lung capacity", label = structure("Lung capacity", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_b342fdd", 
+    option = "Smoking or not", value = "Smoking or not", label = structure("Smoking or not", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_68a0918", 
+    option = "Occupation", value = "Occupation", label = structure("Occupation", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer"))), button_labels = list(submit = structure("<span data-i18n=\"button.questionsubmit\">Submit Answer<\u002fspan>", html = TRUE, class = c("html", 
+"character")), try_again = structure("<span data-i18n=\"button.questiontryagain\">Try Again<\u002fspan>", html = TRUE, class = c("html", 
+"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
+"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), message = NULL, post_message = NULL), ids = list(
+    answer = "quiz45-1-answer", question = "quiz45-1"), loading = NULL, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 1233859098.92544, 
+    options = list()), class = c("learnr_radio", "tutorial_question"
+)), session = session)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "gmc_quiz", question = structure("Grand mean centring for a given variable is achieved by:", html = TRUE, class = c("html", 
+"character")), answers = list(structure(list(id = "lnr_ans_9fb9658", 
+    option = "Taking each score and subtracting from it the mean of all scores (for that variable).", 
+    value = "Taking each score and subtracting from it the mean of all scores (for that variable).", 
+    label = structure("Taking each score and subtracting from it the mean of all scores (for that variable).", html = TRUE, class = c("html", 
+    "character")), correct = TRUE, message = structure("Well done, this answer is correct.", html = TRUE, class = c("html", 
+    "character")), type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_71eb508", 
+    option = "Taking the mean of all scores (ignoring from which variable they come) and subtracting each score from it.", 
+    value = "Taking the mean of all scores (ignoring from which variable they come) and subtracting each score from it.", 
+    label = structure("Taking the mean of all scores (ignoring from which variable they come) and subtracting each score from it.", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = structure("Unlucky, have another try.", html = TRUE, class = c("html", 
+    "character")), type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_6539235", 
+    option = "Taking each score and dividing it by the mean of all scores (for that variable).", 
+    value = "Taking each score and dividing it by the mean of all scores (for that variable).", 
+    label = structure("Taking each score and dividing it by the mean of all scores (for that variable).", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = structure("Unlucky, have another try.", html = TRUE, class = c("html", 
+    "character")), type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_3f80acf", 
+    option = "Taking each score, subtracting the mean and then dividing by the standard deviation.", 
+    value = "Taking each score, subtracting the mean and then dividing by the standard deviation.", 
+    label = structure("Taking each score, subtracting the mean and then dividing by the standard deviation.", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = structure("Close. This answer describes standardizing the score, not centring it.", html = TRUE, class = c("html", 
+    "character")), type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer"))), button_labels = list(submit = structure("<span data-i18n=\"button.questionsubmit\">Submit Answer<\u002fspan>", html = TRUE, class = c("html", 
+"character")), try_again = structure("<span data-i18n=\"button.questiontryagain\">Try Again<\u002fspan>", html = TRUE, class = c("html", 
+"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
+"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), message = NULL, post_message = NULL), ids = list(
+    answer = "gmc_quiz-answer", question = "gmc_quiz"), loading = NULL, 
+    random_answer_order = TRUE, allow_retry = TRUE, seed = 749708856.65089, 
+    options = list()), class = c("learnr_radio", "tutorial_question"
+)), session = session)
+</script>
+
+
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::question_prerendered_chunk(structure(list(type = "learnr_radio", label = "quiz444-1", question = structure("Why is it a good idea to centre your variables when conducting a moderation analysis(including an interaction variable)?", html = TRUE, class = c("html", 
+"character")), answers = list(structure(list(id = "lnr_ans_6bd4e49", 
+    option = "It makes the data normally distributed.", value = "It makes the data normally distributed.", 
+    label = structure("It makes the data normally distributed.", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_ee59fae", 
+    option = "It aids the interpretation of the indirect effect.", 
+    value = "It aids the interpretation of the indirect effect.", 
+    label = structure("It aids the interpretation of the indirect effect.", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_6f09245", 
+    option = "Because it reduces multicollinearity between main effects and the interaction effect.", 
+    value = "Because it reduces multicollinearity between main effects and the interaction effect.", 
+    label = structure("Because it reduces multicollinearity between main effects and the interaction effect.", html = TRUE, class = c("html", 
+    "character")), correct = TRUE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer")), structure(list(id = "lnr_ans_85c0bc7", 
+    option = "It ensures the relationship between the predictor and outcome is linear..", 
+    value = "It ensures the relationship between the predictor and outcome is linear..", 
+    label = structure("It ensures the relationship between the predictor and outcome is linear..", html = TRUE, class = c("html", 
+    "character")), correct = FALSE, message = NULL, type = "literal"), class = c("tutorial_question_answer", 
+"tutorial_quiz_answer"))), button_labels = list(submit = structure("<span data-i18n=\"button.questionsubmit\">Submit Answer<\u002fspan>", html = TRUE, class = c("html", 
+"character")), try_again = structure("<span data-i18n=\"button.questiontryagain\">Try Again<\u002fspan>", html = TRUE, class = c("html", 
+"character"))), messages = list(correct = structure("Correct!", html = TRUE, class = c("html", 
+"character")), try_again = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), incorrect = structure("Incorrect", html = TRUE, class = c("html", 
+"character")), message = NULL, post_message = NULL), ids = list(
+    answer = "quiz444-1-answer", question = "quiz444-1"), loading = NULL, 
+    random_answer_order = FALSE, allow_retry = FALSE, seed = 518798989.258415, 
+    options = list()), class = c("learnr_radio", "tutorial_question"
+)), session = session)
+</script>
+</p>
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["header-attrs"]},{"type":"character","attributes":{},"value":["2.20"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pandoc"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["header-attrs.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.6.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/3.6.0"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery-3.6.0.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquerylib"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.1.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"character","attributes":{},"value":["<style>h1 {font-size: 34px;}\n       h1.title {font-size: 38px;}\n       h2 {font-size: 30px;}\n       h3 {font-size: 24px;}\n       h4 {font-size: 18px;}\n       h5 {font-size: 16px;}\n       h6 {font-size: 12px;}\n       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}\n       pre:not([class]) { background-color: white }<\/style>"]},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.11.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.11.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["i18n"]},{"type":"character","attributes":{},"value":["21.6.10"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/i18n"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["i18next.min.js","tutorial-i18n-init.js"]},{"type":"NULL"},{"type":"character","attributes":{},"value":["<script id=\"i18n-cstm-trns\" type=\"application/json\">{\"language\":\"en\",\"resources\":{\"en\":{\"translation\":{\"button\":{\"runcode\":\"Run Code\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Hint\",\"hint_plural\":\"Hints\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Next Hint\",\"hintprev\":\"Previous Hint\",\"solution\":\"Solution\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copy to Clipboard\",\"startover\":\"Start Over\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continue\",\"submitanswer\":\"Submit Answer\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Previous Topic\",\"nexttopic\":\"Next Topic\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Try Again\"},\"text\":{\"startover\":\"Start Over\",\"areyousure\":\"Are you sure you want to start over? (all exercise progress will be reset)\",\"youmustcomplete\":\"You must complete the\",\"exercise\":\"exercise\",\"exercise_plural\":\"exercises\",\"inthissection\":\"in this section before continuing.\",\"code\":\"Code\",\"enginecap\":\"{{engine}} $t(text.code)\",\"quiz\":\"Quiz\",\"blank\":\"blank\",\"blank_plural\":\"blanks\",\"exercisecontainsblank\":\"This exercise contains {{count}} $t(text.blank).\",\"pleasereplaceblank\":\"Please replace {{blank}} with valid code.\",\"unparsable\":\"It looks like this might not be valid R code. R cannot determine how to turn your text into a complete command. You may have forgotten to fill in a blank, to remove an underscore, to include a comma between arguments, or to close an opening <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> or <code>{<\\/code> with a matching <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code> or <code>}<\\/code>.\\n\",\"unparsablequotes\":\"<p>It looks like your R code contains specially formatted quotation marks or &quot;curly&quot; quotes (<code>{{character}}<\\/code>) around character strings, making your code invalid. R requires character values to be contained in straight quotation marks (<code>&quot;<\\/code> or <code>'<\\/code>).<\\/p> {{code}} <p>Don't worry, this is a common source of errors when you copy code from another app that applies its own formatting to text. You can try replacing the code on that line with the following. There may be other places that need to be fixed, too.<\\/p> {{suggestion}}\\n\",\"unparsableunicode\":\"<p>It looks like your R code contains an unexpected special character (<code>{{character}}<\\/code>) that makes your code invalid.<\\/p> {{code}} <p>Sometimes your code may contain a special character that looks like a regular character, especially if you copy and paste the code from another app. Try deleting the special character from your code and retyping it manually.<\\/p>\\n\",\"unparsableunicodesuggestion\":\"<p>It looks like your R code contains an unexpected special character (<code>{{character}}<\\/code>) that makes your code invalid.<\\/p> {{code}} <p>Sometimes your code may contain a special character that looks like a regular character, especially if you copy and paste the code from another app. You can try replacing the code on that line with the following. There may be other places that need to be fixed, too.<\\/p> {{suggestion}}\\n\",\"and\":\"and\",\"or\":\"or\",\"listcomma\":\", \",\"oxfordcomma\":\",\"}}},\"fr\":{\"translation\":{\"button\":{\"runcode\":\"Lancer le Code\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Indication\",\"hint_plural\":\"Indications\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Indication Suivante\",\"hintprev\":\"Indication Précédente\",\"solution\":\"Solution\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copier dans le Presse-papier\",\"startover\":\"Recommencer\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continuer\",\"submitanswer\":\"Soumettre\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Chapitre Précédent\",\"nexttopic\":\"Chapitre Suivant\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Réessayer\"},\"text\":{\"startover\":\"Recommencer\",\"areyousure\":\"Êtes-vous certains de vouloir recommencer? (La progression sera remise à zéro)\",\"youmustcomplete\":\"Vous devez d'abord compléter\",\"exercise\":\"l'exercice\",\"exercise_plural\":\"des exercices\",\"inthissection\":\"de cette section avec de continuer.\",\"code\":\"Code\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"and\":\"et\",\"or\":\"ou\",\"oxfordcomma\":\"\"}}},\"es\":{\"translation\":{\"button\":{\"runcode\":\"Ejecutar código\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Pista\",\"hint_plural\":\"Pistas\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Siguiente pista\",\"hintprev\":\"Pista anterior\",\"solution\":\"Solución\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copiar al portapapeles\",\"startover\":\"Reiniciar\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continuar\",\"submitanswer\":\"Enviar respuesta\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Tema anterior\",\"nexttopic\":\"Tema siguiente\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Volver a intentar\"},\"text\":{\"startover\":\"Reiniciar\",\"areyousure\":\"¿De verdad quieres empezar de nuevo? (todo el progreso del ejercicio se perderá)\",\"youmustcomplete\":\"Debes completar\",\"exercise\":\"el ejercicio\",\"exercise_plural\":\"los ejercicios\",\"inthissection\":\"en esta sección antes de continuar.\",\"code\":\"Código\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Cuestionario\",\"and\":\"y\",\"or\":\"o\",\"oxfordcomma\":\"\"}}},\"pt\":{\"translation\":{\"button\":{\"runcode\":\"Executar código\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Dica\",\"hint_plural\":\"Dicas\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Próxima dica\",\"hintprev\":\"Dica anterior\",\"solution\":\"Solução\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Copiar para a área de transferência\",\"startover\":\"Reiniciar\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Continuar\",\"submitanswer\":\"Enviar resposta\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Tópico anterior\",\"nexttopic\":\"Próximo tópico\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Tentar novamente\"},\"text\":{\"startover\":\"Reiniciar\",\"areyousure\":\"Tem certeza que deseja começar novamente? (todo o progresso feito será perdido)\",\"youmustcomplete\":\"Você deve completar\",\"exercise\":\"o exercício\",\"exercise_plural\":\"os exercícios\",\"inthissection\":\"nesta seção antes de continuar.\",\"code\":\"Código\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"and\":\"e\",\"or\":\"ou\",\"oxfordcomma\":\"\"}}},\"tr\":{\"translation\":{\"button\":{\"runcode\":\"Çalıştırma Kodu\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Ipucu\",\"hint_plural\":\"İpuçları\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Sonraki İpucu\",\"hintprev\":\"Önceki İpucu\",\"solution\":\"Çözüm\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Pano'ya Kopyala\",\"startover\":\"Baştan Başlamak\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Devam et\",\"submitanswer\":\"Cevabı onayla\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Önceki Konu\",\"nexttopic\":\"Sonraki Konu\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Tekrar Deneyin\"},\"text\":{\"startover\":\"Baştan Başlamak\",\"areyousure\":\"Baştan başlamak istediğinizden emin misiniz? (tüm egzersiz ilerlemesi kaybolacak)\",\"youmustcomplete\":\"Tamamlamalısın\",\"exercise\":\"egzersiz\",\"exercise_plural\":\"egzersizler\",\"inthissection\":\"devam etmeden önce bu bölümde\",\"code\":\"Kod\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Sınav\",\"oxfordcomma\":\"\"}}},\"emo\":{\"translation\":{\"button\":{\"runcode\":\"<U+0001F3C3>\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"<U+0001F4A1>\",\"hint_plural\":\"$t(button.hint)\",\"hinttitle\":\"$t(button.hint)\",\"solution\":\"<U+0001F3AF>\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"<U+0001F4CB>\",\"startover\":\"<U+23EE>\",\"startovertitle\":\"Start Over\",\"continue\":\"<U+2705>\",\"submitanswer\":\"<U+0001F197>\",\"submitanswertitle\":\"Submit Answer\",\"previoustopic\":\"<U+2B05>\",\"nexttopic\":\"<U+27A1>\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"<U+0001F501>\"},\"text\":{\"startover\":\"<U+23EE>\",\"areyousure\":\"<U+0001F914>\",\"youmustcomplete\":\"<U+26A0><U+FE0F> <U+0001F449> <U+0001F9D1><U+200D><U+0001F4BB>\",\"exercise\":\"\",\"exercise_plural\":\"\",\"inthissection\":\"\",\"code\":\"<U+0001F4BB>\",\"enginecap\":\"$t(text.code) {{engine}}\",\"oxfordcomma\":\"\"}}},\"eu\":{\"translation\":{\"button\":{\"runcode\":\"Kodea egikaritu\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Laguntza\",\"hint_plural\":\"Laguntza\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Aurreko laguntza\",\"hintprev\":\"Hurrengo laguntza\",\"solution\":\"Ebazpena\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Arbelean kopiatu\",\"startover\":\"Berrabiarazi\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Jarraitu\",\"submitanswer\":\"Erantzuna bidali\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Aurreko atala\",\"nexttopic\":\"Hurrengo atala\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Berriro saiatu\"},\"text\":{\"startover\":\"Berrabiarazi\",\"areyousure\":\"Berriro hasi nahi duzu? (egindako lana galdu egingo da)\",\"youmustcomplete\":\"Aurrera egin baino lehen atal honetako\",\"exercise\":\"ariketa egin behar duzu.\",\"exercise_plural\":\"ariketak egin behar dituzu.\",\"inthissection\":\"\",\"code\":\"Kodea\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Galdetegia\",\"oxfordcomma\":\"\"}}},\"de\":{\"translation\":{\"button\":{\"runcode\":\"Code ausführen\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Tipp\",\"hint_plural\":\"Tipps\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Nächster Tipp\",\"hintprev\":\"Vorheriger Tipp\",\"solution\":\"Lösung\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"In die Zwischenablage kopieren\",\"startover\":\"Neustart\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Weiter\",\"submitanswer\":\"Antwort einreichen\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Vorheriges Kapitel\",\"nexttopic\":\"Nächstes Kapitel\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Nochmal versuchen\"},\"text\":{\"startover\":\"Neustart\",\"areyousure\":\"Bist du sicher, dass du neustarten willst? (der gesamte Lernfortschritt wird gelöscht)\",\"youmustcomplete\":\"Vervollstädinge\",\"exercise\":\"die Übung\",\"exercise_plural\":\"die Übungen\",\"inthissection\":\"in diesem Kapitel, bevor du fortfährst.\",\"code\":\"Code\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"blank\":\"Lücke\",\"blank_plural\":\"Lücken\",\"pleasereplaceblank\":\"Bitte ersetze {{blank}} mit gültigem Code.\",\"unparsable\":\"Dies scheint kein gültiger R Code zu sein. R kann deinen Text nicht in einen gültigen Befehl übersetzen. Du hast vielleicht vergessen, die Lücke zu füllen, einen Unterstrich zu entfernen, ein Komma zwischen Argumente zu setzen oder ein eröffnendes <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> oder <code>{<\\/code> mit einem zugehörigen <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code> oder <code>}<\\/code> zu schließen.\\n\",\"and\":\"und\",\"or\":\"oder\",\"listcomma\":\", \",\"oxfordcomma\":\",\"}}},\"ko\":{\"translation\":{\"button\":{\"runcode\":\"<U+CF54><U+B4DC> <U+C2E4><U+D589>\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"<U+D78C><U+D2B8>\",\"hint_plural\":\"<U+D78C><U+D2B8><U+B4E4>\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"<U+B2E4><U+C74C> <U+D78C><U+D2B8>\",\"hintprev\":\"<U+C774><U+C804> <U+D78C><U+D2B8>\",\"solution\":\"<U+C194><U+B8E8><U+C158>\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"<U+D074><U+B9BD><U+BCF4><U+B4DC><U+C5D0> <U+BCF5><U+C0AC>\",\"startover\":\"<U+C7AC><U+D559><U+C2B5>\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"<U+B2E4><U+C74C> <U+D559><U+C2B5><U+C73C><U+B85C>\",\"submitanswer\":\"<U+C815><U+B2F5> <U+C81C><U+CD9C>\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"<U+C774><U+C804> <U+D1A0><U+D53D>\",\"nexttopic\":\"<U+B2E4><U+C74C> <U+D1A0><U+D53D>\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"<U+C7AC><U+C2DC><U+B3C4>\"},\"text\":{\"startover\":\"<U+C7AC><U+D559><U+C2B5>\",\"areyousure\":\"<U+B2E4><U+C2DC> <U+C2DC><U+C791> <U+D558><U+C2DC><U+ACA0><U+C2B5><U+B2C8><U+AE4C>? (<U+BAA8><U+B4E0> <U+C608><U+C81C><U+C758> <U+C9C4><U+D589> <U+C815><U+BCF4><U+AC00> <U+C7AC><U+C124><U+C815><U+B429><U+B2C8><U+B2E4>)\",\"youmustcomplete\":\"<U+B2F9><U+C2E0><U+C740> <U+C644><U+B8CC><U+D574><U+C57C> <U+D569><U+B2C8><U+B2E4>\",\"exercise\":\"<U+C5F0><U+C2B5><U+BB38><U+C81C>\",\"exercise_plural\":\"<U+C5F0><U+C2B5><U+BB38><U+C81C><U+B4E4>\",\"inthissection\":\"<U+C774> <U+C139><U+C158><U+C744> <U+C2E4><U+D589><U+D558><U+AE30> <U+C804><U+C5D0>\",\"code\":\"<U+CF54><U+B4DC>\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"<U+D034><U+C988>\",\"blank\":\"<U+ACF5><U+BC31>\",\"blank_plural\":\"<U+ACF5><U+BC31><U+B4E4>\",\"exercisecontainsblank\":\"<U+C774> <U+C5F0><U+C2B5><U+BB38><U+C81C><U+C5D0><U+B294> {{count}}<U+AC1C><U+C758> $t(text.blank)<U+C774> <U+D3EC><U+D568><U+B418><U+C5B4> <U+C788><U+C2B5><U+B2C8><U+B2E4>.\",\"pleasereplaceblank\":\"{{blank}}<U+B97C> <U+C720><U+D6A8><U+D55C> <U+CF54><U+B4DC><U+B85C> <U+BC14><U+AFB8><U+C2ED><U+C2DC><U+C624>.\",\"unparsable\":\"<U+C774><U+AC83><U+C740> <U+C720><U+D6A8><U+D55C> R <U+CF54><U+B4DC><U+AC00> <U+C544><U+B2D0> <U+C218> <U+C788><U+C2B5><U+B2C8><U+B2E4>. R<U+C740> <U+D14D><U+C2A4><U+D2B8><U+B97C> <U+C644><U+C804><U+D55C> <U+BA85><U+B839><U+C73C><U+B85C> <U+BCC0><U+D658><U+D558><U+B294> <U+BC29><U+BC95><U+C744> <U+ACB0><U+C815><U+D560> <U+C218> <U+C5C6><U+C2B5><U+B2C8><U+B2E4>. <U+B2F9><U+C2E0><U+C740> <U+ACF5><U+BC31><U+C774><U+B098> <U+BC11><U+C904><U+C744> <U+B300><U+CCB4><U+D558><U+C5EC> <U+CC44><U+C6B0><U+AE30>, <U+C778><U+C218><U+B97C> <U+CEF4><U+B9C8><U+B85C> <U+AD6C><U+BD84><U+D558><U+AE30>, <U+B610><U+B294> <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> , <code>{<\\/code><U+B85C> <U+C2DC><U+C791><U+D558><U+B294> <U+AD6C><U+BB38><U+C744> <U+B2EB><U+B294> <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code>, <code>}<\\/code><U+C744> <U+C78A><U+C5C8><U+C744> <U+C218><U+B3C4> <U+C788><U+C2B5><U+B2C8><U+B2E4>.\\n\",\"and\":\"<U+ADF8><U+B9AC><U+ACE0>\",\"or\":\"<U+D639><U+C740>\",\"listcomma\":\", \",\"oxfordcomma\":\"\"}}},\"zh\":{\"translation\":{\"button\":{\"runcode\":\"<U+8FD0><U+884C><U+4EE3><U+7801>\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"<U+63D0><U+793A>\",\"hint_plural\":\"<U+63D0><U+793A>\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"<U+4E0B><U+4E00><U+4E2A><U+63D0><U+793A>\",\"hintprev\":\"<U+4E0A><U+4E00><U+4E2A><U+63D0><U+793A>\",\"solution\":\"<U+7B54><U+6848>\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"<U+590D><U+5236><U+5230><U+526A><U+5207><U+677F>\",\"startover\":\"<U+91CD><U+65B0><U+5F00><U+59CB>\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"<U+7EE7><U+7EED>\",\"submitanswer\":\"<U+63D0><U+4EA4><U+7B54><U+6848>\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"<U+4E0A><U+4E00><U+4E13><U+9898>\",\"nexttopic\":\"<U+4E0B><U+4E00><U+4E13><U+9898>\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"<U+518D><U+8BD5><U+4E00><U+6B21>\"},\"text\":{\"startover\":\"<U+91CD><U+7F6E>\",\"areyousure\":\"<U+4F60><U+786E><U+5B9A><U+8981><U+91CD><U+65B0><U+5F00><U+59CB><U+5417>? (<U+6240><U+6709><U+5F53><U+524D><U+8FDB><U+5EA6><U+5C06><U+88AB><U+91CD><U+7F6E>)\",\"youmustcomplete\":\"<U+4F60><U+5FC5><U+987B><U+5B8C><U+6210>\",\"exercise\":\"<U+7EC3><U+4E60>\",\"exercise_plural\":\"<U+7EC3><U+4E60>\",\"inthissection\":\"<U+5728><U+8FDB><U+884C><U+672C><U+8282><U+4E4B><U+524D>\",\"code\":\"<U+4EE3><U+7801>\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"<U+6D4B><U+8BD5>\",\"blank\":\"<U+7A7A>\",\"blank_plural\":\"<U+7A7A>\",\"exercisecontainsblank\":\"<U+672C><U+7EC3><U+4E60><U+5305><U+542B>{{count}}<U+4E2A>$t(text.blank)\",\"pleasereplaceblank\":\"<U+8BF7><U+5728>{{blank}}<U+5185><U+586B><U+5199><U+6070><U+5F53><U+7684><U+4EE3><U+7801>\",\"unparsable\":\"<U+8FD9><U+4F3C><U+4E4E><U+4E0D><U+662F><U+6709><U+6548><U+7684>R<U+4EE3><U+7801><U+3002> R<U+4E0D><U+77E5><U+9053><U+5982><U+4F55><U+5C06><U+60A8><U+7684><U+6587><U+672C><U+8F6C><U+6362><U+4E3A><U+5B8C><U+6574><U+7684><U+547D><U+4EE4><U+3002> <U+60A8><U+662F><U+5426><U+5FD8><U+4E86><U+586B><U+7A7A>,<U+5FD8><U+4E86><U+5220><U+9664><U+4E0B><U+5212><U+7EBF>,<U+5FD8><U+4E86><U+5728><U+53C2><U+6570><U+4E4B><U+95F4><U+5305><U+542B><U+9017><U+53F7>,<U+6216><U+8005><U+662F><U+5FD8><U+4E86><U+7528><code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code>,<code>}<\\/code><U+6765><U+5C01><U+95ED><code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code><U+3002> or <code>{<\\/code><U+3002>\\n\",\"unparsablequotes\":\"<p><U+60A8><U+7684>R<U+4EE3><U+7801><U+4E2D><U+4F3C><U+4E4E><U+542B><U+6709><U+7279><U+6B8A><U+683C><U+5F0F><U+7684><U+5F15><U+53F7>,<U+6216><U+8005><U+5F2F><U+5F15><U+53F7>(<code>{{character}}<\\/code>) <U+5728><U+5B57><U+7B26><U+4E32><U+524D><U+540E>,<U+5728>R<U+4E2D><U+5B57><U+7B26><U+4E32><U+5E94><U+8BE5><U+88AB><U+76F4><U+5F15><U+53F7>(<code>&quot;<\\/code> <U+6216><U+8005> <code>'<\\/code>)<U+5305><U+88F9><U+3002><\\/p> {{code}} <p><U+522B><U+62C5><U+5FC3>,<U+8BE5><U+9519><U+8BEF><U+7ECF><U+5E38><U+5728><U+590D><U+5236><U+7C98><U+8D34><U+5305><U+542B><U+683C><U+5F0F><U+7684><U+4EE3><U+7801><U+65F6><U+9047><U+5230>, <U+60A8><U+53EF><U+4EE5><U+5C1D><U+8BD5><U+5C06><U+8BE5><U+884C><U+4E2D><U+7684><U+4EE3><U+7801><U+66FF><U+6362><U+4E3A><U+4EE5><U+4E0B><U+4EE3><U+7801>,<U+4E5F><U+8BB8><U+8FD8><U+6709><U+5176><U+4ED6><U+5730><U+65B9><U+9700><U+8981><U+4FEE><U+6539><U+3002><\\/p> {{suggestion}}\\n\",\"unparsableunicode\":\"<p><U+60A8><U+7684><U+4EE3><U+7801><U+4E2D><U+4F3C><U+4E4E><U+5305><U+542B><U+6709><U+5F02><U+5E38><U+5B57><U+7B26>(<code>{{character}}<\\/code>),<U+5BFC><U+81F4><U+4EE3><U+7801><U+65E0><U+6548><U+3002><\\/p> {{code}} <p><U+6709><U+65F6><U+5019><U+4F60><U+7684><U+4EE3><U+7801><U+53EF><U+80FD><U+542B><U+6709><U+770B><U+4F3C><U+6B63><U+5E38><U+5B57><U+7B26><U+7684><U+7279><U+6B8A><U+5B57><U+7B26>,<U+7279><U+522B><U+662F><U+5F53><U+4F60><U+590D><U+5236><U+7C98><U+8D34><U+5176><U+4ED6><U+6765><U+6E90><U+4EE3><U+7801><U+7684><U+65F6><U+5019><U+3002> <U+8BF7><U+8BD5><U+7740><U+5220><U+9664><U+8FD9><U+4E9B><U+7279><U+6B8A><U+5B57><U+7B26>,<U+91CD><U+65B0><U+8F93><U+5165><\\/p>\\n\",\"unparsableunicodesuggestion\":\"<p><U+60A8><U+7684><U+4EE3><U+7801><U+4E2D><U+4F3C><U+4E4E><U+5305><U+542B><U+6709><U+5F02><U+5E38><U+5B57><U+7B26>(<code>{{character}}<\\/code>),<U+5BFC><U+81F4><U+4EE3><U+7801><U+65E0><U+6548><U+3002><\\/p> {{code}} <p><U+6709><U+65F6><U+5019><U+4F60><U+7684><U+4EE3><U+7801><U+53EF><U+80FD><U+542B><U+6709><U+770B><U+4F3C><U+6B63><U+5E38><U+5B57><U+7B26><U+7684><U+7279><U+6B8A><U+5B57><U+7B26>,<U+7279><U+522B><U+662F><U+5F53><U+4F60><U+590D><U+5236><U+7C98><U+8D34><U+5176><U+4ED6><U+6765><U+6E90><U+4EE3><U+7801><U+7684><U+65F6><U+5019><U+3002> <U+8BF7><U+8BD5><U+7740><U+5220><U+9664><U+8FD9><U+4E9B><U+7279><U+6B8A><U+5B57><U+7B26>,<U+91CD><U+65B0><U+8F93><U+5165><\\/p>\\n\",\"and\":\"<U+4E14>\",\"or\":\"<U+6216>\",\"listcomma\":\",\",\"oxfordcomma\":\",\"}}},\"pl\":{\"translation\":{\"button\":{\"runcode\":\"Uruchom kod\",\"runcodetitle\":\"$t(button.runcode) ({{kbd}})\",\"hint\":\"Podpowiedz\",\"hint_plural\":\"Podpowiedzi\",\"hinttitle\":\"$t(button.hint)\",\"hintnext\":\"Nastepna podpowiedz\",\"hintprev\":\"Poprzednia podpowiedz\",\"solution\":\"Rozwiazanie\",\"solutiontitle\":\"$t(button.solution)\",\"copyclipboard\":\"Kopiuj do schowka\",\"startover\":\"Zacznij od poczatku\",\"startovertitle\":\"$t(button.startover)\",\"continue\":\"Kontynuuj\",\"submitanswer\":\"Wyslij\",\"submitanswertitle\":\"$t(button.submitanswer)\",\"previoustopic\":\"Poprzednia sekcja\",\"nexttopic\":\"Nastepna sekcja\",\"questionsubmit\":\"$t(button.submitanswer)\",\"questiontryagain\":\"Spróbuj ponownie\"},\"text\":{\"startover\":\"Zacznij od poczatku\",\"areyousure\":\"Czy na pewno chcesz zaczac od poczatku? (caly postep w zadaniu zostanie utracony)\",\"youmustcomplete\":\"Musisz ukonczyc\",\"exercise\":\"cwiczenie\",\"exercise_plural\":\"cwiczenia\",\"inthissection\":\"w tej sekcji przed kontynuowaniem\",\"code\":\"Kod\",\"enginecap\":\"$t(text.code) {{engine}}\",\"quiz\":\"Quiz\",\"blank\":\"luka\",\"blank_plural\":\"luk(i)\",\"exercisecontainsblank\":\"To cwiczenie zawiera {{count}} $t(text.blank).\",\"pleasereplaceblank\":\"Prosze uzupelnic {{blank}} prawidlowym kodem.\",\"unparsable\":\"Wyglada na to, ze moze to nie byc prawidlowy kod R. R nie jest w stanie przetworzyc Twojego tekstu na polecenie. Mogles(-as) zapomniec wypelnic luki, usunac podkreslnik, umiescic przecinka miedzy argumentami, lub zamknac znak <code>&quot;<\\/code>, <code>'<\\/code>, <code>(<\\/code> lub <code>{<\\/code> odpowiadajacym <code>&quot;<\\/code>, <code>'<\\/code>, <code>)<\\/code> lub <code>}<\\/code>.\\n\",\"unparsablequotes\":\"<p>Wyglada na to, ze Twój kod zawiera szczególnie sformatowane cudzyslowy lub cudzyslowy typograficzne (<code>{{character}}<\\/code>) przy ciagach znaków, co sprawia, ze kod jest niepoprawny. R wymaga cudzyslowów prostych (<code>&quot;<\\/code> albo <code>'<\\/code>).<\\/p> {{code}} <p>Nie martw sie, to powszechne zródlo bledów, gdy kopiuje sie kod z innego programu, który sam formatuje teskt. Mozesz spróbowac zastapic swój kod nastepujacym kodem. Moga byc tez inne miejsca, które wymagaja poprawienia.<\\/p> {{suggestion}}\\n\",\"unparsableunicode\":\"<p>Wyglada na to, ze Twój kod zawiera niespodziewany znak specjalny (<code>{{character}}<\\/code>), co sprawia, ze kod jest niepoprawny.<\\/p> {{code}} <p>Czasami Twój kod moze zawierac znak specjalny, który wyglada jak zwykly znak, zwlaszcza jesli kopiujesz kod z innego programu. Spróbuj usunac znak specjalny i wpisac do ponownie recznie.<\\/p>\\n\",\"unparsableunicodesuggestion\":\"<p>Wyglada na to, ze Twój kod zawiera niespodziewany znak specjalny (<code>{{character}}<\\/code>), co sprawia, ze kod jest niepoprawny.<\\/p> {{code}} <p>Czasami Twój kod moze zawierac znak specjalny, który wyglada jak zwykly znak, zwlaszcza jesli kopiujesz kod z innego programu. Mozesz spróbowac zastapic swój kod nastepujacym kodem. Moga byc tez inne miejsca, które wymagaja poprawienia.<\\/p> {{suggestion}}\\n\",\"and\":\"i\",\"or\":\"lub\",\"listcomma\":\", \",\"oxfordcomma\":\"\"}}}}}<\/script>"]},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.11.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.11.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.11.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.6.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/3.6.0"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery-3.6.0.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquerylib"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.1.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["3.6.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/3.6.0"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery-3.6.0.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquerylib"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.1.4"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.20"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["5.5.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.11.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.11.2"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.11.2"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.11.2"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82]}},"value":[{"type":"character","attributes":{},"value":["abind","backports","base","bslib","cachem","car","carData","checkmate","cli","colorspace","commonmark","compiler","crayon","curl","datasets","digest","dplyr","ellipsis","evaluate","fansi","farver","fastmap","generics","GGally","ggplot2","glue","graphics","grDevices","grid","gtable","highr","htmltools","htmlwidgets","httpuv","interactions","jquerylib","jsonlite","jtools","knitr","labeling","later","lattice","learnr","lifecycle","magrittr","markdown","Matrix","methods","mgcv","mime","munsell","nlme","pander","pillar","pkgconfig","plyr","promises","R6","RColorBrewer","Rcpp","reshape","rlang","rmarkdown","rprojroot","rstudioapi","sandwich","sass","scales","shiny","splines","stats","tibble","tidyselect","tools","utf8","utils","vctrs","withr","xfun","xtable","yaml","zoo"]},{"type":"character","attributes":{},"value":["1.4-5","1.4.1","4.1.0","0.4.2","1.0.6","3.1-1","3.0-5","2.1.0","3.4.1","2.0-2","1.8.1","4.1.0","1.5.2","5.0.0","4.1.0","0.6.31","1.1.0","0.3.2","0.20","0.5.0","2.1.1","1.1.0","0.1.3","2.1.2","3.4.1","1.6.2","4.1.0","4.1.0","4.1.0","0.3.1","0.10","0.5.4","1.6.1","1.6.9","1.1.5","0.1.4","1.7.2","2.2.1","1.42","0.4.2","1.3.0","0.20-45","0.11.2","1.0.3","2.0.1","1.5","1.3-4","4.1.0","1.8-41","0.12","0.5.0","3.1-162","0.6.5","1.8.1","2.0.3","1.8.8","1.2.0.1","2.5.1","1.1-3","1.0.7","0.8.9","1.0.6","2.20","2.0.3","0.14","3.0-2","0.4.5","1.2.1","1.7.4","4.1.0","4.1.0","3.2.1","1.2.0","4.1.0","1.2.2","4.1.0","0.5.2","2.5.0","0.37","1.8-4","2.3.7","1.8-11"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+</div>
+
+</article> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h1 class="title toc-ignore" style="display:none;">STAT 412-Recitation
+5</h1>
+<h4 class="author"><em>Ozancan Ozdemir</em></h4>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</main> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+<!-- Build Tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+
+</body>
+
+</html>
