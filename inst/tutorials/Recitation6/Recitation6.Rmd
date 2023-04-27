@@ -1,0 +1,1702 @@
+---
+title: "STAT 412-Recitation 6"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## [ **Reminder** ]{style="color:darkred"}
+
+Last week, we talk about some problems arising in the statistical analysis such as
+
++ Interaction
+
++ Confounding 
+
+Today, we are talk about other important concepts for statistical analysis. 
+
+
+Install the packages using the code line given below.
+
+
+```
+install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan",
+"naniar","datasets","rcompanion","bestNormalize","MASS","gridExtra")
+```
+
+
+## <span style="color:darkred">**Transformation**</span>
+
+In statistics, transformation is the application of a mathematical function to the observations and put those transformed observations in place of the old ones. 
+
+<span style="color:darkred">**Why We Need Transformation?**</span>
+
+The real world data, in general, do not have the ideal properties for statistical analysis. Transformation of the data can help,
+
++ Improve the model fit and model accuracy. 
+
++ Correct the model assumptions such as Normality or Constant Variance
+
++ Improve interpretability. 
+
++ De clutter graphs. 
+
++ Get insight about the relationship between variables.
+
+
+***
+<span style="color:darkred">Important distinctions</span>
+
+It is important to know what we are talking about when we use the term transformation. Transformation, normalization, standardization and centering are often used interchangeably and wrongly so.
+
++ **Centering** is the process of substracting mean of the data from each observation so that the mean of the data
+reduces to 0. It is useful if you intend to change the **center** of the data. 
+
+$X_{center} = X_i - \mu$
+
++ **Standardization(Scaling)** is the process of transforming in respect to the entire data range so that the data has the properties of the standard normal distribution with  mean of 0 and standard deviation of 1. It changes the both scale and center of the data. 
+
+$X_{scaled} = \frac{X_i - \mu}{\sigma}$
+
++ **Normalization** is the process of scaling in respect to the entire data range so that the data has a range from 0 to 1.(Sometimes -1 and 1) It is often called **min-max** scaling and it works well when the standard deviation of the data is small or or when you know the distribution is not Gaussian (a bell curve). It is an alternative for the case where standardization does not work. 
+
+$X_{norm} = \frac{X_i-X_{min}}{X_{max}-X_{min}}$
+
++ **Transformation** is the application of the same calculation to every point of the data separately, and transformation term covers the standardization and normalization as well.
+
+
+This transformations are generally needed for data preparation of some predictive methods such as neural networks or support network machines. They can also used for decrease multicollinearity in your dataset or obtaining consistent parameter estimate for a linear model.
+
+***
+
+Let's observed the effect of the centering, scaling and normalizing on the simulated data set. 
+
+```
+set.seed(1)
+x <- rgamma(2000,5,3)
+  #rnorm(200, 5, 3)
+x_centered <- x - mean(x) #centering
+x_scaled <- (x - mean(x)) / sd(x) #scaling
+x_norm <- (x - min(x)) / (max(x)-min(x))
+d<-data.frame(x,x_centered,x_scaled,x_norm)
+head(d)
+```
+
+```{r}
+set.seed(1)
+x <- rgamma(2000,5,3)
+  #rnorm(200, 5, 3)
+x_centered <- x - mean(x) #centering
+x_scaled <- (x - mean(x)) / sd(x) #scaling
+x_norm <- (x - min(x)) / (max(x)-min(x))
+d<-data.frame(x,x_centered,x_scaled,x_norm)
+head(d)
+```
+
+```
+summary(d)
+```
+
+
+```{r}
+summary(d)
+```
+
+As seen that centering and scaling shrink the mean of the data to 0 while the normalizing makes the range of data between 0 and 1. 
+
+
+```
+library(ggplot2)
+library(gridExtra)
+
+p1<-ggplot(d,aes(x=x))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Original X",y="Count")+geom_density(col="darkred")
+p2<-ggplot(d,aes(x=x_centered))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Centered X",y="Count")+geom_density(col="darkred") # Center of x has changed
+p3<-ggplot(d,aes(x=x_scaled))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Scaled X",y="Count")+geom_density(col="darkred")# Both the location and scale of x shanged
+p4<-ggplot(d,aes(x=x_norm))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Normalized X",y="Count")+geom_density(col="darkred")
+
+grid.arrange(p1,p2,p3,p4,nrow=4)
+  
+```
+
+
+```{r,warning=FALSE,message=FALSE,error=FALSE}
+library(ggplot2)
+library(gridExtra)
+
+p1<-ggplot(d,aes(x=x))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Original X",y="Count")+geom_density(col="darkred")
+p2<-ggplot(d,aes(x=x_centered))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Centered X",y="Count")+geom_density(col="darkred") # Center of x has changed
+p3<-ggplot(d,aes(x=x_scaled))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Scaled X",y="Count")+geom_density(col="darkred")# Both the location and scale of x shanged
+p4<-ggplot(d,aes(x=x_norm))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Normalized X",y="Count")+geom_density(col="darkred")
+
+grid.arrange(p1,p2,p3,p4,nrow=4)
+  
+```
+
+As you see, centering changes the center of the data, scaling changes the both scale and center of the data and normalization limits the range of the data. 
+
+If you are interested in the changing shape of the distribution, making it Gaussian, you can apply stronger transformations such as log, square root etc. 
+
+**Right Skewed Data**
+
+The following transformation can be considered to change the shape of the right skewed distribution. 
+
++ Root $^n\sqrt(x)$ : It needs to be done with care when the data has negative values. 
+
++ Logarithm $log(x)$: One frequently employed transformation in data analysis is affected by the choice of logarithmic base. However, this transformation cannot be applied to negative numbers or zero. In such cases, one needs to shift the entire dataset by adding at least the absolute value of the minimum value in the dataset plus one.
+
++ Reciprocal $1/x$: This transformation is more potent when the exponent is larger. It should be noted that this transformation is not appropriate for negative numbers or values close to zero. In such cases, the data needs to be shifted in a manner similar to that required for a logarithmic transformation.
+
+```
+d$x_log <- log(x)	# Be careful on ln transformation. Data may contain non-positive values
+d$x_root <- sqrt(x)	# Again, be careful on square root transformation. Data may contain negative values
+d$x_reciprocal <- 1/x
+
+p5<-ggplot(d,aes(x=x_log))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Log X",y="Count")+geom_density(col="darkred") 
+p6<-ggplot(d,aes(x=x_root))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Square Root X",y="Count")+geom_density(col="darkred")
+p7<-ggplot(d,aes(x=x_reciprocal))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Reciprocal X",y="Count")+geom_density(col="darkred")
+
+
+grid.arrange(p1,p5,p6,p7,nrow=4)
+  
+
+```
+
+
+```{r,message=FALSE,warning=FALSE}
+d$x_log <- log(x)	# Be careful on ln transformation. Data may contain non-positive values
+d$x_root <- sqrt(x)	# Again, be careful on square root transformation. Data may contain negative values
+d$x_reciprocal <- 1/x
+
+p5<-ggplot(d,aes(x=x_log))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Log X",y="Count")+geom_density(col="darkred") 
+p6<-ggplot(d,aes(x=x_root))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Square Root X",y="Count")+geom_density(col="darkred")
+p7<-ggplot(d,aes(x=x_reciprocal))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Reciprocal X",y="Count")+geom_density(col="darkred")
+
+
+grid.arrange(p1,p5,p6,p7,nrow=4)
+  
+
+```
+
+As you see, the log transformation makes the $X$ with normal distribution left-skewed, Square root transformation makes it approximately symmetric and Reciprocal transformation reduces the variability of the data. 
+
+**Left Skewed Data**
+
++ Square $x^2$: It cannot be applicable for the data with negative values. 
+
++ Exponential $e^x$: It is a stronger transformation and can be used with negative values. 
+
+In the previous example, we went through gamma distributed data, which is a right skewed. Now, create a simulated data from $Beta(5,2)$ following the left skewed, and observe the effect of the transformation.
+
+```
+set.seed(1)
+x_beta<- rbeta(2000,5,2)
+x_beta_square <- x^2
+x_beta_exp <- exp(x)
+d1<-data.frame(x_beta,x_beta_square,x_beta_exp)
+head(d1)
+```
+
+```{r}
+set.seed(1)
+x_beta<- rbeta(2000,5,2)
+x_beta_square <- x^2
+x_beta_exp <- exp(x)
+d1<-data.frame(x_beta,x_beta_square,x_beta_exp)
+head(d1)
+```
+
+
+```
+
+p11<-ggplot(d1,aes(x=x_beta))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Original X (beta)",y="Count")+geom_density(col="darkred") 
+p12<-ggplot(d1,aes(x=x_beta_square))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Square of X",y="Count")+geom_density(col="darkred")
+p13<-ggplot(d1,aes(x=x_beta_exp))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Exponential of X",y="Count")+geom_density(col="darkred")
+
+
+grid.arrange(p11,p12,p13,nrow=3)
+  
+
+```
+
+```{r,message=FALSE,warning=FALSE}
+
+p11<-ggplot(d1,aes(x=x_beta))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Original X (beta)",y="Count")+geom_density(col="darkred") 
+p12<-ggplot(d1,aes(x=x_beta_square))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Square of X",y="Count")+geom_density(col="darkred")
+p13<-ggplot(d1,aes(x=x_beta_exp))+geom_histogram(aes(y=stat(density)))+labs(title="Histogram of Exponential of X",y="Count")+geom_density(col="darkred")
+
+
+grid.arrange(p11,p12,p13,nrow=3)
+  
+
+```
+
+As seen that square transformation changes skew of the data, while exponential changes the skewed and reduces the variablity of the data. 
+
+**Exercise 1**
+
+Please load the `USJudgeRatings` dataset from `datasets` package. 
+
++ Export CONT variable and display it's distribution. Right after that apply the 
+suitable transformation to make it symmetric visually. 
+
++ Export PHYS variable and display it's distribution. Right after that apply the 
+suitable transformation to make it symmetric visually. 
+
+
+### <span style="color:darkred">**Power (BoxCox) Transformation**</span>
+
+It is often described as removing a skew in the distribution, although more generally is described as stabilizing the variance of the distribution. It is also used to make the distribution of the variable of interest more Gaussian, i.e. Normal. 
+
+The examples above show that we can apply well-known techniques to make the data **Gaussian** if they are left or right skewed. Replacing the data with the log, square root, or inverse may help to remove or add the skew as seen above. However, this may or may not be the best power transform for a given variable. (See Beta example) 
+
+Instead, we can use a generalized version of the transform that finds a parameter (lambda) that best transforms a variable to a Gaussian probability distribution.
+
+There are two popular approaches for such automatic power transforms; they are:
+
++ Box Cox Transform
+
++ Yeo Johnson Transform
+
+
+A hyperparameter, often referred to as $\lambda$ is used to control the nature of the transform.
+
+$y_i^{(\lambda)}= \begin{cases}\frac{y_i^\lambda-1}{\lambda} & \text { if } \lambda \neq 0 \\ \ln \left(y_i\right) & \text { if } \lambda=0\end{cases}$
+
+Below are some common values for $\lambda$
+
+$\lambda$ = -1. is a reciprocal transform.
+$\lambda$ = -0.5 is a reciprocal square root transform.
+$\lambda$ = 0.0 is a log transform.
+$\lambda$ = 0.5 is a square root transform.
+$\lambda$ = 1.0 is no transform.
+
+The optimal value for this hyperparameter used in the transform for each variable can be stored and reused to transform new data in the future in an identical manner, such as a test dataset or new data in the future.
+
+```
+Turbidity = c(1.0, 1.2, 1.1, 1.1, 2.4, 2.2, 2.6, 4.1, 5.0, 10.0, 4.0, 4.1, 4.2,
+              4.1, 5.1, 4.5, 5.0, 15.2, 10.0, 20.0, 1.1, 1.1, 1.2, 1.6, 2.2, 3.0, 4.0, 10.5)
+Tu<-data.frame(Turbidity)
+```
+
+```{r}
+Turbidity = c(1.0, 1.2, 1.1, 1.1, 2.4, 2.2, 2.6, 4.1, 5.0, 10.0, 4.0, 4.1, 4.2,
+              4.1, 5.1, 4.5, 5.0, 15.2, 10.0, 20.0, 1.1, 1.1, 1.2, 1.6, 2.2, 3.0, 4.0, 10.5)
+Tu<-data.frame(Turbidity)
+```
+
+
+Check the normality of the object using both test and graphics. 
+
+```
+ggplot(Tu, aes(sample = Turbidity))+ stat_qq() + stat_qq_line()
+```
+
+```{r}
+ggplot(Tu, aes(sample = Turbidity))+ stat_qq() + stat_qq_line()
+```
+
+Assess the normality of the data via formal test; Shapiro-Wilk.
+
+```
+shapiro.test(Turbidity)
+```
+
+
+```{r}
+shapiro.test(Turbidity)
+```
+
+Since $p<\alpha$, we reject $H_0$. Therefore, the variable does not follow normal distribution.
+
+Find the lambda ($\lambda$) value for transformation. 
+
+```
+library(MASS)
+bc<-MASS::boxcox(Tu$Turbidity~1)
+```
+
+```{r,warning=FALSE,message=FALSE}
+library(MASS)
+bc<-MASS::boxcox(Tu$Turbidity~1)
+```
+
+As you see, the range of $\lambda$ includes zero. In that case, you can apply $log$ transformation or find the $\lambda$ value itself.
+
+```
+lambda <- bc$x[which.max(bc$y)]
+lambda
+```
+
+```{r}
+lambda <- bc$x[which.max(bc$y)]
+lambda
+```
+
+As you see $\lambda$ value is approximately `r lambda`
+
+```
+T_box = (Tu$Turbidity ^ lambda - 1)/lambda    #applying the transformation
+```
+
+```{r}
+T_box = (Tu$Turbidity ^ lambda - 1)/lambda    #applying the transformation
+```
+
+
+```
+Tu<-data.frame(Tu,T_box)
+```
+
+```{r}
+Tu<-data.frame(Tu,T_box)
+```
+
+Check the normality of the object using both test and graphics. 
+
+```
+ggplot(Tu, aes(sample = T_box))+ stat_qq() + stat_qq_line()
+```
+
+```{r}
+ggplot(Tu, aes(sample = T_box))+ stat_qq() + stat_qq_line()
+```
+
+```
+shapiro.test(Tu$T_box)
+```
+
+```{r}
+shapiro.test(Tu$T_box)
+```
+
+Since $p>\alpha$, we fail to reject $H_0$. Therefore, the variable follows normal distribution after transformation.
+
+
+**If the distribution of the variable of interest follow heavy tailed distribution, you cannot use the BoxCox transformation for normality.**
+
+**This is not only way to apply Power transformation in R. Please look at yourself.**
+
+However, it is not always that easy to make a variable normal with power transformation. You may need more alternatives. In this case, [```bestNormalize```](https://cran.r-project.org/web/packages/bestNormalize/vignettes/bestNormalize.html) will help you.
+
+
+```
+# Generate some data
+set.seed(100)
+x <- rgamma(200,1,5)
+dt<-data.frame(x)
+ggplot(dt, aes(sample = x))+ stat_qq() + stat_qq_line() #right skewed
+```
+
+```{r,}
+# Generate some data
+set.seed(100)
+x <- rgamma(200,1,5)
+dt<-data.frame(x)
+ggplot(dt, aes(sample = x))+ stat_qq() + stat_qq_line() #right skewed
+```
+
+```
+shapiro.test(dt$x)
+```
+
+```{r}
+shapiro.test(dt$x)
+```
+
+
+```
+library(bestNormalize)
+x_bn<- bestNormalize(dt$x)
+x_bn_data<-predict(x_bn, newdata = dt$x)
+shapiro.test(x_bn_data)
+```
+
+
+```{r,warning=F,message=FALSE,error=FALSE}
+library(bestNormalize)
+x_bn<- bestNormalize(dt$x)
+x_bn_data<-predict(x_bn, newdata = dt$x)
+shapiro.test(x_bn_data)
+```
+
+Best Normalize is a very useful package when you need to make your data gaussian. However it **does not work for heavy tailed** distributions. 
+
+**Tukey Ladder of Power Transformation**
+
+The Tukey ladder of powers  is a way to change the shape of a skewed distribution so that it becomes normal or nearly-normal. It can also help to reduce error variability (heteroscedasticity) It is similar to power transformation. 
+
+Here, I use the `transformTukey` function, which performs iterative Shapiro Wilk tests, and finds the lambda value that maximizes the W statistic from those tests.  In essence, this finds the power transformation that makes the data fit the normal distribution as closely as possible with this type of transformation.
+
+
+```
+library(rcompanion)
+plotNormalHistogram(Turbidity)
+```
+
+```{r,warning=F,message=F}
+library(rcompanion)
+plotNormalHistogram(Turbidity)
+```
+
+```
+T_tuk = transformTukey(Turbidity,plotit=FALSE)
+```
+
+```{r}
+T_tuk = transformTukey(Turbidity,plotit=FALSE)
+```
+
+```
+plotNormalHistogram(T_tuk)
+```
+
+```{r}
+plotNormalHistogram(T_tuk)
+```
+ 
+
+**Important Note:** Left skewed values should be adjusted with (constant value), to convert the skew to right skewed, and perhaps making all values positive.  In some cases of right skewed data, it may be beneficial to add a constant to make all data values positive before transformation.  For large values, it may be helpful to scale values to a more reasonable range.
+
+
+**Dealing with Heavy Tailed Data** 
+
+When you have a heavy-tailed distribution, `Gaussianize()` function may satisfy your requirement. 
+
+The `Gaussianize()` function from the `LambertW` package in R is a method of transforming a non-Gaussian distribution into a Gaussian distribution using the Lambert W function. The Lambert W function is a special function that is the inverse of the function $f(w) = w * exp(w).$
+
+The function takes a vector or matrix of data and applies the following steps:
+
++ Center the data by subtracting the mean from each data point.
+
++ Scale the data by dividing each data point by the standard deviation.
+
++ Apply the Lambert W function to each scaled data point.
+
++ Scale the transformed data by multiplying each transformed data point by the standard deviation.
+
++ Center the transformed data by adding the mean to each transformed data point.
+
+The resulting transformed data should have a Gaussian distribution, which can be useful for
+statistical analyses and modeling. 
+
+
+```
+library(stats)
+htd <- rt(n = 1000, df = 3) #generate a heavy tailed data 
+htd1 <- data.frame(htd)
+head(htd1)
+```
+
+```{r}
+library(stats)
+htd <- rt(n = 1000, df = 3) #generate a heavy tailed data 
+htd1 <- data.frame(htd)
+head(htd1)
+```
+
+```
+ggplot(htd1,aes(x=htd))+geom_histogram()+labs(title = "Heavy Tailed Data")
+```
+
+```{r}
+ggplot(htd1,aes(x=htd))+geom_histogram()+labs(title = "Heavy Tailed Data")
+```
+
+```
+ggplot(htd1, aes(sample = htd))+ stat_qq() + stat_qq_line() #heavy tailed 
+```
+
+
+```{r}
+ggplot(htd1, aes(sample = htd))+ stat_qq() + stat_qq_line() #heavy tailed 
+```
+
+```
+shapiro.test(htd1$htd)
+```
+
+```{r}
+shapiro.test(htd1$htd)
+```
+
+As we verified from SW Test, the data does not follow the normal distribution. 
+
+```
+library(LambertW)
+gaus<-Gaussianize(htd1$htd)
+gaus_df<-data.frame(gaus) #convert a data frame for ggplot2 
+```
+
+
+```{r}
+library(LambertW)
+gaus<-Gaussianize(htd1$htd)
+gaus_df<-data.frame(gaus) #convert a data frame for ggplot2 
+```
+
+```
+ggplot(gaus_df,aes(x=Y1.X))+geom_histogram()+labs(title = "The Effect of Gaussianize on Heavy Tailed Data")
+```
+
+```{r}
+ggplot(gaus_df,aes(x=Y1.X))+geom_histogram()+labs(title = "The Effect of Gaussianize on Heavy Tailed Data")
+```
+
+```
+ggplot(gaus_df, aes(sample = Y1.X))+ stat_qq() + stat_qq_line() #normal
+```
+
+```{r}
+ggplot(gaus_df, aes(sample = Y1.X))+ stat_qq() + stat_qq_line() #normal
+```
+
+```
+shapiro.test(gaus_df$Y1.X)
+```
+
+```{r}
+shapiro.test(gaus_df$Y1.X)
+```
+
+As you can see, the heavy tailed data becomes normal after the `Gaussianize` function.
+
+
+**Transformations for Nonlinear Relations**
+
+It is used to make the relationship linear between outcome ($y$) and predictor ($x$). It is applied on $x$.  Sometimes these transformations can help with violation of model assumptions, and other times they can be used to simply fit a more flexible model.
+
+```
+time <- c(seq(0,15))
+severity <- c(42,45,51,58,64,74,85,99,110,121,138,159,180,219,254,300)
+data<-data.frame(time ,severity)
+head(data)
+```
+
+```{r}
+time <- c(seq(0,15))
+severity <- c(42,45,51,58,64,74,85,99,110,121,138,159,180,219,254,300)
+data<-data.frame(time ,severity)
+head(data)
+```
+
+```
+library(ggplot2)
+ggplot(data,aes(x=time,y=severity))+geom_point()+geom_smooth()
+```
+
+
+```{r,warning=F,message=FALSE,error=FALSE}
+library(ggplot2)
+ggplot(data,aes(x=time,y=severity))+geom_point()+geom_smooth()
+```
+
+As you see, the relationship is not linear. The relationship looks like $y=x^2$ rather than $y=x$.
+
+Now, we can apply the transformation on predictor.  Now, I add **time2** variable being equal to $time^2$.
+
+```
+time2<-time^2
+data<-data.frame(data,time2)
+```
+
+```{r}
+time2<-time^2
+data<-data.frame(data,time2)
+```
+
+```
+ggplot(data,aes(x=time2,y=severity))+geom_point()+geom_smooth()
+```
+
+```{r}
+ggplot(data,aes(x=time2,y=severity))+geom_point()+geom_smooth()
+```
+
+As you see, after transformation, the relationship becomes approximately linear. 
+
+
+## <span style="color:darkred">**Missing Data**</span>
+
+Missing value or observation is the one being not available in the data. Unfortunately, in practice, real life data means missing data.  In the real life problems, the missing data occurs frequently due to some reasons. For example,
+
++ In a survey, people do not answer to survey or specific questions in a survey.
+
++ Species are rare and cannot be found or sampled.
+
++ The individual dies or drops out before sampling.
+
++ Some things are easier to measure than others.
+
++ Data entry errors.
+
++ And more!
+
+
+Missing data is a potential danger for researchers because,
+
+
++ To reduce statistical power. e.g you may not reject the null hypothesis although it is false. 
+
++ To cause bias in estimation of parameters.
+
++ To reduce the representativeness of the samples.
+
++ To make the analysis complicated.
+
+Thus the resulting inference may be wrong due to these results caused by missing data. Before starting your analysis, you have to deal with the missingness in the data under the study if it exists. In other words, you need to understand type or mechanism of the missing observations in the data. 
+
+### <span style="color:darkred">**Types of Missing / Missingness Mechanism**</span>
+
+
+In 1976, Rubin first described and divided the types of missing data into three types of missing data
+
+#### <span style="color:darkred">Missing completely at random</span>
+
+**Missing completely at random (MCAR)** is defined as when the probability that the data are missing is not related to either the specific value which is supposed to be obtained or the set of observed responses. That is the missingness has no association with any data you have observed, or not observed. MCAR is an ideal missingness, but it is rarely seen. However, if data are missing by design, because of an equipment failure or because the samples are lost in transit or technically unsatisfactory, such data are regarded as being MCAR.
+
+The statistical advantage of data that are MCAR is that the analysis remains **unbiased**. Power may be lost in the design, but the estimated parameters are not biased by the absence of the data.
+
+**Implications**
+
++ Imputation is advisable
+
++ Deleting observations may reduce sample size, limiting inference, but will not bias
+
++ You should be imputing data
+
+#### <span style="color:darkred">Missing at random</span>
+
+Missing at random (MAR) is a more realistic assumption for the studies. Data are regarded to be MAR when the probability that the responses are missing depends on the set of observed responses, but is not related to the specific missing values which is expected to be obtained. That is the missingness depends on data observed, but not data observed
+
+As we tend to consider randomness as not producing bias, we may think that MAR does not present a problem. However, MAR does not mean that the missing data can be ignored. If a dropout variable is MAR, we may expect that the probability of a dropout of the variable in each case is conditionally independent of the variable, which is obtained currently and expected to be obtained in the future, given the history of the obtained variable prior to that case.
+
+An example of MAR in its purest form would be to suppose there were two test scores, test_1 and test_2, in a dataset. These two tests are sequential and test_1 is done before test_2. Students who scored higher than a score of 85 would be excused from test_2. Supposing there were no dropouts in taking of students taking the test, the missingness of data in test_2 would be entirely due to the test_1 variable.
+
+However, in a large dataset, missingness on a variable may be significantly related to another observed variable, but its relatedness may be weak due to weak effect size such that missingness is not able to be predicted from that variable. Such is the threshold which differentiates MAR from MNAR; MAR still allows for prediction from other observed variables, albeit weak, but MNAR data are insufficiently correlated to its other observed variables in the dataset.
+
+We might tend to consider that MAR is not problematic because it does not produce statistical bias. However, the missingness that MAR data produces cannot be neglected.
+
+**Implications**
+
++ Imputation is advisable
+
++ Deleting observations not ideal, may lead to bias
+
+#### <span style="color:darkred">Missing not at random</span>
+
+If the characters of the data do not meet those of MCAR or MAR, then they fall into the category of missing not at random (MNAR). That is the missingness of the response is related to an unobserved value relevant to the assessment of interest.
+
+The cases of MNAR data are problematic. The only way to obtain an unbiased estimate of the parameters in such a case is to model the missing data. The model may then be incorporated into a more complex one for estimating the missing values.
+
+**Examples:**
+
++ A student skips a tutorial lesson because the student knows that the attendance would not be graded.
+
++ A researcher does data collection from a weighing scale.
+
++ Suppose that the weighing mechanism deteriorates over time, producing more missing data over time.
+
++ When heavier objects are subsequently measured, the distribution of its measurements will be shifted and unreliable.
+
+As such, this missingness of data is often difficult to diagnose and handle.
+
+**Implications:**
+
++ Data will be biased from deletion and imputation
+
++ Inference can be limited, proceed with caution.
+
+These three mechanism can be also grouped as **ignorable** and **nonignorable**,
+
+If the mechanism is ignorable we do not have to care about it and we can ignore it confidently before missing data analysis but if it is not we have to model the mechanism also as part of the parameter estimation. 
+
++ **Ignorable:** MCAR, MAR.
+
++ **Nonignorable:** MNAR.
+
+**Note that it is really hard to detect the type of missing mechnanism in the data. It is still arguing.**
+
+However, you can guess the missing mechanisim in your data by drawing the missing pattern. 
+
+![](https://users.metu.edu.tr/ozancan/missing.png)
+
+### <span style="color:darkred">**Handling with Missing Data in R**</span>
+
+![The best solution to handle missing data is to have none. R.A. Fisher](https://www.nkfu.com/wp-content/uploads/2020/05/Ronald-Fisher-1.jpg)
+
+
+There are several ways to define the missing observation in the data. The data owners may use large numbers like 9999999 or 0, or 'NaN' etc. In R, the missing observations are represented by `NA`. 
+
+Let's see how to identify the missing observations in R. There are awful lot of methods for detecting missing in the data. We examine a couple of them; base commands and `naniar` package.
+
+We divide this investigation into two parts; a univariate data and a multivariate data. 
+
+**Missing identification of a univariate data**
+
+```is.na()``` which returns a logical vector with ```TRUE``` in the element locations that contain missing values represented by NA is the main tool to identify missing values. This function can be applicable for vectors, lists, matrices, data frames and tibble objects. 
+
+```
+x<-c(1,9,0,5,NA,1,9,9,4)
+is.na(x)
+```
+
+```{r}
+x<-c(1,9,0,5,NA,1,9,9,4)
+is.na(x)
+```
+
+If you represent the number of missing observations in the object that you deal with, you can give the output of ```is.na()``` function as input to ```sum``` function.
+
+```
+sum(is.na(x))
+```
+
+
+```{r}
+sum(is.na(x))
+```
+
+If you would like to know the index(es) of the missing observation, you can use ```which``` function.
+
+```
+which(is.na(x))
+```
+
+```{r}
+which(is.na(x))
+```
+
+
+```{r,error=FALSE,warning=FALSE,message=F}
+library(naniar)
+```
+
+`are_na()` function works the same as `is.na`. 
+
+```
+are_na(x) #works same as is.na 
+```
+
+```{r}
+are_na(x) #works same as is.na 
+```
+
+`any_na()` function returns a boolean output and shows whether the object has missing observation or not. 
+
+```
+any_na(x) #shows you have missing observation or not
+```
+
+```{r}
+any_na(x) #shows you have missing observation or not
+```
+
+`n_miss()` function returns the total number of missing observation in your data. 
+
+```
+n_miss(x) #shows how many missing observation
+```
+
+```{r}
+n_miss(x) #shows how many missing observation
+```
+
+`prop_miss()` function returns the proportion of missing observation in your data. 
+
+```
+prop_miss(x)
+```
+
+```{r}
+prop_miss(x)
+```
+
+**Missing identification of a multivariate data**
+
+Consider `airquality` data.  
+
+```
+head(airquality)
+```
+
+```{r}
+head(airquality)
+```
+
+You can use `summary` command for counting the number of missing value in each column, if the all missing observations are recorded as `NA`. 
+
+```
+summary(airquality)
+```
+
+```{r}
+summary(airquality)
+```
+
+You can also create **shadow matrix** and **nabular data**. If the missing data can be represented as a binary matrix of “missing” or “not missing”, it is a shadow matrix. 
+
+```
+library(naniar)
+as_shadow(airquality)
+```
+
+```{r}
+library(naniar)
+as_shadow(airquality)
+```
+
+The tibble object shows `!NA` for available observations and  `NA` for missing observations. 
+
+If you merge your data and shadow matrix of your data, you obtain **nabular data**.
+
+```
+nabular_airquality<- bind_shadow(airquality)
+```
+
+```{r}
+nabular_airquality<- bind_shadow(airquality)
+```
+
+```
+nabular_airquality
+```
+
+```{r}
+nabular_airquality
+```
+
+We can add missing label to our data via `add_label_shadow()`
+
+```
+library(dplyr)
+nabular_airquality_label<-nabular_airquality%>%add_label_shadow()
+nabular_airquality_label %>% glimpse() #any_missing
+```
+
+```{r}
+library(dplyr)
+nabular_airquality_label<-nabular_airquality%>%add_label_shadow()
+nabular_airquality_label %>% glimpse() #any_missing
+```
+
+```
+table(nabular_airquality$Ozone_NA)
+```
+
+```{r}
+table(nabular_airquality$Ozone_NA)
+```
+
+Note that nabular data is a useful approach when you compare your data as missing and non-missing. 
+
+The act of visualizing can swiftly grasp a concept or notion, and the `naniar` package offers a welcoming set of graphics for visualizing missing data. Each of these graphics corresponds to a summary of the data, and utilizing them allows for faster thinking and decision-making.
+
+```
+vis_miss(airquality)
+```
+
+```{r}
+vis_miss(airquality)
+```
+
+`vis_miss` returns a kind of heat map where the each block corresponds whether the variable has missing or not.
+
+You can also draw a lollipop chart based on the number of missing observations in each variable. 
+
+
+```
+gg_miss_var(airquality)
+```
+
+```{r}
+gg_miss_var(airquality)
+```
+
+`gg_miss_var` function also enables the `facet`ting. 
+
+```
+gg_miss_var(airquality, facet = Month)
+```
+
+```{r}
+gg_miss_var(airquality, facet = Month)
+```
+
+As seen from the faceted missing plot, the most of the missing observations in Ozone variable occur in June. (6)
+
+`gg_miss_upset` helps you to visualize the missing pattern in the data.
+
+```
+gg_miss_upset(airquality)
+```
+
+```{r}
+gg_miss_upset(airquality)
+```
+
+The plot shows that Ozone and Solar.R have 2 missing points in common.
+
+
+`gg_miss_fct`depicts the % missing of each factor level for each variable. It is kind of heat map representation of faceted `gg_miss_var`.
+
+```
+gg_miss_fct(x = airquality, fct = Month)
+```
+
+```{r}
+gg_miss_fct(x = airquality, fct = Month)
+```
+
+
+So far, we have talked about how we can clarify whether the data or vector object has missing values or not.  Now, we can talk about the remedies for missingness.
+
+### <span style="color:darkred">**Performing Missing Treatment**</span>
+
+We can manage the missing in the data, if it is MCAR or MAR, by deletion or imputation. Note that deletion or removing the observation is not a good approach, in general. 
+
+**1.Deletion Methods**
+
+**1.1  Listwise Deletion**
+
+The most commonly easiest method used to handle with missing data is to remove the cases having the missing data and continue to analysis with the available observations. This method is known as listwise deletion or complete-case analysis. 
+
+The ```na.omit()``` function in R removes all cases with one or more missing data values in a dataset.
+
+Lets create a new small data frame,
+
+```
+
+Name <- c("John", "Tim", NA,"Carl","Phil","Clarie")
+Sex <- c("men", "men", "women","men",NA,"women")
+Age <- c(45, 53, NA,18,53,NA)
+df <- data.frame(Name, Sex, Age)
+df
+```
+
+```{r}
+
+Name <- c("John", "Tim", NA,"Carl","Phil","Clarie")
+Sex <- c("men", "men", "women","men",NA,"women")
+Age <- c(45, 53, NA,18,53,NA)
+df <- data.frame(Name, Sex, Age)
+df
+```
+
+As seen that we have NA observations on $3^{rd}$,$4^{th}$ and last rows of the data frame. 
+
+Apply listwise deletion.
+
+```
+na.omit(df)
+```
+
+```{r}
+na.omit(df)
+```
+
+Now we can see that the ```na.omit()``` function removes all cases (rows) which contain any NAs.
+
+The greatest advantage of this method is its convenience. However, this technique results in higher standard error for complete data, not data with missing obs., if the mechanism is MCAR.
+
+This method of dealing with missing data is possibly wasteful. If cases are removed in this way, one must be aware of the decreased ability to detect the true effect of the variables of interest.
+
+However, if the data are not MCAR, the complete-cases analysis can greatly influence estimates of mean, regression coefficients and correlations. Listwise deletion may cause nonsensical subsamples.
+
+Consider airquality dataset, again. The rows of the dataset represent 154 consecutive days. Any deletion of these rows will affect the continuity of time, which may affect any time series analyses done.
+
+Lets have a closer look at the dataset airquality
+
+Firstly, lets peek at the top 6 cases of the dataset.
+
+```
+library(datasets)
+head(airquality)
+```
+
+
+```{r,error=FALSE,warning=FALSE,message=F}
+library(datasets)
+head(airquality)
+```
+
+We can already observe some NA values within the dataset
+
+Next, we perform a simple `na.omit(airquality)` function to remove cases which have NAs
+
+```
+airquality_omit <- na.omit(airquality)
+```
+
+```{r}
+airquality_omit <- na.omit(airquality)
+```
+
+
+Lastly, lets look at the result:
+
+```
+head(airquality_omit)
+```
+
+```{r}
+head(airquality_omit)
+```
+
+Again, we see that any rows that contained any NAs in any variable were removed from the dataframe and see that day  5 and 6 are gone. It causes problem in the analysis. 
+
+
+**1.2 Pairwise Deletion**
+
+Available-case analysis or pairwise deletion is an attempt to fix the problem of data loss as a result of listwise deletion. In this methodology, the means and co(variances) of all observed data are calculated. For variables X and Y, both their means are based on all cases of their respective observed values. Summary statistics can then be put through a program for further regression analysis.
+
+![](https://pbs.twimg.com/media/FNV9qLZXwAckvQU.png)
+
+Lets demonstrate Pairwise Deletion using the airquality dataset.
+
+```
+head(airquality)
+```
+
+```{r}
+head(airquality)
+```
+
+We have already noticed that there are some NAs in the dataset. We will represent how to conduct basic statistical analysis under pairwise deletion in R.
+
+However, we need to know which variables has missing observations.
+
+```
+library(naniar)
+library(tidyverse)
+# Which variables are affected?
+airquality %>% is.na() %>% colSums()
+```
+
+```{r,warning=FALSE,message=FALSE,error=FALSE}
+library(naniar)
+library(tidyverse)
+# Which variables are affected?
+airquality %>% is.na() %>% colSums()
+```
+
+
+```
+data <- airquality[, c("Ozone", "Solar.R","Wind")]
+mu <- colMeans(data, na.rm = TRUE) #na.rm = TRUE
+cv <- cov(data, use = "pairwise")
+```
+
+```{r}
+data <- airquality[, c("Ozone", "Solar.R","Wind")]
+mu <- colMeans(data, na.rm = TRUE) #na.rm = TRUE
+cv <- cov(data, use = "pairwise")
+```
+
+
+```
+mu
+```
+
+```{r}
+mu
+```
+
+```
+cv
+```
+
+```{r}
+cv
+```
+
+Next, we use the ```lavaan()``` function from the ```lavaan``` package to take means and covariances as input instead of the lm() function, which does not.
+
+
+
+```
+library(lavaan)
+fit <- lavaan("Ozone ~ 1  + Solar.R + Wind
+              Ozone ~~ Ozone",  sample.mean = mu, sample.cov = cv,
+             sample.nobs = sum(complete.cases(data)))
+summary(fit)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+library(lavaan)
+fit <- lavaan("Ozone ~ 1  + Solar.R + Wind
+              Ozone ~~ Ozone",  sample.mean = mu, sample.cov = cv,
+             sample.nobs = sum(complete.cases(data)))
+summary(fit)
+```
+
+Also, see what happens if we conduct a same regression analysis with data applied listwise deletion.
+
+```
+fit1<-lm(Ozone~Solar.R+Wind,data=data)
+coef(fit1)
+```
+
+```{r}
+fit1<-lm(Ozone~Solar.R+Wind,data=data)
+coef(fit1)
+```
+
+
+This method of dealing with missing data is simple. With MCAR data, it still generates estimates of mean, correlations and covariances consistently.
+
+Despite its strengths, its applications are restricted to data that are MCAR. If data are not MCAR, estimates may be biased. 
+
+In addition, pairwise deletion only applies to numerical values that follow a normal distribution approximately. This may not apply in reality, where we have variables with many mixed data types.
+
+Therefore, the pairwise deletion method is best used to handle missing data where it follows an approximate normal distribution, where correlation between the observed variables are low and where the missing data is of MCAR in nature.
+
+**2. Imputation**
+
+**2.1 Mean/Median/Mode Imputation**
+
+Sometimes you need to use some quick solutions for missing in your data which is to replace missing observatons by central tendency measures, for numerical variables. You can use the average of observation if it has approximately symmetric distribution. Median imputation can be used when the variable has a skewed distribution. Mode is used for imputing categorical data.
+ 
+Mean imputation can be done in either manual coding or packages. Note that mean imputation is not a good method. 
+
+
+Consider airquality dataset, but the labeled nabular one. Suppose that we want to impute the mean of its missing values. Previously, we have already showed that Ozone and Solar.R have the missing observations.
+
+```
+nabular_airquality_label$Ozone[is.na(nabular_airquality_label$Ozone)] = round(mean(nabular_airquality_label$Ozone,na.rm=T))
+nabular_airquality_label$Solar.R[is.na(nabular_airquality_label$Solar.R)] = round(mean(nabular_airquality_label$Solar.R,na.rm=T))
+head(nabular_airquality_label)
+```
+
+```{r}
+nabular_airquality_label$Ozone[is.na(nabular_airquality_label$Ozone)] = round(mean(nabular_airquality_label$Ozone,na.rm=T))
+nabular_airquality_label$Solar.R[is.na(nabular_airquality_label$Solar.R)] = round(mean(nabular_airquality_label$Solar.R,na.rm=T))
+head(nabular_airquality_label)
+```
+
+Also, you can consider ```apply_imputation()``` function from ```missMethods``` package. 4
+
+```
+library(missMethods)
+data("airquality")
+airquality_imp_app <- apply_imputation(airquality, FUN = mean)
+head(airquality_imp_app)
+```
+
+```{r,warning=FALSE,message=FALSE,error=FALSE}
+library(missMethods)
+data("airquality")
+airquality_imp_app <- apply_imputation(airquality, FUN = mean)
+head(airquality_imp_app)
+```
+
+Or `impute_mean_all()` from `naniar`
+
+```
+airquality_impute_mean<- airquality %>%
+bind_shadow(only_miss = TRUE) %>%
+impute_mean_all() %>%
+add_label_shadow()
+airquality_impute_mean
+```
+
+```{r}
+airquality_impute_mean<- airquality %>%
+bind_shadow(only_miss = TRUE) %>%
+impute_mean_all() %>%
+add_label_shadow()
+airquality_impute_mean
+```
+
+
+
+**How to understand an imputation is good or bad?** 
+
+Draw a plot!
+
+```
+ggplot(nabular_airquality_label,
+aes(x = Ozone,
+y = Solar.R,
+color = any_missing)) +
+geom_point()
+```
+
+```{r}
+ggplot(nabular_airquality_label,
+aes(x = Ozone,
+y = Solar.R,
+color = any_missing)) +
+geom_point()
+```
+
+As you can see, the mean imputations for Ozone and Solar.R do not follow the association between these two variables. 
+
+**2.2 Regression Imputation**
+
+In regression imputation, we are using the other variables to produce a qualified imputations. To do so, we consider the column having missing observations as response variable and regress other on it using the observed data. Then, the missing data are then predicted using the fitted model.
+
+The cases of MNAR data are problematic. The only way to obtain an unbiased estimate of the parameters in such a case is to model the missing data. The model may then be incorporated into a more complex one for estimating the missing values.
+
+Lets try the regression imputation method on the airquality dataset(labeled nabular one).
+
+```{r,echo=FALSE}
+nabular_airquality<- bind_shadow(airquality)
+nabular_airquality_label<-nabular_airquality%>%add_label_shadow() 
+```
+
+
+We use `impute_lm()` command from `simputation` package.
+
+```
+airquality_imp_lm<- airquality %>% impute_lm(Solar.R ~ Wind + Temp + Month+ Day) %>%
+impute_lm(Ozone ~ Wind + Temp + Month+ Day)
+airquality_imp_lm
+```
+
+
+```{r,error=FALSE,warning=FALSE,message=F}
+library(simputation)
+airquality_imp_lm<- airquality %>% impute_lm(Solar.R ~ Wind + Temp + Month+ Day) %>%
+impute_lm(Ozone ~ Wind + Temp + Month+ Day)
+airquality_imp_lm
+```
+
+Add missing column for coloring the scatter plot drawn for checking imputation quality. 
+
+
+```
+airquality_imp_lm$any_missing<-nabular_airquality_label$any_missing
+```
+
+```{r}
+airquality_imp_lm$any_missing<-nabular_airquality_label$any_missing
+```
+
+```
+airquality_imp_lm$any_missing<-nabular_airquality_label$any_missing
+```
+
+```{r}
+airquality_imp_lm$any_missing<-nabular_airquality_label$any_missing
+```
+
+
+Draw the scatter plot again.
+
+```
+ggplot(airquality_imp_lm,
+aes(x = Ozone,y = Solar.R,
+color = any_missing)) +geom_point()
+```
+
+```{r}
+ggplot(airquality_imp_lm,
+aes(x = Ozone,y = Solar.R,
+color = any_missing)) +geom_point()
+```
+
+The scatter plot shows that linear regression imputation seems better compared to mean imputation. 
+
+Imputed values are based on estimates from the model. Nevertheless, the imputed values will vary less than the observed values from the actual dataset. Moreover, by imputing predicted values from a regression model, we also create an effect on the correlation. Correlations are biased upwards.
+
+However, while regression has its uses to produce very realistic imputations of data, one must always be careful of its use because it may artificially strengthen the effect of data. One may eventually introduce false positives and spurious relations.
+
+**2.3 Last Observation Carried Forward (LOCF)**
+
+LOCF is an imputation method for longitudinal data, which involves taking the previous observed value to replace missing values in the dataset. It is mostly used in confidence for cases where the data scientist or statistician knows what the missing data should be. Although this method of imputation is favoured by the US Food and Drug Administration for imputing clinical trial data, LOCF still needs to be put through a proper statistical analysis to segregate real and imputed data to look at its similarities. This method is especially useful on data to be plotted for a time series analysis.
+
+Lets go through a short demonstration of the LOCF method on the airquality dataset!
+
+To perform the LOCF imputation method, we simply run the ```fill()``` function from the tidyr package on the dataset and the variable with the missing data:
+
+```
+library(tidyr)
+airquality2 <- fill(airquality, Ozone)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+library(tidyr)
+airquality2 <- fill(airquality, Ozone)
+```
+
+
+
+**Exercise 2**
+
+Please click [here](http://users.metu.edu.tr/ozancan/r6exercise2.zip) for your
+second exercise.
+
+
+
+**Multiple Imputation Analysis** 
+
+Multiple Imputation Analysis (MIA) is a way to deal with missing data. It fills in the missing observations by generating multiple plausible values for each missing data point. This creates several versions of the dataset with slightly different missing data entries, but identical non-missing data. It is generally not recommended to simply discard partially observed data units, as this can cause bias and poor predictions.
+
+To use MIA effectively, it's important to know how much data is missing and how it is distributed in the dataset. Data is considered Missing Completely at Random (MCAR) if the chance of missing data is not related to the item's value or any other variables in the analysis. For example, if participants don't answer a question because they find it too difficult or if only participants in class B were not given the question, the data is not MCAR.
+
+Data is considered Missing at Random (MAR) when the distribution of missing data depends only on the observed data.
+
+The process is done in several ways. In this part, we will cover the following packages.
+
+```
+library(missForest)
+library(Hmisc)
+library(mice)
+library(VIM)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+library(missForest)
+library(Hmisc)
+library(mice)
+library(VIM)
+```
+
+**Hmisc**
+
+Hmisc is a multiple purpose package useful for data analysis, high  level graphics, imputing missing values, advanced table making, model fitting & diagnostics (linear regression, logistic regression & cox regression) etc. Amidst, the wide range of functions contained in this package, it offers 2 powerful functions for imputing missing values. These are `impute()` and `aregImpute()`. Though, it also has `transcan()` function, but `aregImpute()` is better to use.
+
+`impute()` function simply imputes missing value using user defined statistical method (mean, max, median). Its default is median. On the other hand, `aregImpute()` allows mean imputation using additive regression, bootstrapping, and predictive mean matching.
+
+In bootstrapping, different bootstrap resamples are used for each of multiple imputations. Then, a flexible additive model (non parametric regression method) is fitted on samples taken with replacements from original data and missing values (acts as dependent variable) are predicted using non-missing values (independent variable).
+
+Then, it uses predictive mean matching (default) to impute missing values. Predictive mean matching works well for continuous and categorical (binary and multi.level) without the need for computing residuals and maximum likelihood fit.
+
+Here are some important highlights of this package:
+
+It assumes linearity in the variables being predicted.
+Fishers optimum scoring method is used for predicting categorical variables.
+
+```
+data("iris") #load the data
+library(Hmisc)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+data("iris") #load the data
+library(Hmisc)
+```
+
+
+```
+#seed missing values ( 10% )
+library(missForest)
+set.seed(1)
+iris.mis <- prodNA(iris, noNA = 0.1) 
+head(iris.mis,10)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+#seed missing values ( 10% )
+library(missForest)
+set.seed(1)
+iris.mis <- prodNA(iris, noNA = 0.1) 
+head(iris.mis,10)
+```
+
+```
+# impute with mean value
+iris.mis$imputed_sepal.length <- with(iris.mis, impute(Sepal.Length, mean))
+head(iris.mis,10)
+#impute(iris.mis$Sepal.Length,mean)
+```
+
+```{r}
+# impute with mean value
+iris.mis$imputed_sepal.length <- with(iris.mis, impute(Sepal.Length, mean))
+head(iris.mis,10)
+#impute(iris.mis$Sepal.Length,mean)
+```
+
+```
+# impute with random value
+iris.mis$imputed_sepal.length2 <- with(iris.mis, impute(Sepal.Length, 'random'))
+head(iris.mis,10)
+#impute(iris.mis$Sepal.Length,random)
+#similarly you can use min, max, median to impute missing value
+
+```
+
+```{r}
+# impute with random value
+iris.mis$imputed_sepal.length2 <- with(iris.mis, impute(Sepal.Length, 'random'))
+head(iris.mis,10)
+#impute(iris.mis$Sepal.Length,random)
+#similarly you can use min, max, median to impute missing value
+
+```
+
+```
+#using argImpute
+impute_arg <- aregImpute(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width +
+Species, data = iris.mis, n.impute = 5)
+```
+
+```{r}
+#using argImpute
+impute_arg <- aregImpute(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width +
+Species, data = iris.mis, n.impute = 5)
+```
+
+`argImpute()` automatically identifies the variable type and treats them accordingly.
+
+```
+impute_arg
+```
+
+```{r}
+impute_arg
+```
+
+The output shows $R^2$ values for predicted missing values. Higher the value, better are the values predicted. You can also check imputed values using the following command.
+
+```
+#check imputed variable Sepal.Length
+impute_arg$imputed$Sepal.Length
+```
+
+```{r}
+#check imputed variable Sepal.Length
+impute_arg$imputed$Sepal.Length
+```
+
+**mice**
+
+Mice stands for Multivariate Imputation via Chained Equations.
+
+Creates multiple imputations as compared to a single imputation (such as mean) takes care of uncertainty in missing values.
+
+It assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. .It imputes data on a variable by variable basis by specifying an imputation model per variable.
+
+```
+data("iris") #load the data
+library(mice)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+data("iris") #load the data
+library(mice)
+```
+
+```
+#seed missing values ( 10% )
+set.seed(1)
+library(missForest)
+iris.mis <- prodNA(iris, noNA = 0.1)
+```
+
+```{r,error=FALSE,warning=FALSE,message=F}
+#seed missing values ( 10% )
+set.seed(1)
+library(missForest)
+iris.mis <- prodNA(iris, noNA = 0.1)
+```
+
+Mice package has a function known as `md.pattern()`. It returns a tabular form of missing value present in each variable in a data set.
+
+```
+md.pattern(iris.mis)
+```
+
+```{r}
+md.pattern(iris.mis)
+```
+
+The plot shows that there are total 75 missing observations. Also, it shows the number of missing observation that each variable has. For example, Sepal.Length has 10 missing observations. However, this missing plot is not clear. Let's draw the better one. 
+
+```
+library(VIM)
+mice_plot <- aggr(iris.mis, col=c('darkred','orange'),
+                    numbers=TRUE, sortVars=TRUE,
+                    labels=names(iris.mis), cex.axis=.7,
+                    gap=3, ylab=c("Missing data","Pattern"))
+```
+
+```{r,warning=F,message=F,error=F}
+library(VIM)
+mice_plot <- aggr(iris.mis, col=c('darkred','orange'),
+                    numbers=TRUE, sortVars=TRUE,
+                    labels=names(iris.mis), cex.axis=.7,
+                    gap=3, ylab=c("Missing data","Pattern"))
+```
+
+Quick points from above graphs
+
+1. 59% of rows in dataset with no missing values.
+2. Species have more than 12% missing values and so on.
+3. Bar plot clearly depicts the influence of missing values in the variables.
+
+
+Using `marginplot` to visualize missing data for the Sepal.Width and Sepal.Length variables:
+
+```
+marginplot(iris.mis[c(1,2)])
+```
+
+```{r}
+marginplot(iris.mis[c(1,2)])
+```
+
+
+The data area holds many blue points for which both Sepal.Width and Sepal.Length  were observed. 11 red dots in the left margin correspond to the records for which Sepal Width is observed and Sepal.Length is missing.  Likewise, the bottom margin contain 8 red points with observed Sepal.Lenght and missing Sepal.Width. The red dot at the intersection of the bottom and left margin indicates that there are records for which both Sepal.Width and Sepal.Length  are missing. The three numbers at the lower left corner indicate the number of incomplete records for various combinations. There are 11 records in which Sepal.Width is missing, 15 records in which Sepal.Length is missing, and 1 records in which both are missing.
+
+
+Now lets impute missing values.
+
+```
+imputed_Data <- mice(iris.mis, m=1, maxit = 1, method = 'pmm', seed = 500)
+#it is better if you increase your iteration number
+summary(imputed_Data)
+```
+
+
+```{r}
+imputed_Data <- mice(iris.mis, m=1, maxit = 1, method = 'pmm', seed = 500)
+#it is better if you increase your iteration number
+summary(imputed_Data)
+```
+
+Here is explanation of parameters used.
+1. m  Refers to 5 imputed data sets
+2. maxit  Refers to no. of iterations taken to impute missing values
+3. method  Refers to method used in imputation. we used predictive mean matching
+
+
+Check the imputed values.
+
+```
+imputed_Data$imp$Sepal.Length
+```
+
+```{r}
+imputed_Data$imp$Sepal.Length
+```
+
+```
+complete_data<-mice::complete(imputed_Data,1)
+```
+
+```{r}
+complete_data<-mice::complete(imputed_Data,1)
+```
+
+You can compare your imputation using a visual tools like density plot for continuous variable. In doing so, you can bind your data with missing and without missing. Then, you can draw a density plot with multiple line. 
+
+```
+sepal_length_withNA<- iris.mis$Sepal.Length
+sepal_length_withoutNA<- complete_data$Sepal.Length
+value<-c(sepal_length_withNA,sepal_length_withoutNA)
+label <-c(rep("WithNA",length(sepal_length_withNA)),rep("WithoutNA",length(sepal_length_withoutNA)))
+df_for_plot<-data.frame(value,label)
+```
+
+
+```{r}
+sepal_length_withNA<- iris.mis$Sepal.Length
+sepal_length_withoutNA<- complete_data$Sepal.Length
+value<-c(sepal_length_withNA,sepal_length_withoutNA)
+label <-c(rep("WithNA",length(sepal_length_withNA)),rep("WithoutNA",length(sepal_length_withoutNA)))
+df_for_plot<-data.frame(value,label)
+```
+
+
+```
+ggplot(df_for_plot,aes(x=value,colour= label))+geom_density()
+```
+
+```{r}
+ggplot(df_for_plot,aes(x=value,colour= label))+geom_density()
+```
+
+As seen from the density plot, the imputation for Sepal.Length does not cause a considerable change in the distribution of the variable. 
+
+If you do not produce your plot with `ggplot2`, you can use either `densityplot`.
+
+```
+densityplot(imputed_Data)
+```
+
+
+```{r}
+densityplot(imputed_Data)
+```
+
+**missForest**
+
+`missForest()` function is used to impute missing values particularly in the case of mixed-type data. It can be used to impute continuous and/or categorical data including complex interactions and nonlinear relations.
+
+It is an implementation of random forest algorithm (a non parametric imputation method applicable to various variable types).
+
+It builds a random forest model for each variable. Then it uses the model to predict missing values in the variable with the help of observed values.
+
+Note:Tuning parameters are
+
++ mtry refers to the number of variables being randomly sampled at each split.
+
++ ntree refers to number of trees to grow in the forest.
+
+You can prefer to use default argument or you can decide the argument values
+
+Impute missing values, using all parameters as default values
+
+```
+iris.imp <- missForest(iris.mis)
+```
+
+```{r}
+iris.imp <- missForest(iris.mis)
+```
+
+Check imputed values by data set
+
+```
+iris.imp$ximp
+```
+
+```{r}
+iris.imp$ximp
+```
+
+To check for imputation error, you can use different metrics depending on the type of data you are working with.
+
+```
+iris.imp$OOBerror
+```
+
+
+```{r}
+iris.imp$OOBerror
+```
+
+For continuous data, the normalized mean squared error (NRMSE) is a commonly used metric to represent the error derived from imputing missing values. It measures the average of the squared differences between the actual data and the imputed data, normalized by the range of the actual data. A lower NRMSE value indicates better imputation accuracy.
+
+For categorical data, the proportion of falsely classified (PFC) is a metric that can be used to represent the error derived from imputing missing values. It measures the proportion of observations that were misclassified in the imputed dataset compared to the actual dataset. A lower PFC value indicates better imputation accuracy.
+
+To compare the actual data with the imputed dataset, you can calculate these metrics for both datasets and compare the results.
+
+
+```
+iris.err <- mixError(iris.imp$ximp, iris.mis, iris)
+iris.err
+```
+
+```{r}
+iris.err <- mixError(iris.imp$ximp, iris.mis, iris)
+iris.err
+```
+
+**References:**
+
++ https://medium.com/analytics-vidhya/a-guide-to-data-transformation-9e5fa9ae1ca3
++ https://rpubs.com/auroratsai/344055
+
+
+
