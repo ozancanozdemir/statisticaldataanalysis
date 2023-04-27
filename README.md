@@ -83,6 +83,18 @@ install.packages(c("interaction"))
 
 + Interaction
 
+### Recitation 6 
+
+Install the following packages before running the tutorial.
+
+```
+install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan",
+"naniar","datasets","rcompanion","bestNormalize","MASS","gridExtra")
+```
+
++ Transformation 
+
++ Handling with missing data in R
 
 
 
