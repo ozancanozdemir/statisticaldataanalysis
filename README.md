@@ -96,6 +96,16 @@ install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan
 
 + Handling with missing data in R
 
+### Recitation 7
 
+Install the following packages before running the tutorial.
+
+```
+install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
+```
+
++ Model Complexity and Overfitting
+
++ Dimension Reduction
 
 
