@@ -1,0 +1,969 @@
+---
+title: "STAT 412-Recitation 7"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## [ **Reminder** ]{style="color:darkred"}
+
+Last week, we talk about some issues that may need or occur in the data analysis
+
++ Transformation
+
++ Missing
+
+Today, we are talk about other important concepts for statistical modelling. 
+
+
+Install the packages using the code line given below.
+
+
+[Today's lecture song.](https://www.youtube.com/watch?v=yhjEhPVw-n8&ab_channel=Do%C4%9Fa%C4%B0%C3%A7in%C3%87al-Topic)
+
+
+```
+install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
+```
+
+## <span style="color:darkred">**Model Complexity and Overfitting**</span>
+
+The standard linear regression approach may fail if the underlying association among your predictors and response is non-linear such as polynomial. If so, creating new predictors by adding the polynomial powers of the predictors (i.e inclusion of $x^3$ to the model) allows us to capture the non-linear association between the variables in the data. Thus, even simple models like linear regression can achieve higher accuracy by incorporating non-linear relationship.  
+
+![Standard Linear Regression Source: https://towardsdatascience.com/too-many-terms-ruins-the-regression-7cf533a0c612?gi=4113508cff67](https://miro.medium.com/v2/resize:fit:720/format:webp/1*oLe8p_Qb6BU-TFtR_2lxTA.png)
+![Polynomial Linear Regression with $Age^2 Source: https://towardsdatascience.com/too-many-terms-ruins-the-regression-7cf533a0c612?gi=4113508cff67](https://miro.medium.com/v2/resize:fit:720/format:webp/1*odB3NAhbFIVzDrzIH9iKhw.png)
+
+
+However, the adding the polynomial terms to your model improves the complexity of the model so that the model can capture not only the underlying association in the data but also the noise in the data. Thence, inappropriate usage of the polynomial terms increasing the model complexity can lead to a phenomenon known as overfitting the data, which is that the model may perform well on a training dataset but not as well on a testing dataset. **In fact, we wouldn’t expect the model to perform well on any dataset that it was not trained on.**
+
+![The effect of overfitting on model error Source: CS109A Harvard](https://users.metu.edu.tr/ozancan/of.png)
+
+This conclusion arises **the question of determining the complexity of the model.** **Model selection** is the application of a principled method to determine the complexity of the model, e.g. choosing a subset of predictors, choosing the degree of the polynomial model etc. 
+
+A strong motivation for performing model selection is **to avoid overfitting**, which we saw can happen when: 
+
++ there are too many predictors: 
++ the feature space has high dimensionality 
++ the polynomial degree is too high 
++ too many cross terms are considered 
++ the coefficients values are too extreme 
+
+
+## <span style="color:darkred">**Model Selection and Cross Validation**</span>
+
+
+In statistics, model selection based on Cross Validation plays a vital role. The prediction problem is about predicting a response (either continuous or discrete) using a set of predictors (some of them may be continuous, others may be discrete). The solution to such a problem is to build a prediction model on a training sample. This process presents two challenges:
+
+**1. Model Selection**
+
+We often have many candidate models (e.g. regression, tree, neural net, SVM, etc). Each model may have many sub-models specified by hyper-parameters that need to be tuned for optimal prediction performance (e.g. variable selection, shrinkage/penalty factor, smoothing/complexity parameter, Bayesian hyper priors, etc.). In order to choose the (approximate) best model, we need to estimate objectively the performance of different models and their sub models.
+
+**2.Model Assessment**
+
+Once we decide on the best model, we want to estimate its test error by making a prediction on a new sample, which provides an objective judgment on the performance of this final model. Besides the test error, other model assessment tools such as ROC Curve or Calibration Plot may be useful.
+To estimate the test errors of different models and to assess the final model objectively, we shall ideally split the dataset into three parts.
+
++ **Training Sample:** It is used for model estimation by estimating the model parameters. It can be 50% of the data.
+
++ **Validation Sample:** It is used for model selection by estimating the test error of each candidate model. It can be 25% of the data.
+
++ **Test Sample:** It is used for model assessment by estimating the test error of the final chosen model. It can be the remaining 25% of the data.
+
+If **the data is insufficient to be split into three parts**, we can drop the **Test Sample** if we can accept (slightly) biased model assessments. In addition, we can drop the Validation Sample and use CV (Cross Validation) on the Training Sample to estimate the test errors to do the model selection.
+
+**Cross Validation**
+
+Cross Validation refers to a set of methods for measuring the performance of a given predictive model on new test data sets.
+
+The basic idea, behind cross validation techniques, consists of dividing the data into two sets:
+
++ The training set, used to train (i.e. build) the model;
+
++ The testing set (or validation set), used to test (i.e. validate) the model by estimating the prediction error.
+
+cross validation is also known as a resampling method because it involves fitting the same statistical method multiple times using different subsets of the data. There are several cross validation methods in the literature. Some of them are listed below. These are also the methods that we cover in this class. 
+
++ Validation set approach (or data split)
+
++ Leave One Out Cross Validation (LOOCV)
+
++ k fold Cross Validation
+
++ Repeated k fold Cross Validation
+
+Each of these methods has their advantages and drawbacks. Use the method that best suits your problem. Generally, **the (repeated) k fold cross validation** is recommended.
+
+Briefly, cross validation algorithms can be summarized as follow:
+
++ Reserve a small sample of the data set
+
++ Build (or train) the model using the remaining part of the data set
+
++ Test the effectiveness of the model on the the reserved sample of the data set. If the model works well on the test data set, then its good.
+
+### <span style="color:darkred"> **Application** </span>
+
+In this example, we will use ```tidyverse``` package for easy data manipulation and visualizaton, and ```caret``` for easily computing cross validation methods.
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+library(tidyverse)
+library(caret)
+```
+
+
+Please call `swiss` dataset from `dataset` package in R. The necessary information about the dataset is given below.
+
+A data frame with 47 observations on 6 variables, each of which is in percent, i.e., in [0, 100].
+
+**Fertility**	Ig, common standardized fertility measure
+
+**Agriculture**	% of males involved in agriculture as occupation
+
+**Examination**	% draftees receiving highest mark on army examination
+
+**Education**	% education beyond primary school for draftees.
+
+**Catholic**	% catholic (as opposed to protestant).
+
+**Infant.Mortality**	live births who live less than 1 year.
+
+```{r}
+library(datasets)
+data("swiss")
+head(swiss)
+```
+
+**New Function**
+
+```sample_n``` : select random rows from a table. Alternative to ```head()``` function.
+
+```{r}
+# Inspect the data
+sample_n(swiss, 3)
+```
+
+
+**1. The Validation set Approach**
+
+The validation set approach consists of randomly splitting the data into two sets: one set is used to train the model and the remaining other set is used to test the model.
+
+The process works as follow:
+
+Build (train) the model on the training data set.
+
+Apply the model to the test data set to predict the outcome of new unseen observations.
+
+Quantify the prediction error as the mean squared difference between the observed and the predicted outcome values..
+
+
+The example below splits the swiss data set so that 80% is used for training a linear regression model and 20% is used to evaluate the model performance. Generally, datasets are splitted as 80%  20% or 70%  30%. It is up to you. 
+
+```{r}
+# Split the data into training and test set
+set.seed(123)
+training.samples <- swiss$Fertility %>% createDataPartition(p = 0.8, list = FALSE) #createDataPartition helps you define train set index 
+train.data  <- swiss[training.samples, ]
+test.data <- swiss[-training.samples, ]
+```
+
+Then, built your model on **train data.**
+
+```{r}
+# Build the model
+model <- lm(Fertility ~., data = train.data)
+summary(model)
+```
+
+**Make an interpretation!**
+
+After building a model,  make a prediction for the unseen observations, i.e observations in the test data using ```predict()``` function.
+
+```{r}
+predictions <- model %>% predict(test.data)
+predictions
+```
+
+After building a model, we are interested in determining the accuracy of this model on predicting the outcome for new unseen observations not used to build the model. Put in other words, we want to estimate the prediction error.
+
+To do so, the basic strategy is to:
+
++ Build the model on a training data set
+
++ Apply the model on a new test data set to make predictions
+
++ Compute the prediction errors
+
+In this lab, we described several statistical metrics for quantifying the overall quality of regression models. These include:
+
++ **R-squared, $R^2$**, representing the squared correlation between the observed outcome values and the predicted values by the model. The higher the adjusted $R^2$, the better the model. However, this measure is not a good choice to understand the predictive power of the model. 
+
++ **Root Mean Squared Error (RMSE)**, which measures the average prediction error made by the model in predicting the outcome for an observation. That is, the average difference between the observed known outcome values and the values predicted by the model. The lower the RMSE, the better the model.
+
++ **Mean Absolute Error (MAE)**, an alternative to the RMSE that is less sensitive to outliers. It corresponds to the average absolute difference between observed and predicted outcomes. The lower the MAE indicates the better the model.
+
+In classification setting, the prediction error rate is estimated as the proportion of misclassified observations.
+
+$R^2$, RMSE and MAE are used to measure the regression model performance during cross validation.
+
+
+```{r}
+# Make predictions and compute the R2, RMSE and MAE
+data.frame( R2 = R2(predictions, test.data$Fertility),
+            RMSE = RMSE(predictions, test.data$Fertility),
+            MAE = MAE(predictions, test.data$Fertility))
+```
+
+**Do not forget!** When comparing two models, the one that produces the lowest test sample RMSE is the preferred model. It should also have the highest $R^2$.
+
+the RMSE and the MAE are measured in the same scale as the outcome variable. Dividing the RMSE by the average value of the outcome variable will give you the prediction error rate, which should be as small as possible:
+
+```{r}
+RMSE(predictions, test.data$Fertility)/mean(test.data$Fertility)
+```
+
+Note that, the validation set method is only useful when you have a large data set that can be partitioned. A disadvantage is that we build a model on a fraction of the data set only, possibly leaving out some interesting information about data, leading to higher bias. Therefore, the test error rate can be highly variable, depending on which observations are included in the training set and which observations are included in the validation set.
+
+**Leave one out cross validation  (LOOCV)**
+
+This method works as follow:
+
++ Leave out one data point and build the model on the rest of the data set
+
++ Test the model against the data point that is left out at step 1 and record the test error associated with the prediction
+
++ Repeat the process for all data points
+
++ Compute the overall prediction error by taking the average of all these test error estimates recorded at step 2.
+
+```{r}
+# Define training control using the following function from caret package
+train.control <- trainControl(method = "LOOCV")
+#Control the computational nuances of the train function
+```
+
+Now, we train the model using ```train``` function. 
+
+```{r}
+# Train the model
+model <- train(Fertility ~., data = swiss, method = "lm", trControl = train.control)
+summary(model)
+```
+
+**Make an interpretation!**
+
+**Compare them with the previous one!**
+
+```{r}
+# Summarize the results
+print(model)
+```
+
+The advantage of the LOOCV method is that we make use all data points reducing potential bias.
+
+However, the process is repeated as many times as there are data points, resulting to a higher execution time when n is extremely large.
+
+Additionally, we test the model performance against one data point at each iteration. This might result to higher variation in the prediction error, if some data points are outliers. So, we need a good ratio of testing data points, a solution provided by the k fold cross validation method.
+
+**k fold cross validation** 
+
+The k fold cross validation method evaluates the model performance on different subset of the training data and then calculate the average prediction error rate. The algorithm is as follow:
+
++ Randomly split the data set into k-subsets (or k fold) (for example 5 subsets)
+
++ Reserve one subset and train the model on all other subsets
+
++ Test the model on the reserved subset and record the prediction error
+
++ Repeat this process until each of the k subsets has served as the test set.
+
++ Compute the average of the k recorded errors. This is called the cross validation error serving as the performance metric for the model.
+
+k fold cross validation (CV) is a **robust method** for estimating the accuracy of a model.
+
+The most obvious advantage of k fold CV compared to LOOCV is computational. A less obvious but potentially more important advantage of k fold CV is that it often gives more accurate estimates of the test error rate than does LOOCV (James et al. 2014).
+
+**Typical question, is how to choose right value of k?**
+
+Lower value of K is more biased and hence undesirable. On the other hand, higher value of K is less biased, but can suffer from large variability. It is not hard to see that a smaller value of k (say k = 2) always takes us towards validation set approach, whereas a higher value of k (say k = number of data points) leads us to LOOCV approach.
+
+In practice, one typically performs k fold cross validation using k = 5 or k = 10, as these values have been shown empirically to yield test error rate estimates that suffer neither from excessively high bias nor from very high variance.
+
+The following example uses 10-fold cross validation to estimate the prediction error. Make sure to set seed for reproducibility.
+
+
+```{r}
+# Define training control
+set.seed(123) 
+train.control <- trainControl(method = "cv", number = 10)
+```
+
+Now, we train the model using ```train``` function. 
+
+```{r}
+# Train the model
+model <- train(Fertility ~., data = swiss, method = "lm",
+               trControl = train.control)
+summary(model)
+```
+
+**Make an interpretation!**
+
+**Compare them with the previous one!**
+
+```{r}
+# Summarize the results
+print(model)
+```
+
+
+**Repeated k-fold cross validation**
+
+The process of splitting the data into k folds can be repeated a number of times, this is called repeated k fold cross validation.
+
+The final model error is taken as the mean error from the number of repeats.
+
+The following example uses 10-fold cross validation with 3 repeats:
+
+
+```{r}
+# Define training control
+set.seed(123)
+train.control <- trainControl(method = "repeatedcv", 
+                              number = 10, repeats = 10)
+#repeats arrange number of repetition
+```
+
+
+```{r}
+# Train the model
+model <- train(Fertility ~., data = swiss, method = "lm",
+               trControl = train.control)
+summary(model)
+```
+
+```{r}
+# Summarize the results
+print(model)
+
+```
+
+In this part, we described 4 different methods for assessing the performance of a model on unseen test data. These methods include: validation set approach, leave-one-out cross validation, k fold cross validation and repeated k fold cross validation. 
+
+In our example, the best performance was given by Validation set, and it is followed by repeated k fold, k fold and LOOCV. 
+
+We generally recommend the (repeated) k fold cross validation to estimate the prediction error rate. It can be used in regression and classification settings. However, the approach depends on your dataset and purpose. 
+
+#### <span style="color:darkred">**Exercise 1**</span>
+
+
+Please click [here](http://users.metu.edu.tr/ozancan/exe2.zip) to download your second exercise. 
+
+## <span style="color:darkred">**Dimension Reduction**</span>
+
+One of the most commonly faced problems while dealing with data analytics problem such as recommendation engines, text analytics is high-dimensional and sparse data.
+At many times, we face a situation where we have a large set of features and fewer data points, or we have data with very high feature vectors.
+In such scenarios, fitting a model to the dataset, results in lower predictive power of the model.
+This scenario is often termed as the curse of dimensionality.
+In general, adding more data points or decreasing the feature space, also known as dimensionality reduction, often reduces the effects of the curse of dimensionality.
+
+**What is dimension reduction?**
+
+Dimension reduction is the process of reducing the number of variables (also sometimes referred to as features or of course dimensions) to a set of values of variables called principal variables.
+
+**Why we need dimension reduction?**
+
+Dimension reduction via feature extraction is an extremely powerful statistical tool and thus is frequently applied.
+Some of the main uses of dimension reduction are:
+
+-   simplification
+
+-   denoising
+
+-   variable selection
+
+-   visualization
+
+In the literature, there are several techniques for this purpose.
+One of these methods are Principal Component Analysis, Random Forest, Independent Component Analysis [ICA], Low Variance Filter, etc.
+
+### **Principal Component Analysis**
+
+Principal component analysis (PCA) is a statistical procedure that uses an rotation to convert a set of observations of possibly correlated variables (entities each of which takes on various numerical values) into a set of values of linearly uncorrelated variables called principal components.
+The theory of this concept depends on high level maths, statistics and linear algebra.
+As written in the definition, this technique produces new variables, being uncorrelated among each other, by applying some linear transformations on the correlated variables which are available in the data.
+These new predictors are called **principal component**.
+
+This technique is efficient when the data has correlated numerical variables because high correlation in the data indicates the redundant information.
+
+#### **Pros and Cons**
+
+**Strength**
+
++ can be efficiently applied to large data sets
+
++ has many extensions that deal with special situation such as sparse PCA when data has many missing values, kernel PCA can provide more robust solutions
+
++ preserves global structures
+
+**Weaknesses**
+
++ may suffer from scale problems, i.e. when one variable dominates the variance simply because it is in a higher scale (for example if one variable is measured in mm instead of km); some of these scale problems can simply be dealt with by centering and scaling
+
++ suffers from crowding in the presence of large numbers of observations, i.e. points do not form clusters but instead occupy the entire plotting space
+
++ is susceptible to big outliers
+
++ makes the interpretation harder.
+
+
+PCA can be used for several purposes and one are that used is regression which is called principal component regression.
+
+### **What is Principal Component Regression and why is it used?**
+
+Principal components regression was first suggested by Kendall (1957).
+Its premise is to use the results of Principal Component Analysis performed on regressors and use the output as new regressors. That way the independent variables are orthogonal and ensure the computations are easier and more stable (Jolliffe (1982)).
+
+PCA in linear regression has been used to serve two basic goals. 
+
+The first one is performed on datasets where the number of predictor variables is too high. It has been a method of dimensionality reduction along with Partial Least Squares Regression. Alternatively for reducing dimensions, there are methods like ridge regression, Lasso and remaining regression models using penalties (H. Lee, Park, and Lee (2015)).
+
+The second goal of PCR is to get rid of collinearities between variables.
+Because each subsequent principal component is orthogonal, PCR has been used in order to prevent errors cased by dependencies between assumed independent variables in regression (Hadi and Ling (1998)).
+
+When it comes to choosing the number of appropriate principal components, the researchers are not unanimous.
+One approach is, to choose the best principal components as if they were regular variables. Another, states that it is best to choose the first determined number of PCs that explain the highest variance (Hadi and Ling (1998)).
+
+This leads to rejecting some principal components that explain low variance.
+This approach however, has been criticized since those rejected PCs can actually be the ones that correlate with dependent variable (H. Lee, Park, and Lee (2015)).
+
+**The advantages of PCR have been best summarised by Ali S. Hadi and Robert F. Ling:**
+
+Because the PCs, $W_1,...,W_m$ are orthogonal, the problem of multicollinearity disappears completely, and no matter how many PCs are actually used, the regression equation will always contain all of the variables in X (because each PC is a linear combination of the variabes in X formed by an eigenvector of $Z^{T}Z$).
+
+PCR presumably improves the numerical accuracy of the regression estimates because of the use of orthogonal PCs.
+(Hadi and Ling (1998)
+
+#### **Steps for PCA**
+
++   Standardize your dataset.
+
++   Calculate the covariance matrix.
+
++   Find the eigenvector and eigenvalues of the covariance matrix. An eigenvector is a direction and an eigenvalue is a number that indicates how much variance is in the data in that direction.
+
++   Sort the eigenvectors according to their eigenvalues in decreasing order.
+
++  Choose first k eigenvectors and that will be the new k dimensions.
+
++   Transform the original n dimensional data points into k dimensions.
+
+#### **Assumptions for PCA** 
+
+In doing so, you need to take the assumptions of PCA into consideration.
+
++ All variables must be on an interval or ratio level of measurement for PCA.
+
++ PCA assumes a correlation between features in the dataset.
+
++ PCA is sensitive to the scale of the features, requiring normalization or standardization.
+
++ PCA is not robust against outliers, which should be addressed before using PCA.
+
++ PCA assumes a linear relationship between features.
+
++ Technical implementations of PCA usually assume there are no missing values, which must be handled appropriately.
+
+
+### <span style="color:darkred"> **Application** </span>
+
+
+In this part, we will look into the different ways for conducting principal component regression. 
+
+The first scenario involves creating components and creating the regression model. 
+
+Please load ```housing.csv```.
+
+The data contains information from the 1990 California census taken from [Kaggle](kaggle.com/datasets/camnugent/california-housing-prices?resource=download)
+
+The details of the variables in the data are given below. 
+
++ longitude: A measure of how far west a house is; a higher value is farther west
+
++ latitude: A measure of how far north a house is; a higher value is farther north
+
++ housingMedianAge: Median age of a house within a block; a lower number is a newer building
+
++ totalRooms: Total number of rooms within a block
+
++ totalBedrooms: Total number of bedrooms within a block
+
++ population: Total number of people residing within a block
+
++ households: Total number of households, a group of people residing within a home unit, for a block
+
++ medianIncome: Median income for households within a block of houses (measured in tens of thousands of US Dollars)
+
++ medianHouseValue: Median house value for households within a block (measured in US Dollars)
+
++ oceanProximity: Location of the house w.r.t ocean/sea
+
+The dependent variable in our analysis is medianHouseValue.
+
+
+```{r,warning=FALSE,message=FALSE,error=FALSE}
+housing<-read.csv("https://ozancanozdemir.github.io/housing.csv")
+knitr::kable(head(housing))
+```
+
+As you see, the variables except `ocean_proximity` are numerical. To proceed without problem, drop this variable.
+
+```{r}
+library(dplyr)
+housing <- housing%>%select(-ocean_proximity)
+knitr::kable(head(housing))
+```
+
+If you are interested with a data set including both numerical and categorical variables, you should extract the numeric ones for PCA or apply a transformation on categorical variables turn into numeric ones. 
+
+Check the structure of the data 
+
+```{r}
+dplyr::glimpse(housing)
+```
+
+Assess the missingness pattern in the data
+
+```{r}
+naniar::any_na(housing)
+```
+
+
+The data has missing value that violates the no missing assumption.
+
+```{r}
+sum(naniar::n_miss_row(housing))
+```
+
+We have 207 rows containing at least one missing observation. Let's drop the missing values for practical convenience, but you don't! 
+
+
+```{r}
+housing<-na.omit(housing)
+naniar::any_na(housing)
+```
+
+
+After that, split the data into test and train data, will be needed later for the evaluation. 
+
+```{r}
+library(caret)
+library(dplyr)
+set.seed(1) #makes the model reproducible
+training_index <- housing$median_house_value %>% createDataPartition(p = 0.8, list = FALSE) #give your target variable as input
+housing.descr <- housing[training_index,]
+housing.test <- housing[-training_index,] 
+```
+
+Extracting the dependent variable median_house_value and removing it from the original data frame since PCA is an applied technique for predictors not the response. 
+
+```{r}
+housing.descr1 <- housing[training_index,] #backup the training data for the following analysis. 
+housing.median_house_value <- housing.descr$median_house_value
+housing.descr$median_house_value <- NULL
+```
+
+After this, let's check the correlation among the predictors.
+
+```{r}
+res <- cor(housing.descr, method="pearson")
+corrplot::corrplot(res, method= "color", order = "hclust")
+```
+
+This is a good database for analysis, because as you can see below on the correlation plot, there is a significant correlation among some of the variables, which satisfies the linear relationship assumption of the PCA. It also means that the possible linear model for this dataset will suffer from multicollinearity.
+
+**Perform PCA**
+
+Although this procedure requires high level knowledge in math, statistics and linear algebra in theory, we can apply it in R without having high level knowledge in practice. The fundamental of PCA is based on the eigenvalues and eigenvectors of correlation and/or covariance matrix of the data set, which are assumed as positive symmetric, or eigenvalues and eigenvectors of the dataset.
+
+For this purpose, we should consider decomposition techniques in the analysis and we need to make a decision at this step when we conduct this analysis in R.
+
+This analysis can be done by using `prcomp()` and `princomp()`. The difference between the two is simply the method employed to calculate PCA.
+
+According to `?prcomp:`
+
+The calculation is done by a singular value decomposition of the (centered and possibly scaled) data matrix, not by using eigen on the covariance matrix. This is generally the preferred method for numerical accuracy.
+
+`princomp()` uses the spectral decompositon.
+
+You can perform PCA manually, but R provides several functions for this process. One of these function is ```prcomp()```. This function performs a principal components analysis on the given data matrix and returns the results as an object of class prcomp.
+
+As written in steps for PCA, standardization is essential before performing PCA. Note that this transformation does not change the correlation in the data. 
+
+```{r,warning=FALSE,message=FALSE,error=FALSE}
+housing.norm <- scale(housing.descr) #scale input
+```
+
+Apply the PCA on the input matrix. 
+
+```{r}
+housing.pca1 <- prcomp(housing.norm)
+```
+
+Get the summary of the data 
+
+```{r}
+summary(housing.pca1)
+```
+
+The summary function on the result object gives us standard deviation, proportion of variance explained by each principal component, and the cumulative proportion of variance explained. The cumulative proportion of explained variability of the data is needed to determine the number of components selected in the analysis. For example, the first component explains the 49% of the variability in the data. 
+
+We can also use names function to find the name of the variables in the result object.
+
+```{r}
+names(housing.pca1)
+```
+
+We see that the resulting object has 5 variables. The principal components of interest are stored in x object. It will be of the same dimension as our data used for PCA. Here each column is Principal Component.
+
+The components in PCA are basically calculated by multiplying the standardized input and the eigenvectors of the corresponding inputs. We can verify this by extracting the outputs from our component object. 
+
+That is $Components = Input*Eigenvectors$
+
+The first values of the first 10 components extracted from the component object are given below. 
+
+```{r}
+library(dplyr)
+housing.pca1$x [,1:3] %>% head(1)  #Z matrix 
+#first ten component
+```
+
+
+The first values of the first 10 components calculated by the multipication of these input and eigenvectors  are given below.
+
+```{r}
+as.matrix(housing.norm) %*% as.matrix(housing.pca1$rotation) [,1:3] %>% head(1) #XV matrix
+```
+
+If you assess the whole values, for components 
+
+```
+housing.pca1$x
+```
+
+for eigenvectors 
+
+```
+housing.pca1$rotation
+```
+
+for eigenvalues
+
+```
+housing.pca1$sdev
+```
+
+
+Now, we obtain the all components for the data. After this step, we should decide how many components should we include in our analysis. The way of making such a decision is to look at the contribution of the each component to cumulative proportion. However, it is sometimes difficult to decide for this number. In this case, we will use a visual way, scree plot, which is a line plot of the eigenvalues of factors or principal components in an analysis. 
+
+
+```{r,warning=F,message=FALSE}
+library(factoextra)
+fviz_eig(housing.pca1)
+#ncp=number of component
+```
+
+The plot shows that 5 components seems fine. When we look at the summary output, we see that first 5 components explain the almost 98% of the variability which is highly satisfied 
+
+Now, let's extract first 15 components and continue our analysis with them. 
+
+```{r}
+pca<-housing.pca1$x[,1:5]
+#I write index numbers for column part
+head(pca)
+```
+
+We would like to be sure that our components should be orthogonal. In other words, they must be linearly independent. To check this, draw the correlation plot of the pca's.
+
+```{r}
+res1 <- cor(pca, method="pearson")
+corrplot::corrplot(res1, method= "color", order = "hclust")
+```
+
+As you see, all components are linearly independent. 
+
+**Interpretation of Components**
+
+Interpretation of principal components is still a heavily researched topic in statistics, and although the components may be readily interpreted in most settings, this is not always the case (Joliffe, 2002).
+
+```{r}
+cor(housing.norm ,pca)
+```
+
+The PCs can then be interpreted based on which variables they are most correlated in either a positive or negative direction.
+The level at which the correlations are significant is left to the researcher.
+
+The first component is positively correlated with total_rooms, total_bedrooms,population and households. This correlation suggests the four variables vary together and when one goes down, the others decrease as well.
+The component  could be considered as primarily a measure of these for variables.
+
+After this step, it's time to plot your PCA. You will make a biplot, which includes both the position of each sample in terms of PC1 and PC2 and also will show you how the initial variables map onto this.  A biplot is a type of plot that will allow you to visualize how the samples relate to one another in our PCA (which samples are similar and which are different) and will simultaneously reveal how each variable contributes to each principal component.
+In other words, it is presenting how strongly a loading of a given variable contributes to a given principal component. Click on the tab in order to view another pair of PCs.
+
+
+
+#### **Loading Plots**
+
+**PC1-PC2**
+
+
+
+```{r}
+fviz_pca_var(housing.pca1,axes = c(1, 2))
+```
+
+**PC2-PC3**
+
+
+
+```{r}
+fviz_pca_var(housing.pca1,axes = c(2, 3))
+```
+
+Lets consider plot for **PC1-PC2**.
+
+In this plot, the axes are seen as arrows originating from the center point.
+Their project values on each PC show how much weight they have on that PC.
+In this example, total_rooms, total_bedrooms, population, median_income strongly influence PC1, while lattitude  and longitude have more say in PC2.
+
+Another nice thing about loading plots: the angles between the vectors tell us how characteristics correlate with one another.
+
+Lets look at Figure 1.
+When two vectors are close, forming a small angle, the two variables they represent are positively correlated.
+Example: population and total_rooms
+
+We can also compare the contribution of the variables to the components visually.
+
+```{r}
+fviz_pca_var(housing.pca1, col.var = "contrib")+ scale_color_gradient2( low="red", mid="green", high="blue", midpoint=96, space = "Lab")
+```
+
+Show the ones being the first three variable with high contribution
+
+```{r}
+fviz_pca_var(housing.pca1, select.var = list(contrib = 3))
+```
+
+household, lattitude and longitude are the first three variables having the highest contribution to the first two components. In these three, household contributes to the components 1, and rest of them contribute to the component 2. 
+
+We can also observe the which components is good in the explanation of the cases.
+
+
+```{r}
+fviz_pca_ind(housing.pca1, col.ind = "#00AFBB")
+```
+
+
+**Bonus:**
+
+```{r}
+biplot(housing.pca1, scale = 0)
+```
+
+This 2-D plot shows the house models. The houses models being close to each other have the similar pattern.
+
+After all this step, Lets see what we have.
+
+-   Explaratory variables (PC's)
+
+-   Response variable.
+
+Therefore, we are ready for Principle Component Regression.
+
+In order to perform the regression, I am combining both the explanatory variables - PCs, and explained variable - y. In this moment the dimensionality reduction should take place.
+
+
+```{r}
+ols.data <- data.frame(cbind(housing.median_house_value ,pca))
+```
+
+Using the lm function I perform the linear regression. The coefficient attribute contains values of 5 coefficients, denoted earlier as $\beta$Z.
+
+```{r}
+lmodel <- lm(housing.median_house_value ~ ., data = ols.data)
+summary(lmodel)
+```
+
+As you see, the model is significant. Almost 54% of the variability of y can be explained by components. Also, we can say that most of the components significantly contribute to the model. 
+
+This example aims to give you an insight about extracting the components of the variable as well as constructing a model. 
+
+The second scenario involves creating a principal regression model via `pcr` command from `pls` package.
+
+```
+pcr(formula, ncomp, Y.add, data, subset, na.action, scale = FALSE, center=TRUE, validation=c(none,CV,LOO), model=TRUE, x=FALSE, y=FALSE)
+```
+
+```{r}
+set.seed(1)
+library(pls)
+#fit PCR model
+model <- pcr(median_house_value~., data=housing.descr1, scale=TRUE, validation="CV")
+```
+
+
+`scale=TRUE:` This tells R that each of the predictor variables should be scaled to have a mean of 0 and a standard deviation of 1. This ensures that no predictor variable is overly influential in the model if it happens to be measured in different units.
+
+`validation="CV":` This tells R to use k-fold cross-validation to evaluate the performance of the model. Note that this uses k=10 folds by default. 
+
+Once we’ve fit the model with full data, we need to determine the number of principal components worth keeping.
+
+The way to do so is by looking at the test root mean squared error (test RMSE) calculated by the k-fold cross-validation:
+
+```{r}
+#view summary of model fitting
+summary(model)
+```
+
+There are two tables of interest in the output:
+
+**1. Validation: RMSEP**
+
+This table tells us the test RMSE calculated by the k-fold cross validation. We can see the following:
+
++ If we only use the intercept term in the model, the test RMSE is 115443.
+
++ If we add in the first principal component, the test RMSE drops to 115239.
+
++ If we add in the second principal component, the test RMSE drops to 115101.
+
+and soon.
+
+**2. Traning: % variance explained**
+
+This table tells us the percentage of the variance in the response variable explained by the principal components. We can see the following:
+
++ By using just the first principal component, we can explain 49% of the variation in the response variable.
+
++ By adding in the second principal component, we can explain 72.91% of the variation in the response variable.
+
+
+We can also visualize the test RMSE (along with the test MSE and R-squared) based on the number of principal components by using the `validationplot()` function. 
+
+```{r}
+#visualize cross-validation plots
+par(mfrow=c(1,3))
+validationplot(model)
+validationplot(model, val.type="MSEP")
+validationplot(model, val.type="R2")
+```
+
+In each plot we can see that the model fit has the lowest error value and highest $R^2$ value when we use 6 components for input.  Thus, the optimal model includes just the first six principal components.
+
+As a result, we can construct our regression model  with six principal components to make predictions on new observations.
+
+```{r}
+set.seed(1)
+#fit PCR model
+model2 <- pcr(median_house_value~., data=housing.descr1, scale=TRUE, ncomp= 6, validation="CV")
+```
+
+```{r}
+summary(model2)
+```
+
+**Partial Least Square**
+
+The PCR (Principal Component Regression) approach we have just discussed involves finding linear combinations or directions that represent the predictors X1,...,Xp in the best way possible. These directions are determined unsupervisedly, meaning the response Y is not involved in identifying the principal component directions. As a result, PCR has a disadvantage: there is no assurance that the directions that explain the predictors the most accurately will also be the most suitable for forecasting the response.
+
+Partial Least Square allows us to determine the number of components by not only considering the association among the predictors but also their association with the response variable. 
+
+In the construction process, we follow the same procedures as above.
+
+```{r}
+set.seed(1)
+#fit PCR model
+model_pls <- plsr(median_house_value~., data=housing.descr1, scale=TRUE, validation="CV")
+```
+
+
+```{r}
+#view summary of model fitting
+summary(model_pls)
+```
+
+
+```{r}
+#visualize cross-validation plots
+par(mfrow=c(1,3))
+validationplot(model_pls)
+validationplot(model_pls, val.type="MSEP")
+validationplot(model_pls, val.type="R2")
+```
+
+According to the output above, the model fit has the lowest error value and highest $R^2$ value when we use 5 components for input.  
+
+As a result, we can construct our regression model  with five principal components to make predictions on new observations.
+
+```{r}
+set.seed(1)
+#fit PCR model
+model3 <- plsr(median_house_value~., data=housing.descr1, scale=TRUE, ncomp= 5, validation="CV")
+```
+
+```{r}
+summary(model3)
+```
+
+**Comparison**
+
+In this example, we will build 3 regression models, `lmodel`,`model2`,`model3` based on principal components. Among these three models, we can assess the one that has lowest prediction error by comparing their performance with respect to an error measure like RMSE. 
+
+Since the test data does not have the components, we can compare the error of two models. 
+
+```{r}
+rmse_train_lmodel<-sqrt(mean(ols.data$housing.median_house_value-predict(lmodel)))
+rmse_train_model2<-sqrt(mean(housing.descr1$median_house_value-as.numeric(predict(model2,ncomp = 6))))
+rmse_train_model3<-sqrt(mean(housing.descr1$median_house_value-as.numeric(predict(model3))))
+train_error <-c(rmse_train_lmodel,rmse_train_model2,rmse_train_model3)
+names(train_error)<-c("Lmodel","PCR","PLS")
+train_error
+```
+
+
+```{r}
+predict_for_model2<-as.numeric((predict(model2,housing.test[,-9],ncomp = 6)))
+predict_for_model3<-as.numeric((predict(model3,housing.test[,-9],ncomp = 5)))
+```
+
+
+```{r}
+rmse_test_model2<-sqrt(mean(predict_for_model2-housing.test$median_house_value,na.rm=T))
+rmse_test_model3<-sqrt(mean(predict_for_model3-housing.test$median_house_value,na.rm=T))
+test_error <-c(rmse_test_model2,rmse_test_model3)
+names(test_error)<-c("PCR","PLS")
+test_error
+```
+
+
+#### <span style="color:darkred">**Exercise 2**</span>
+
+
+Please click [here](https://users.metu.edu.tr/ozancan/r2e7.zip) to download your second exercise. 
+
+
+
+**References:**
+
++ HARVARD CS109
++ https://rpubs.com/esobolewska/pcr-step-by-step
++ https://miro.medium.com/
+
+
+
