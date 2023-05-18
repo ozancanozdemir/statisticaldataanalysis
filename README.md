@@ -108,4 +108,15 @@ install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
 
 + Dimension Reduction
 
+### Recitation 8
 
+Install the following packages before running the tutorial.
+
+```
+install.packages("vcd","ggmosaic","ltm","polycor","ISLR","caret","corrplot","MASS")
+devools::install_version("InformationValue", version = "1.2.3", repos = "http://cran.us.r-project.org")
+devtools::install_version("DMwR", version = "0.4.1", repos = "http://cran.us.r-project.org"
+```
++ Categorical Data Analysis
++ Logistic Regression 
++ Robust Regression
