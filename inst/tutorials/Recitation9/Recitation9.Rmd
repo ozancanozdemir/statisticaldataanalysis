@@ -1,0 +1,939 @@
+---
+title: "STAT 412-Recitation 9"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## <span style=color:darkred>**Reminder**</span>
+
+Before looking at the lecture note, I would like to leave a song.  
+
+If you want to listen, please click [here](https://www.youtube.com/watch?v=VUKPVG2_5Lc)
+
+Last week, we talked about 
+
++ Categorical Data Analysis
+
++ Logistic Regression
+
++ Robust Regression 
+
+Please install ```gradDescent```, ```Boruta``` and ```plspm``` packages.
+
+```
+install.packages(c("Boruta","plspm"))
+```
+
+To install `gradDescent`
+
+```
+
+devtools::install_version("gradDescent", version = "3.0", repos = "http://cran.us.r-project.org")
+
+```
+
+
+## <span style=color:darkred>**Supervised Learning**</span> 
+
+Supervised learning is the most common subbranch of machine learning today. Typically, new machine learning practitioners will begin their journey with supervised learning algorithms.
+
+Supervised machine learning algorithms are designed to learn by example. The name supervised learning originates from the idea that training this type of algorithm is like having a teacher supervise the whole process.
+
+When training a supervised learning algorithm, the training data will consist of inputs paired with the correct outputs. During training, the algorithm will search for patterns in the data that correlate with the desired outputs. After training, a supervised learning algorithm will take in new unseen inputs and will determine which label the new inputs will be classified as based on prior training data. The objective of a supervised learning model is to predict the correct label for newly presented input data. At its most basic form, a supervised learning algorithm can be written simply as:
+
+$y=f(x)$
+
+Where $y$ is the predicted output that is determined by a mapping function that assigns a class to an input value $x$. The function used to connect input features to a predicted output is created by the machine learning model during training.
+Supervised learning can be split into two subcategories: Classification and regression.
+
+### Classification Problem
+
+During training, a classification algorithm will be given data points with an assigned category. The job of a classification algorithm is to then take an input value and assign it a class, or category, that it fits into based on the training data provided.
+
+The most common example of classification is determining if an email is spam or not. With two classes to choose from (spam, or not spam), this problem is called a binary classification problem. The algorithm will be given training data with emails that are both spam and not spam. The model will find the features within the data that correlate to either class and create the mapping function mentioned earlier: Y=f(x). Then, when provided with an unseen email, the model will use this function to determine whether or not the email is spam.
+
+Classification problems can be solved with a numerous amount of algorithms. Whichever algorithm you choose to use depends on the data and the situation. Here are a few popular classification algorithms:
+
++ Linear Classifiers
+
++ Support Vector Machines
+
++ Decision Trees
+
++ K-Nearest Neighbor
+
++ Random Forest
+
+### Regression
+
+Regression is a predictive statistical process where the model attempts to find the important relationship between dependent and independent variables. The goal of a regression algorithm is to predict a continuous number such as sales, income, and test scores. The equation for basic linear regression can be written as so:
+
+$\hat{y}=\theta_0+\theta_1*x_1+......+\theta_i*x_i$
+
+where $x_i$ is the features or predictors for the data and where $\theta_i$s are the parameters that are developed during training. For simple linear regression models with only one feature or predictor in the data, the formula looks like as follows:
+
+$\hat{y}=\theta_0+\theta_1*x$ 
+
+where $\theta_1$ is slope, $x$ is single predictor or feature and $\theta_0$ is the intercept. 
+
+For simple regression problems such as this, the models predictions are represented by the line of best fit. For models using two features, the plane will be used. Finally, for a model using more than two features, a hyperplane will be used.
+
+There are many different types of regression algorithms. The three most common are listed below:
+
++ Linear Regression
+
++ Logistic Regression
+
++ Polynomial Regression
+
+As you see, the aim of supervised learning is to develop predictive machines, and we would like to have a machine that predicts accurately. In this case, we need to consider some measures to o assess the quality of the learned model and to see on how long term the predictions given by the model are accurate.
+
+
+### Prediction Accuracy and Prediction Error
+
+Accuracy is a measured used to find out how close a predicted value is to the actual (true) value.
+
+**Remember your Logistic Regression Notes.**
+
+If a machine has good predicton accuracy (Generally greater than or equal to $0.80$), it is called as good learner. High predicton accuracy also means that **low** prediction error.
+
+To find the well performed model, the dataset under the study is used. The parameter of the almost all predictive models are tuned to fit the data well, and this process is done by using the dataset. In this process, the dataset is splitted into training and test seets. The training set is used to build and tune the model and the test set is used to estimate the models predictive performance. This is the classical way. However, in modern approach, the dataset is splitted into multiple training and test sets, which have often been shown to get more optimal tuning parameters and give a more accurate representation of the models predictive performance.
+
+#### How to calculate prediction error (PE)?
+
+Assume that we have set of training dataset consisting of $X_i,Y_i$s and it is denoted as follows: 
+
+$D_{training}={(X_i,Y_i),i=1,2,...n}$
+
+The training data is used to regress Y on X, and then a new response,$Y_{new}$, is estimated by applying the fitted model to a brand-new set of predictors, $X_{new}$ from the test data $D_{test}$.
+
+Pediction for $Y_{new}$ is done by multiplying the new predictor values by the regression coefficients already obtained from the training set.
+
+The resulting prediction is compared with the actual response value. (PSU, Stat 508 Lecture Note)
+
+The prediction error is defined as the mean squared error in predicting $Y_{new}$ using $\hat{f}(X_{new})$.
+
+$PE=E[(Y_{new}-\hat{f}(X_{new})^{2})]$,
+
+Therefore, the formula above is estimated using the following equation:
+
+$\frac{1}{n} \sum_{i=1}^{n}\left(Y_{(n e w) i}-\hat{f}\left(X_{n e w) i}\right)^{2}\right.$
+
+**Warning**
+
+The models are trained by using the train data, and they can predict very accurate results for the train dataset. However, the prediction error is calculated for test data, i.e unseen observations, so the model being very accurate for train data does not mean that the model is very accurate for test data, too. 
+
+If a model learns the structure of a training data too well then the model is applied to the data on which the model was built, it correctly predicts every sample value. Sometimes, the model admits no error. However, although it seems a good thing, actually it is not. In this case, the model is said to be over-fit and will usually have poor accuracy rate for the unseen observations. This problem is called **overfitting.**
+
+**WHY?**
+
+## Bias-Variance Trade-off
+
+
+The most common metric used for characterizing the predictive capability of the model when dealing with prediction of a quantitative response is the root mean squared error or mean square error. 
+
+MSE is calculated by squaring the residuals and summing them, and the result is generally considered as either how far the residuals are from zero or as the average distance between the observed values and the model predictions.
+
+If we assume that the observations are independent and model residuals have zero mean and constant variance $\sigma^2$, theoretically. Then, MSE has the following three components.
+
++ **Irreducible Error:** is the error that cant be reduced by creating good models. It is a measure of the amount of noise in our data. Here it is important to understand that no matter how good we make our model, our data will have certain amount of noise or irreducible error that can not be removed.
+
++ **Bias:** Bias is the difference between the average prediction of our model and the correct value which we are trying to predict. Model with high bias pays very little attention to the training data and oversimplifies the model. It always leads to high error on training and test data.
+
++ **Variance:** Variance is the variability of model prediction for a given data point or a value which tells us spread of our data. Model with high variance pays a lot of attention to training data and does not generalize on the data which it hasnt seen before. As a result, such models perform very well on training data but has high error rates on test data.
+
+Therefore, MSE equals to 
+
+$E[MSE]= \sigma^2 + (Model Bias)^2+Model Variance^2$
+
+**The best learner is the one which can balance the bias and the variance of a model.** (Lecture Note)
+
+
+If our model is too simple and has very few parameters, i.e it is less complex, then it may have high bias and low variance. On the other hand if our model has large number of parameters, i.e it is more complex, then it is going to have high variance and low bias.
+As you see, the bias and the variance behave opposite to each other, and if one of them is high and another one is low, they will have the same amount of error. 
+
+
+An ideal predictor is that, which will learn all the structure in the data but none of the noise. While with increasing model complexity in the training data, PE reduces monotonically, the same will not be true for test data. Bias and variance move in opposing directions and at a suitable bias-variance combination the PE is the minimum in the test data. In other words, we need to find an algorithm that cannot be more complex and less complex at the same time.
+
+The model that achieves this lowest possible PE is the best prediction model. The following figure is a graphical representation of that fact.
+
+![](http://users.metu.edu.tr/ozancan/to.png){width=75%}
+
+
+## Learning Parameters 
+
+As written above, the models for both regression and classification problems have parameters. During the training period, the model learn these parameters and they use these parameters to predict $Y_{new}$ for given $X_{new}$ values.
+
+There are several ways to learn the parameters, I will focus on the approach that best illustrates statistical learning; minimizing a cost function.
+
+#### Cost Function
+
+It is a function that measures the performance of a Machine Learning model for given data. Cost Function quantifies the error between predicted values and expected values and presents it in the form of a single real number. Depending on the problem Cost Function can be formed in many different ways. 
+
+The purpose of Cost Function is to be either:
+
+Minimized - then returned value is usually called cost, loss or error. The goal is to find the values of model parameters for which Cost Function return as small number as possible.
+
+Maximized - then the value it yields is named a reward. The goal is to find values of model parameters for which returned number is as large as possible.
+
+After this definition, lets go back our main problem!
+
+To explain learning parameter process, I will consider linear regression problem, specifically simple linear  regression, firstly, since it makes explanation of this concept easier. 
+
+The SLR model is described as follows:
+
+$h_{\theta}(x)=\theta_{0}+\theta_{1} x$
+
+In LR problem, our purpose is to fit the best straight line to our data and predict the unseen numerical response observations with this way. In other words, we need to find a value for $\theta_{0}$ and $\theta_{1}$ so that $h_{\theta}(x)$ is close to $y$ for our trainin example.
+
+To find the best line, we consider the minimization problem which involves the cost function. **This is our optimization objective.**
+
+The most commonly used cost function in LR is MSE which measure the difference between the estimator (the dataset) and the estimated value (the prediction). It looks like this:
+
+$\frac{1}{n} \sum_{i=1}^{n}\left(Y_{(n e w) i}-\hat{f}\left(X_{n e w) i}\right)^{2}\right.$
+
+It turns out we can adjust the equation a little to make the calculation down the track a little more simple. We end up with:
+
+$\frac{1}{2 m} \sum_{i=1}^{m}\left(h_{\theta}\left(x^{(i)}\right)-y^{(i)}\right)^{2}$
+
+Cost function is also called squared error function.
+
+It works well and reasonable choice for regression problem.
+
+There are other cost functions but squared error cost function is probably most commonly used one for regression problems.
+
+The cost function determines the parameters. (Andrew Ng, Coursera)
+
+
+## Gradient Descent Algorithm
+
+It is an optimization algorithm mainly used for finding the minimum of the function. In machine learning, this algorithm is used for updating and finding the optimum parameters for the model. Parameters in the machine learning methods can be various from one algorithm to another.
+
+As you understood above, this algorithm can be used for minimizing the cost function. It is not only used in regression problems, actually used all over place in machine learning. It is also used for minimizing other functions not only cost function.
+
+Let me explain gradient descent with a real-life analogy for better understanding. Think of a valley you would like to descend when you are blind-folded. Any sane human will take a step and look for the slope of the valley, whether it goes up or down. Once you are sure of the downward slope you will follow that and repeat the step again and again until you have descended completely (or reached the minima).
+
+This is exactly what happens in gradient descent. The inclined and/or irregular is the cost function when it is plotted and the role of gradient descent is to provide direction and the velocity (learning rate)  of the movement in order to attain the minima of the function i.e where the cost is minimum.
+
+![](http://users.metu.edu.tr/ozancan/gda.png){width=75%})
+
+#### How the algoritm works ?
+
+Following the valley example, we will look for the slope then take a step. In each time, we know two things, the gradient (for that position, or parameters) and the width of the step to take (learning rate). With that information, the current value of each parameter is updated. With the new parameter values, the gradient is re-calculated and the process is repeated until reach convergence or local minima.
+
+Repeat until hit convergence:
+
++ Given the gradient, calculate the change in the parameters with the learning rate.
+
++ Re-calculate the new gradient with the new value of the parameter.
+
++ Repeat step 1.
+
+Repeat until convergence
+
+$$
+\theta_{j} \leftarrow \theta_{j}-\alpha \frac{\partial}{\partial \theta_{j}} J(\theta)
+$$
+
+where $J(\theta)$ is the function to be minimized, and $\alpha$ is the learning rate. 
+
+
+**Convergence** is a name given to the situation where the loss function does not improve significantly, and we are stuck in a point near to the minima.
+
+If learning rate is too small, the algorithm can be slow.
+
+If learning rate is too large, the algorithm can overshoot the minimum. It may fail to converge or evn diverge.
+
+**Bad News**
+
+It should be emphasized that there is no value of the learning rate that will guarantee convergence to the minimum value of the error function (assuming global) value of a function. 
+
+![](http://users.metu.edu.tr/ozancan/gda2.png){width=75%})
+
+
+[**How to choose a optimal learning rate?**](https://automaticaddison.com/how-to-choose-an-optimal-learning-rate-for-gradient-descent/)
+
+####  Application of Gradient Descent Algorithm to Linear Regression Problem
+
+**Reminder**
+
+$$
+\theta_{j} \leftarrow \theta_{j}-\alpha \frac{\partial}{\partial \theta_{j}} J(\theta)
+$$
+
+As you know, we have to minimize our cost function (MSE) in LR problem.
+
+$\frac{1}{2 m} \sum_{i=1}^{m}\left(h_{\theta}\left(x^{(i)}\right)-y^{(i)}\right)^{2}$
+
+In this case, the derivative term is the key term. In order to implement this algorithm, we have to work out what is the partial derivative term on the right hand side. Lets first work it out for the case of if we have only one training example $(x, y)$, so that we can neglect the sum in the definition of $J$.
+
+$\begin{aligned} \frac{\partial}{\partial \theta_{j}} J(\theta) &=\frac{\partial}{\partial \theta_{j}} \frac{1}{2}\left(h_{\theta}(x)-y\right)^{2} \\ &=2 \cdot \frac{1}{2}\left(h_{\theta}(x)-y\right) \cdot \frac{\partial}{\partial \theta_{j}}\left(h_{\theta}(x)-y\right) \\ &=\left(h_{\theta}(x)-y\right) \cdot \frac{\partial}{\partial \theta_{j}}\left(\sum_{i=0}^{n} \theta_{i} x_{i}-y\right) \\ &=\left(h_{\theta}(x)-y\right) x_{j} \end{aligned}$
+
+For a single training example, this gives the update rule:
+
+$\theta_{j}:=\theta_{j}+\alpha\left(y^{(i)}-h_{\theta}\left(x^{(i)}\right)\right) x_{j}^{(i)}$
+
+
+The rule is called the LMS update rule (LMS stands for least mean squares),
+and is also known as the Widrow-Hoff learning rule. This rule has several
+properties that seem natural and intuitive. For instance, the magnitude of
+the update is proportional to the error term $(y^{(i)}-h_{\theta}\left(x^{(i)}\right)$
+ thus, for instance, if we are encountering a training example on which our prediction
+nearly matches the actual value of $y^{(i)}$  then we find that there is little need
+to change the parameters; in contrast, a larger change to the parameters will
+be made if our prediction $h_{\theta}\left(x^{(i)}\right)$  has a large error.
+
+
+We have derived the LMS rule for when there was only a single training
+example. There are two ways to modify this method for a training set of
+more than one example. The first is replace it with the following algorithm.
+
+This representation is also called batch gradient descent.
+
+Repeat until convergence \{
+$$
+\theta_{j}:=\theta_{j}+\alpha \sum_{i=1}^{m}\left(y^{(i)}-h_{\theta}\left(x^{(i)}\right)\right) x_{j}^{(i)} \quad(\text { for every } j)
+$$
+\}
+
+
+The second is follows
+
+Loop \{
+for $\mathrm{i}=1$ to $\mathrm{m},\{$
+$$
+\theta_{j}:=\theta_{j}+\alpha\left(y^{(i)}-h_{\theta}\left(x^{(i)}\right)\right) x_{j}^{(i)}
+$$
+(for every $j$ ).
+\}
+
+
+In this algorithm, we repeatedly run through the training set, and each time
+we encounter a training example, we update the parameters according to
+the gradient of the error with respect to that single training example only.
+This algorithm is called stochastic gradient descent (also incremental
+gradient descent). Whereas batch gradient descent has to scan through
+the entire training set before taking a single step a costly operation if m is
+large stochastic gradient descent can start making progress right away, and
+continues to make progress with each example it looks at. Often, stochastic
+gradient descent gets $\theta$ close to the minimum much faster than batch gradient descent. (Note however that it may never converge to the minimum,
+and the parameters  $\theta$ will keep oscillating around the minimum of $J(\theta)$; but in practice most of the values near the minimum will be reasonably good
+approximations to the true minimum.) For these reasons, particularly when
+the training set is large, stochastic gradient descent is often preferred over
+batch gradient descent.
+
+
+#### **Application 1**
+
+This example was taken from [Kaggle](https://www.kaggle.com/bryanb2003/gradient-descent-machine-learning-in-r)
+
+Lets consider cars dataset. 
+
+```{r,warning=FALSE,message=FALSE}
+library(knitr)
+kable(head(cars))
+```
+
+
+Lets fit a simple linear regression on the response distance.
+
+**lm() uses least square estimation.**
+
+```{r}
+lmod <- lm(dist ~ speed, data = cars)
+lmod
+```
+
+As you see, the estimated intercept is -17.579 and slope is 3.932
+
+```{r}
+plot(dist ~ speed, data = cars)
+abline(lmod, col = "red")
+```
+
+You can see the line created using the estimated coefficients obtained from previous code.
+
+Next we will create a function for Gradient Descent. This implementation is based on matrices and as will be shown later will work for models with multiple factors.
+
+Inputs:
+
+
++ x: a matrix for the input to the model. This should be an m x n matrix where m is the number of rows which aligns with the number of input values and n is the number of columns and aligns with the number of factors.
+
++ y: a matrix for the target for the model. This should be an m x 1 matrix. The number of rows m align with the number of values.
+
++ alpha: This is the learning rate of the algorithum.
+
++ epsilon: This is the value to use to test the while loop. Once the difference in the cost function between iterations is less than this value the while loop will stop.
+
++ Outputs: This will print the number of iterations used before it found a result and it will return the matrix of coefficients for the linear model.
+
+```{r}
+GradD <- function(x, y, alpha = 0.006, epsilon = 10^-10){
+  iter <- 0
+  i <- 0
+  x <- cbind(rep(1,nrow(x)), x)
+  theta <- matrix(c(1,1),ncol(x),1)
+  cost <- (1/(2*nrow(x))) * t(x %*% theta - y) %*% (x %*% theta - y)
+  delta <- 1
+  while(delta > epsilon){
+    i <- i + 1
+    theta <- theta - (alpha / nrow(x)) * (t(x) %*% (x %*% theta - y))
+    cval <- (1/(2*nrow(x))) * t(x %*% theta - y) %*% (x %*% theta - y)
+    cost <- append(cost, cval)
+    delta <- abs(cost[i+1] - cost[i])
+    if((cost[i+1] - cost[i]) > 0){
+      print("The cost is increasing.  Try reducing alpha.")
+      return()
+    }
+    iter <- append(iter, i)
+  }
+  print(sprintf("Completed in %i iterations.", i))
+  return(theta)
+}
+```
+
+We will create one more function. This function will create the predictions using the coefficient matrix and the x input matrix.
+
+```{r}
+TPredict <- function(theta, x){
+  x <- cbind(rep(1,nrow(x)), x)
+  return(x %*% theta)
+}
+```
+
+
+Now we will use our function to calculate the coefficients of the linear model using the same cars data as above.
+
+```{r}
+x <- as.matrix(cars$speed)
+y <- as.matrix(cars$dist)
+theta <- GradD(x, y, alpha = 0.006, epsilon = 10^-10)
+theta
+```
+
+### Comparison of Parameter Estimations {.tabset}
+
+#### lm()
+
+**Intercept:** -17.579       
+
+**Slope:** 3.932
+
+#### GDA 
+
+**Intercept:** -17.578      
+
+**Slope:** 3.932
+
+##
+
+As you see, they are almost same. 
+
+However, the convergence is achieved after 15519 iterations. In order to make it faster, the input features can be scaled.
+
+```{r}
+x <- as.matrix(cars$speed)
+y <- as.matrix(cars$dist)
+stheta <- GradD(scale(x), y, alpha = 0.06, epsilon = 10^-10)
+stheta
+```
+
+This output matrix can be converted back into the previous units using the following code. You can see how the coefficient matrix is similar to the previous Gradient Descent without scaling and the R linear model.
+
+```{r}
+ctheta <- stheta[c(2:nrow(stheta)),] / t(t(apply(x,2,sd)))
+cthetazero <- stheta[1,1] - sum(stheta[c(2:nrow(stheta)),] / t(t(apply(x,2,sd))) * t(t(apply(x,2,mean))))
+ctheta <- matrix(c(cthetazero, ctheta))
+ctheta
+
+```
+
+The coefficients can be calculated directly using the normal equation. The function for finding this is shown below.
+
+```{r}
+NormEquation <- function(x, y){
+  require(MASS)
+  x <- cbind(rep(1,nrow(x)), x)
+  ntheta <- ginv(t(x) %*% x) %*% t(x) %*% y
+  return(ntheta)
+}
+```
+
+```{r}
+x <- as.matrix(cars$speed)
+y <- as.matrix(cars$dist)
+ntheta <- NormEquation(x, y)
+ntheta
+```
+
+This is the application of GD Algorithm using a funciton. Instead, you can do this process with one line.
+
+```gradDescent``` package: An implementation of various learning algorithms based on Gradient Descent for dealing with **regression tasks.**
+
+
+```GD()```
+
+A function to build prediction model using Gradient Descent method.
+
+**Default Usage**
+
+```GD(dataTrain, alpha = 0.1, maxIter = 10, seed = NULL)```
+
+
+```{r}
+library(gradDescent)
+GDmodel_default <- GD(cars)
+GDmodel_default
+```
+
+
+```{r}
+GDmodel<-GD(cars,alpha=0.006,maxIter=10000,seed=NULL)
+GDmodel
+```
+
+If you apply SGD, use ```SGD()``` function. Syntax is the same as ```GD()```.
+
+
+```{r}
+SGDmodel<-SGD(cars,alpha=0.006,maxIter=10000,seed=NULL)
+SGDmodel
+```
+
+As you see the function gives a different result because of hyperparameters insufficient.
+
+#### **Application 2**
+
+Lets consider multiple linear regression problem. In this case, well use iris dataset. 
+
+```{r}
+kable(head(iris))
+```
+
+Lets fit the model by regression on Sepal.Length.
+
+```{r}
+lmod <- lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width, data = iris)
+lmod
+```
+
+The estimated coefficients can be seen above. 
+
+Lets use GD function written in the previous example and see the result.
+
+```{r}
+x <- as.matrix(iris[,c(2:4)])
+y <- as.matrix(iris[,1])
+theta <- GradD(x, y, alpha = 0.006, epsilon = 10^-10)
+theta
+```
+
+As you see, achieving convergence takes 66532 iterations. Lets use the scaled inputs. 
+
+```{r}
+x <- as.matrix(iris[,c(2:4)])
+y <- as.matrix(iris[,1])
+stheta <- GradD(scale(x), y, alpha = 0.006, epsilon = 10^-10)
+stheta
+```
+
+Changing the coefficients back into the units for the original x dataset:
+
+```{r}
+ctheta <- stheta[c(2:nrow(stheta)),] / t(t(apply(x,2,sd)))
+cthetazero <- stheta[1,1] - sum(stheta[c(2:nrow(stheta)),] / t(t(apply(x,2,sd))) * t(t(apply(x,2,mean))))
+ctheta <- matrix(c(cthetazero, ctheta))
+ctheta
+```
+
+
+Using the normal equation.
+
+```{r}
+x <- as.matrix(iris[,c(2:4)])
+y <- as.matrix(iris[,1])
+ntheta <- NormEquation(x, y)
+ntheta
+```
+
+Using ```gradDescent``` package.
+
+```{r}
+GDmodel <- GD(iris,alpha = 0.006,maxIter = 60000,seed = NULL)
+GDmodel
+```
+
+Predictions can be made using these coefficients like so. Here we calculate the RMSE:
+
+### RMSE for Methods {.tabset}
+
+#### lm()
+
+
+```{r}
+ypred <- predict(lmod, newdata = iris)
+print("RMSE for R Linear Model for comparison:")
+sqrt(mean((iris$Sepal.Length - ypred)^2))
+```
+
+#### GD with Unscaled Data
+
+```{r}
+# RMSE for Gradient Descent unscaled data
+ypred <- TPredict(theta, x)
+print("RMSE for Gradient Descent using unscaled data:")
+sqrt(mean((y - ypred)^2))
+```
+
+#### GD with Scaled Data
+
+```{r}
+# RMSE for Gradient Descent scaled data
+ypred <- TPredict(stheta, scale(x))
+print("RMSE for Gradient Descent using scaled data:")
+sqrt(mean((y - ypred)^2))
+
+```
+
+### RMSE for scaled data transformed into previous units
+
+```{r}
+# RMSE for scaled data transformed into previous units
+ypred <- TPredict(ctheta, x)
+print("RMSE for scaled data transformed into previous units:")
+sqrt(mean((y - ypred)^2))
+```
+
+### RMSE for Normal Equation
+
+```{r}
+# RMSE for Normal Equation
+ypred <- TPredict(ntheta, x)
+print("RMSE for normal equation:")
+sqrt(mean((y - ypred)^2))
+```
+
+### RMSE for GDModel
+
+```{r}
+library(gradDescent)
+ypred <- prediction(GDmodel,iris[,-1])
+#we dropped the sepal length which is the response
+print("RMSE for gradDescent package for comparison:")
+sqrt(mean((iris$Sepal.Length - ypred[,5])^2))
+#fifth column involces the predicted values
+```
+
+#### **Application 3**
+
+**GD Algorithm for Logistic Regression**
+
+Representation of the model
+
+$h_{\theta}(x)=\frac{1}{1+e^{-\theta^{T} x}}$ where $x$ is the tranining dataset
+
+
+Cost Function for Logistic Regression
+
+
+
+$J(\theta)=\frac{1}{n} \sum_{i=1}^{n} \operatorname{cost}\left(h_{\theta}\left(x^{(i)}\right), y^{(i)}\right)$
+
+where
+
+$\operatorname{cost}\left(h_{\theta}(x), y\right)=\left\{\begin{array}{ll}-\log \left(h_{\theta}(x)\right) & , \text {if } y=1 \\ -\log \left(1-h_{\theta}(x)\right), & \text {if } y=0\end{array}\right.$
+
+For this example, please download data by executing the following code.
+
+
+```{r}
+d<-read.csv("http://ucanalytics.com/blogs/wp-content/uploads/2017/09/Data-L-Reg-Gradient-Descent.csv")
+kable(head(d))
+```
+
+Lets prepare our dataset for the GDA.
+
+```{r}
+#Normalization of data for gradient descent
+d[,1:2]<-scale(d[,1:2])
+
+#Predictor variables matrix
+X <- as.matrix(d[,c(1,2)])
+
+#Add ones to Predictor variables matrix
+X <- cbind(rep(1,nrow(X)),X)
+
+#Response variable matrix
+Y <- as.matrix(d$y)
+
+```
+
+Then, write a function for sigmoid function.
+
+```{r}
+#Sigmoid function for logistic regression
+sigmoid <- function(z)
+{
+  g <- 1/(1+exp(-z))
+  return(g)
+}
+```
+
+
+```{r}
+#Loss Function for gradient descent (logistic regression)
+cost <- function(beta)
+{
+  m <- nrow(X)
+  g <- sigmoid(X%*%beta)
+  J <- (1/m)*sum((-Y*log(g)) - ((1-Y)*log(1-g)))
+  return(J)
+}
+
+#Intial betas (0,0,0)
+beta <- rep(0,ncol(X))
+
+
+```
+
+
+```{r}
+#Cost at inital beta
+cost(beta)
+```
+
+```{r}
+# Define learning rate and iteration limit
+alpha <- 0.1
+num_iters <- 50000
+
+# initialize coefficients
+beta <- matrix(c(0,0,0), nrow=3)
+
+# gradient descent
+for (i in 1:num_iters) {
+  error <- (sigmoid(X%*%beta) - Y)
+  delta <- (t(X) %*% error) / length(Y)
+  beta <- beta - (alpha*delta)
+}
+
+```
+
+```{r}
+beta
+```
+
+The estimated coefficients are given above.
+
+Lets compare them with usual logistic regression model. ```glm()``` 
+
+```{r}
+l<-glm(y~x1+x2,family = binomial,data=d)
+l$coefficients
+```
+
+### Coefficients {.tabset}
+
+#### GDA
+
+```{r}
+beta
+```
+
+#### glm()
+
+```{r}
+l$coefficients
+```
+
+## <span style=color:darkred>**Feature Engineering with `Boruta` Package in R**</span> 
+
+Nowadays, regression or classification problems often involve high-dimensional data with a large number of features. To effectively utilize this data, it is necessary to employ statistical techniques that eliminate noise and redundant information. It is not always essential to include all available features when training a model, as the quality of the model can be enhanced by selecting only uncorrelated and non-redundant features. Feature selection plays a crucial role in this process, as it not only speeds up model training but also simplifies the model, facilitates interpretation, and improves performance metrics such as accuracy, precision, or recall.
+
+### Feature Selection
+
+
+Generally, whenever you want to reduce the dimensionality of the data you come across methods like Principal Component Analysis, Singular Value decomposition etc. So it's natural to ask why you need other feature selection methods at all. The thing with these techniques is that they are unsupervised ways of feature selection: take, for example, PCA, which uses variance in data to find the components. These techniques don't take into account the information between feature values and the target class or values. Also, there are certain assumptions, such as normality, associated with such methods which require some kind of transformations before starting to apply them. These constraints doesn't apply to all kinds of data.
+
+There are three types of feature selection methods in general:
+
+Filter Methods : filter methods are generally used as a preprocessing step. The selection of features is independent of any machine learning algorithm. Instead the features are selected on the basis of their scores in various statistical tests for their correlation with the outcome variable. Some common filter methods are Correlation metrics (Pearson, Spearman, Distance), Chi-Squared test, Anova, Fisher's Score etc.
+
+Wrapper Methods : in wrapper methods, you try to use a subset of features and train a model using them. Based on the inferences that you draw from the previous model, you decide to add or remove features from the subset. Forward Selection, Backward elimination are some of the examples for wrapper methods.
+
+Embedded Methods : these are the algorithms that have their own built-in feature selection methods. LASSO regression is one such example.
+
+In this tutorial you will use one of the wrapper methods which is readily available in R through a package called Boruta.
+
+**Boruta Algorithm**
+
+
+The Boruta algorithm is a wrapper built around the random forest classification algorithm. It tries to capture all the important, interesting features you might have in your dataset with respect to an outcome variable.
+
++ First, it duplicates the dataset, and shuffle the values in each column. These values are called shadow features. * Then, it trains a classifier, such as a Random Forest Classifier, on the dataset. By doing this, you ensure that you can an idea of the importance -via the Mean Decrease Accuracy or Mean Decrease Impurity- for each of the features of your data set. The higher the score, the better or more important.
+
++ Then, the algorithm checks for each of your real features if they have higher importance. That is, whether the feature has a higher Z-score than the maximum Z-score of its shadow features than the best of the shadow features. If they do, it records this in a vector. These are called a hits. Next,it will continue with another iteration. After a predefined set of iterations, you will end up with a table of these hits. Remember: a Z-score is the number of standard deviations from the mean a data point is, for more info click here.
+
++ At every iteration, the algorithm compares the Z-scores of the shuffled copies of the features and the original features to see if the latter performed better than the former. If it does, the algorithm will mark the feature as important. In essence, the algorithm is trying to validate the importance of the feature by comparing with random shuffled copies, which increases the robustness. This is done by simply comparing the number of times a feature did better with the shadow features using a binomial distribution.
+feature selection R boruta.
+
+![DataCamp](http://res.cloudinary.com/dyd911kmh/image/upload/f_auto,q_auto:best/v1520429681/boruta_algo_ft1i8z.png)
+
+
+If a feature hasn't been recorded as a hit in say 15 iterations, you reject it and also remove it from the original matrix. After a set number of iterations -or if all the features have been either confirmed or rejected- you stop.
+
+#### **Application 4**
+
+The motivating example for the usage of Boruta comes from `cereals` dataset from `plspm` data. The data includes several variables for different brands of cereal. 
+
+
+
+```{r}
+library(plspm)
+data("cereals")
+head(cereals)
+```
+
+Check the class of the variables with `glimpse`
+
+```{r}
+dplyr::glimpse(cereals)
+```
+As seen, we have 77 observations and 15 variables where 2 of them are categorical and rest of them are numerical. Lets look into the summary of the data. 
+
+```{r}
+summary(cereals)
+```
+
+We have no missing, great!
+
+The objective in this example is to predict the rating score of the cereals based on variables measuring the properties of the cereals. Before start to build a model, a useful trick is given to you to include the categorical variables to your model efficiently. 
+
+**One Hot Encoding**
+
+One-hot encoding is a popular technique used to convert categorical variables into a numerical representation that machine learning algorithms can easily process. It is particularly useful when dealing with categorical features or variables that do not have an inherent ordinal relationship.
+
+In one-hot encoding, each category or level of a categorical variable is transformed into a binary feature. The process involves creating new binary variables, also known as dummy variables, where each variable corresponds to a unique category of the original variable.
+
+Here's how the one-hot encoding process works:
+
+Identify the categorical variable: Choose the variable in your dataset that contains categorical or nominal values. For example, a variable named "Color" may have categories like "Red," "Blue," and "Green."
+
+Create dummy variables: For each unique category in the variable, create a new binary (dummy) variable. For the "Color" variable, three dummy variables would be created: "Red," "Blue," and "Green."
+
+Assign values: Assign a value of 1 to the dummy variable that corresponds to the category of the original variable, and 0 to all other dummy variables. For example, if an observation has "Red" as the value for the "Color" variable, the "Red" dummy variable would be assigned 1, while the "Blue" and "Green" dummy variables would be assigned 0.
+
+Repeat for all observations: Apply the same process for every observation in the dataset, creating binary values for each category of the categorical variable.
+
+The resulting one-hot encoded variables allow the machine learning algorithm to interpret the categorical information as numerical values. Each category becomes an independent binary feature, indicating the presence (1) or absence (0) of that category for each observation.
+
+One-hot encoding is useful because it avoids assigning any numerical relationship or order between categories. It prevents algorithms from assuming a natural ordering or magnitude that may not exist in the original categorical variable.
+
+![An Example for One Hot Encoding](https://www.researchgate.net/profile/Fatemeh-Davoudi-Kakhki/publication/344409939/figure/fig1/AS:940907041918978@1601341128930/An-example-of-one-hot-encoding.png)
+
+It's important to note that one-hot encoding can significantly increase the dimensionality of the dataset, as it introduces a new binary variable for each category. This expansion in feature space can impact the computational requirements and model complexity, especially when dealing with a large number of categories.
+
+One-hot encoding is commonly used in machine learning tasks where categorical variables need to be incorporated into models, such as classification algorithms (e.g., logistic regression, decision trees) or neural networks.
+
+After this notion, we will apply one hot encoding on `mfr` and `type` variables. As in many approaches, various packages and functions are applicable for this transformation. Here, we will use `dummyVars` function from `caret` package. 
+
+```{r}
+library(caret)
+#define your one hot encoding function 
+dummy <- dummyVars(" ~ .", data=cereals)
+head(dummy)
+```
+
+
+```{r}
+#perform one-hot encoding on data frame
+final_df <- data.frame(predict(dummy, newdata=cereals))
+head(final_df)
+```
+
+After one hot encoding, lets check the dimension. 
+
+```{r}
+dim(final_df)
+```
+The dimension of the data is increased from 15 to 22. It is awful lot of variables for a frame with 77 observations. Now, lets use `Boruta` to select the important variables.
+
+```{r}
+library(Boruta)
+set.seed(111)
+boruta.cereal_train <- Boruta(rating~., data = final_df, doTrace = 2)
+print(boruta.cereal_train)
+```
+
+When using Boruta for feature selection, some features may be classified as "tentative." This means that their importance is very close to their best shadow features, and Boruta cannot confidently make a decision about their significance within the default number of Random Forest runs.
+
+To address this situation, there are a few options you can consider:
+
+Increase the maxRuns parameter: If there are still tentative features remaining, you can try increasing the maxRuns parameter. This allows Boruta to perform more iterations of the Random Forest algorithm, which may provide more confidence in determining the importance of these features.
+
+Specify mtry and ntree parameters: You can provide values for the mtry and ntree parameters, which are passed to the randomForest() function. The mtry parameter determines the number of variables randomly considered as candidates at each split, while the ntree parameter specifies the number of trees to grow in the Random Forest classifier. By setting appropriate values for these parameters, you can help the Random Forest classifier converge at a minimal out-of-bag error, which is an estimate of the prediction error using bootstrap aggregation.
+
+Set doTrace argument: Another option is to set the doTrace argument to 1 or 2. This enables you to receive a progress report during the feature selection process, providing insights into the iterations and decisions made by Boruta.
+
+Additionally, the boruta package includes a TentativeRoughFix() function. This function can be used to fill missing decisions for tentative features by comparing the median feature Z-score with the median Z-score of the most important shadow feature. This comparison helps in making a more informed decision about the significance of these features.
+
+In summary, when dealing with tentative features in Boruta, you can adjust parameters such as maxRuns, mtry, and ntree to improve the feature selection process. You can also enable progress tracking using the doTrace argument and utilize the TentativeRoughFix() function to fill missing decisions based on Z-score comparisons.
+
+```{r}
+#take a call on tentative features
+boruta.cereal <- TentativeRoughFix(boruta.cereal_train)
+print(boruta.cereal)
+```
+
+Once Boruta has completed its feature classification, you can generate a Boruta variable importance chart using the plot(boruta.bank) function. However, the default behavior of this plot is to display the x-axis labels horizontally, which may not be visually optimal.
+
+To improve the visual appearance of the plot, you can adjust the x-axis labels to be displayed vertically. This can be achieved by using the following code chunk as an example:
+
+```{r}
+plot(boruta.cereal, xlab = "", xaxt = "n")
+lz<-lapply(1:ncol(boruta.cereal$ImpHistory),function(i)
+boruta.cereal$ImpHistory[is.finite(boruta.cereal$ImpHistory[,i]),i])
+names(lz) <- colnames(boruta.cereal$ImpHistory)
+Labels <- sort(sapply(lz,median))
+axis(side = 1,las=2,labels = names(Labels),
+at = 1:ncol(boruta.cereal$ImpHistory), cex.axis = 0.7)
+```
+
+
+The y axis label Importance represents the Z score of every feature in the shuffled dataset.
+
+The blue boxplots correspond to minimal, average and maximum Z score of a shadow feature, while the red and green boxplots represent Z scores of rejected and confirmed features, respectively. As you can see the red boxplots have lower Z score than that of maximum Z score of shadow feature which is precisely the reason they were put in unimportant category.
+
+You can confirm the importance of the features by typing:
+
+```{r}
+getSelectedAttributes(boruta.cereal, withTentative = F)
+#withTentative=F -> you do not consider the tentative variables. 
+```
+
+Consequently, you can proceed with these variables in your further analysis. 
+
+
+**Exercise Time**
+
+Please click [here](https://users.metu.edu.tr/ozancan/r9e1.zip) and download your exercise.
+
+**References:**
+
++ https://medium.com/analytics-vidhya/all-you-need-to-know-about-gradient-descent-f0178c19131d
++ https://www.datacamp.com/tutorial/feature-selection-R-boruta
+
+
+
+
