@@ -1,0 +1,703 @@
+---
+title: "STAT 412-Recitation 10"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##<span style=color:darkred>**Reminder**</span>
+
+Before looking at the lecture note, I would like to leave a song.  
+ 
+If you want to listen, please click [here.](https://www.youtube.com/watch?v=TJEOU4bEVAI)
+
+Last week, we talked about 
+
++ Supervised Learning
+
++ Gradient Descent Algorithm
+
++ Boruta Feature Selection Algorithm 
+
+Please install the following packages.
+
++ ```tidyverse```
+
++ ```neuralnet```
+
++ ```GGally```
+
++ ```nnet```
+
++ ```caret```
+
+```
+install.packages(c("tidyverse","neuralnet","GGally","nnet","caret"))
+```
+
+## <span style=color:darkred>**Artificial Neural Network** </span> 
+
+Artificial neural networks (ANNs) describe a specific class of machine learning algorithms designed to acquire their own knowledge by extracting useful patterns from data. ANNs are function approximators, mapping inputs to outputs, and are composed of many interconnected computational units, called neurons. Each individual neuron possesses little intrinsic approximation capability; however, when many neurons function cohesively together, their combined effects show remarkable learning performance. This tutorial provides an introduction to ANNs and discusses a few key features to consider and will demonstrate how to apply ANNs.
+
+#### <span style=color:darkred>**Biologic Model**</span>
+
+ANNs are engineered computational models inspired by the brain (human & animal). While some researchers used ANNs to study animal brains, most researchers view neural networks as being inspired by, not models of, neurological systems.The following figure shows the basic functional unit of the brain, a biologic neuron.
+
+![](http://users.metu.edu.tr/ozancan/ann1.PNG)
+
+ANN neurons are simple representations of their biologic counterparts. In the biologic neuron figure please note the **Dendrite**, **Cell body**, and the **Axon** with the **Synaptic terminals**. In biologic systems, information (in the form of neuroelectric signals) flow into the neuron through the dendrites. If a sufficient number of input signals enter the neuron through the dendrites, the cell body generates a response signal and transmits it down the axon to the synaptic terminals. The specific number of input signals required for a response signal is dependent on the individual neuron. When the generated signal reaches the synaptic terminals neurotransmitters flow out of the synaptic terminals and interact with dendrites of adjoining neurons. There are three major takeaways from the biologic neuron:
+
+The neuron only generates a signal if a sufficient number of input signals enter the neurons dendrites (all or nothing)
+Neurons receive inputs from many adjacent neurons upstream, and can transmit signals to many adjacent signals downstream (cumulative inputs)
+Each neuron has its own threshold for activation (synaptic weight).
+
+
+
+#### <span style=color:darkred>**Artifical Neuron**<\span>
+
+The artificial analog of the biologic neuron is shown below in the following figure. In the artificial model the inputs correspond to the dendrites, the transfer function, net input, and activation function correspond to the cell body, and the activation corresponds to the axon and synaptic terminal.
+
+
+![](http://users.metu.edu.tr/ozancan/ann2.PNG)
+
+The inputs to the artificial neuron may correspond to raw data values, or in deeper architectures, may be outputs from preceding artificial neurons. The transfer function sums all the inputs together (cumulative inputs). If the summed input values reach a specified threshold, the activation function generates an output signal (all or nothing). The output signal then moves to a raw output or other neurons depending on specific ANN architecture. This basic artificial neuron is combined with multiple other artificial neurons to create an ANNs such as the ones shown in the figure below.
+
+![](http://users.metu.edu.tr/ozancan/ann3.PNG)
+
+ANNs are often described as having an Input layer, Hidden layer, and Output layer. The input layer reads in data values from a user provided input. Within the hidden layer is where a majority of the "learning" takes place, and the output layer displays the results of the ANN. In the bottom plot of the figure above, each of the red input nodes correspond to an input vector $\vec{x}_{i}$  Each of the black lines with correspond to a weight $w^{(l)}_{ij}$ and describe how artificial neurons are connections to one another within the ANN. The  $i$
+subscript identifies the source and the
+$j$ subscript describes to which artificial neuron the weight connects the source to. The green output nodes are the output vectors $\vec{y}_{q}$.
+
+Examination of the figures top-left and top-right plots show two possible ANN configurations. In the top-left, we see a network with one hidden layer with $q$ artificial neurons, $p$ input vectors $\vec{x}$, and generates $q$ output vectors $\vec{y}$. Please note the **bias** inputs to each hidden node, denoted by the $b_q$. The bias term is a simple constant valued 1 to each hidden node acting akin to the grand mean in a simple linear regression. Each bias term in a ANN has its own associated weight $w$. n the top-right ANN we have a network with two hidden layers. This network adds superscript notation to the bias terms and the weights to identify to which layer each term belongs. Weights and biases with a superscript 1 act on connecting the input layer to the first layer of artificial neurons and terms with a superscript 2 connect the output of the second hidden layer to the output vectors.
+
+The size and structure of ANNs are only limited by the imagination of the analyst.
+
+
+#### <span style=color:darkred>**Activation Functions**</span> 
+
+The capability of ANNs to learn approximately any function, (given sufficient training data examples) are dependent on the appropriate selection of the Activation Function(s) present in the network. Activation functions enable the ANN to learn non-linear properties present in the data. We represent the activation function here as $\phi(\cdot)$. The input into the activation function is the weighted sum of the input features from the preceding layer. Let $o_j$ be the output from the  jth neuron in a given layer for a network for k input vector features.
+
+$o_j=\phi(b_j+\sum\limits_{i=1}^p w_ix_i)$
+
+The output $o_j$ can feed into the output layer of a neural network, or in deeper architectures may feed into additional hidden layers. The activation function determines if the sum of the weighted inputs plus a bias term is sufficiently large to trigger the firing of the neuron. There is not a universal best choice for the activation function, however, researchers have provided ample information regarding what activation functions work well for ANN solutions to many common problems. The choice of the activation function governs the required data scaling necessary for ANN analysis. Below we present activation functions commonly seen in may ANNs.
+
+![.](http://users.metu.edu.tr/ozancan/ann4.png)
+
+#### How ANNs Learn
+We have described the structure of ANNs, however, we have not touched on how these networks learn. For the purposes of this discussion we assume that we have a data set of labeled observations. Data sets in which we have some features $(X)$ describing an output $(\vec{y})$ fall under machine learning techniques called Supervised Learning. To begin training our notional single-layer one-neuron neural network we initially randomly assign weights. We then run the neural network with the random weights and record the outputs generated. This is called a forward pass. Output values, in our case called $\vec{y}$, are a function of the input values $(X)$, the random initial weights ($\vec{w}$) and our choice of the threshold function $(T)$
+
+$\vec{\hat{y}} = f(X, \vec{w}, T)$
+
+Once we have our ANN output values $(\vec{\hat{y}})$ we can compare them to the data set output values $(\vec{{y}})$. To do this we use a performance function 
+$P$. The choice of the performance function is a choice of the analyst, we choose to use the One-Half Square Error Cost Function otherwise known as the Sum of Squared Errors (SSE).
+
+$P = \frac{1}{2}\|\vec{y}-\vec{\hat{y}}\|^{2}_{2}$
+
+Now that we have our initial performance, we need a method to adjust the weights to improve the performance. For our performance function $P$, to maximize the performance of the one-layer, one-neuron neural network, we need to minimize the difference between ANN predicted output values $(\vec{\hat{y}})$ and the observed data set outputs $(\vec{{y}})$. Recall that our neural network is simply a function $\vec{\hat{y}} = f(X, \vec{w}, T)$ Thus we can minimize the MSE by differentiating the performance function with respect to the weights $(w)$. Recall however, the weights in our ANN is a vector, thus we need to update each weight individually, so we require the use of the partial derivative. Additionally, we need to determine how much we want to improve. So we add a parameter $r$ , called the learning rate parameter, which is a scalar value that controls how far we move closer to the optimum weight values. The weight updates are calculated as follows:
+$\Delta \vec{w} = r*(\frac{\partial P}{\partial w_0},\frac{\partial P}{\partial w_1}, ... ,\frac{\partial P}{\partial w_q})$
+
+The previous equation describes how to adjust each of the weights associated with the $q$ input features of $X$
+and the bias weight $b_0$. We then update the weight values as prescribed by the above equation. This process is called Back-Propagation. Once the weights are updated, we can re-run the neural network with the update weight values. This entire process can be repeated a number of times until either, a set number of iterations occur, or, we reach a pre-specified performance value (minimum error rate).
+
+The back-propagation algorithm (described in the previous paragraphs) is the fundamental process by which an ANN learns. This brief example merely summaries high level details of the procedure.
+
+The back-propagation algorithm is the most computationally expensive component to many neural networks. Given a ANN, back-propagation requires $O(l)$ operations for $l$-hidden layers, and $O(w^2)$ perations for the number of input weights. We often describe ANNs in terms of depth and width, where the depth refers to the number of total layers, and the width refers to the number of neurons within each layer.
+
+Prior to moving on to ANN application we must touch on one more topic, neural network **hyperparameters**
+
+####<span style=color:darkred>**ANN Hyperparameters**<\span>
+
+ANN hyperparameters are settings used to control how a neural network performs. We have seen examples of hyperparameters previously, for example the learning rate in back-propagation and the selection of MSE as the performance metric. Hyperparameters dictate how well neural networks are able to learn the underlying functions they approximate. Poor hyperparameter selection can lead to ANNs that fail to converge, exhibit chaotic behavior, or converge too quickly at local, not global, optimums. Hyperparameters are initially selected based on historical knowledge about the data set being analyzed and/or based on the type of analysis being conducted. The optimum values of hyperparameters are dependent on the specific data sets being analyzed, therefore, in a majority of neural network analysis, hyperparameters need to be tuned for the best performance. The No Free Lunch Theorem states that no machine learning algorithm (neural networks included) is always better at predicting new, unobserved, data points universally. When building a ANN, we are looking a building a network that performs reasonably well on a specific data set, not on all possible data sets.
+
+The ultimate goal of an ANN is to train the network on training data, with the expectation that given new data the ANN will be able to predict their outputs with accuracy. The capability to predict new observations is called generalization. Generally, when ANNs are developed they are evaluated against one data set that has been split into a training data set and a test data set. The training data set is used to train the ANN, and the test data set is used to measure the neural networks capacity to generalize to new observations. When testing ANN hyperparameters we generally see multiple ANNs created with different hyperparameters trained on the training data set. Each of the ANNs are tested against the test data set and the ANN with the lowest test data set error is assumed to be the neural network with the best capacity to generalize to new observations.
+
+When testing ANNs we are concerned with two types of error, under-fitting and over-fitting. An ANN exhibiting under-fitting is a neural network in which the error rate of the training data set is very high. An ANN exhibiting over-fitting has a large gap between the error rates on the training data set and the error rates on the test data set. We expect to see a slight performance decrease between the test and training data set error rates, however if this gap is large, over-fitting may be the cause. Researchers can always design a ANN with perfect performance on the training data set by increasing either the width or depth of the neural network. Adjusting these ANN hyperparameters is an adjustment of the neural networks capacity. In much the same way we can fit high-order polynomials in linear regression to perfectly match the output as a function of the regressors, ANNs can be gamed by simply adding depth to the network. An over-capacity ANN is likely to show over-fitting when tested against the test data set. ANNs are function approximators, and as approximators we are looking for a neural network that is no larger or complex than it needs to be for the required performance. Given two ANNs with equal test data set error performance, Occams razor dictates that the simplest model be selected, given no additional information.
+
+
+
+#### <span style=color:darkred>**Application 1**<\span>
+
+**ANN Regression**
+
+Regression ANNs predict an output variable as a function of the inputs. The input features (independent variables) can be categorical or numeric types, however, for regression ANNs, we require a numeric dependent variable. If the output variable is a categorical variable (or binary) the ANN will function as a classifier. 
+
+There are awful lot of ways to construct an ANN structure in R, but we will use ```caret``` package since it provides the opportunity of creating NN models using different package. 
+
+To develop a supervised learning models in Caret, you must check [this](https://topepo.github.io/caret/index.html) and [this](https://towardsdatascience.com/a-guide-to-using-caret-in-r-71dec0bda208?gi=122cab7d4288).
+
+We require the following packages for the analysis.
+
+
+We require the following packages for the analysis.
+
+
+```{r, warning=FALSE,error=FALSE,message=FALSE}
+library(tidyverse)
+library(nnet)
+library(GGally)
+library(caret)
+```
+
+
+
+Our regression ANN will use the Yacht Hydrodynamics data set from UCIs Machine Learning Repository. The yacht data was provided by Dr. Roberto Lopez email. This data set contains data contains results from 308 full-scale experiments performed at the Delft Ship Hydromechanics Laboratory where they test 22 different hull forms. Their experiment tested the effect of variations in the hull geometry and the ship's Froude number on the crafts residuary resistance per unit weight of displacement.
+
+To begin we download the data from UCI.
+
+
+```{r,warning=TRUE}
+url <- 'http://archive.ics.uci.edu/ml/machine-learning-databases/00243/yacht_hydrodynamics.data'
+
+Yacht_Data <- read_table(file = url,
+                         col_names = c('LongPos_COB', 'Prismatic_Coeff',
+                                       'Len_Disp_Ratio', 'Beam_Draut_Ratio', 
+                                       'Length_Beam_Ratio','Froude_Num', 
+                                       'Residuary_Resist')) %>%na.omit()
+```
+
+In this instance, we omit the missing observations for practical advantages. However, you should consider more advanced techniques in your real life applications. 
+
+
+```{r}
+head(Yacht_Data)
+```
+
+Prior to any data analysis lets take a look at the data set.
+
+
+```{r,warning=TRUE}
+ggpairs(Yacht_Data, title = "Scatterplot Matrix of the Features of the Yacht Data Set")
+```
+
+
+Here we see an excellent summary of the variation of each feature in our data set. Draw your attention to the bottom-most strip of scatter-plots. This shows the residuary resistance as a function of the other data set features (independent experimental values). The greatest variation appears with the Froude Number feature. It will be interesting to see how this pattern appears in the subsequent regression ANNs.
+
+Prior to regression ANN construction we first must split the Yacht data set into test and training data sets. After that, scale each **feature** to fall in the [0,1] interval. In doing so, we will create `scaler` function. 
+
+
+
+```{r}
+# Scale the Data
+scaler <- function(x){
+  (x - min(x)) / (max(x) - min(x))
+}
+```
+
+
+Then, partition your data as train and test.
+
+```{r}
+# Split the data into training and test set
+set.seed(123)
+training.samples <- Yacht_Data$Residuary_Resist %>% createDataPartition(p = 0.8, list = FALSE) #createDataPartition helps you define train set index 
+train.data  <- Yacht_Data[training.samples, ]
+test.data <- Yacht_Data[-training.samples, ]
+```
+
+
+```{r}
+train_data_new<- train.data%>%select(-Residuary_Resist)%>%scaler()%>%cbind(train.data$Residuary_Resist)%>%as_tibble()%>%mutate(Residuary_Resist = `train.data$Residuary_Resist`)%>%select(-`train.data$Residuary_Resist`)
+```
+
+```{r}
+head(train_data_new)
+```
+
+In above code chunks, we scale the inputs of the model with their mean and standard deviation and then combine the response `Residuary_Resist` with those scaled inputs. Here one important reminder should be noticed. Since the data does not have any categorical variable, we applied scaling direct. If you have a categorical variable, you can include them to your input matrix by **One Hot Encoding**. After encoding, you do not need to scale the newly created binary features, since they are already between 0 and 1. 
+
+**Why we scale the inputs?**
+
+To speed up the algorithm. 
+
+After that, apply the same procedure for the test data.
+
+
+```{r}
+test_data_new<- test.data%>%select(-Residuary_Resist)%>%scaler()%>%cbind(test.data$Residuary_Resist)%>%as_tibble()%>%mutate(Residuary_Resist = `test.data$Residuary_Resist`)%>%select(-`test.data$Residuary_Resist`)
+```
+
+```{r}
+head(test_data_new)
+```
+
+As stated above, there are many packages to construct a feed forward neural network in R, but we proceed with `caret` and its dependencies. We use `neuralnet` package for our regression problem. [Here](https://topepo.github.io/caret/train-models-by-tag.html#neural-network), you can reach out the list of the packages that you can use for NN models in R with `caret`. 
+
+To improve the prediction capability of your algorithm and prevent it from possible dangers like over-fitting, we need to tune the model parameters, called hyperparamter tunning. Note that the optimized parameter values for a ML algorithm can be obtained via **cross-validation**. 
+
+In `caret`, `train`  function can be used to
+
++ evaluate, using resampling, the effect of model tuning parameters on performance
+
++ choose the optimal model across these parameters
+
++ estimate model performance from a training set 
+
+The `nnet` package that can be used for both regression and classification purposes has two parameters to be tuned. 
+
++ size (#Hidden Units)
+
++ decay (Weight Decay)
+
+We can follow two possible ways, of course there are more, for hyper-parameter tuning; grid search and random search. In grid search, the algorithm tries the parameter values in the pre-defined range by user. On the other hand, the algorithm randomly pick points and improve it through the obtained result in random search. 
+
+Consider random search in this example, so define the criteria for training via `trainControl` function.
+
+```{r}
+tr_control<-trainControl(method = "repeatedcv", number =10,repeats = 5, search = "random")
+```
+
+We train our network algorithm with 10 fold CV with 5 repeats and tune the parameters via random search. 
+
+
+```{r, warning=TRUE}
+set.seed(1)
+nn_model <-train(Residuary_Resist ~.,  data =train_data_new, method = "nnet", trControl = tr_control)
+```
+
+You can see the details of your model by executing model object name.
+
+```{r}
+nn_model
+```
+```{r}
+nn_model$bestTune #gives the optimal parameter values.
+```
+
+
+The output shows that the optimal parameters for your network are `size = 2`  and `decay = 0.09221185	`, which gives the highest $R^2$  and lowest $MAE$ values used for training criteria. You can change those metrics in your `trainControl` object.  
+
+You can draw your training process across the loss function and parameter values by `plot` function.
+
+
+```{r}
+plot(nn_model)
+```
+
+
+To get the structure of your final model. 
+
+```{r}
+nn_model$finalModel
+```
+
+You have two layers NN model where the first layer has 6 neurons and the second one has 2 neurons. 
+
+To get the visual of your model.
+
+```{r}
+library(devtools)
+#get a function
+source_url('https://gist.githubusercontent.com/fawda123/7471137/raw/466c1474d0a505ff044412703516c34f1a4684a5/nnet_plot_update.r')
+plot.nnet(nn_model$finalModel)
+```
+
+
+The model performance on training data is already represented in model summary. Now, calculate the model performance on the test data. Before this, get your predictions using `predict()` function.
+
+
+```{r}
+nn_predict<-predict(nn_model$finalModel,test_data_new)
+```
+
+Then, 
+
+```{r}
+paste("MAE of Model:", MAE(as.numeric(nn_predict),test_data_new$Residuary_Resist))
+```
+
+```{r}
+paste("RMSE of Model:", RMSE(as.numeric(nn_predict),test_data_new$Residuary_Resist))
+```
+
+```{r}
+nn_model
+```
+
+```{r}
+summary(nn_model)
+```
+
+
+
+#### <span style=color:darkred>**Application 2**<\span>
+
+**ANN Classification**
+
+Classification ANNs seek to classify an observation as belonging to some discrete class as a function of the inputs. The input features (independent variables) can be categorical or numeric types, however, we require a categorical feature as the dependent variable.
+
+**Data Preparation**
+
+Our classification ANN will use Haberman's Survival data set from UCI's Machine Learning Repository. Haberman's data set was provided by Tjen-Sien Lim email, and contains cases from a 1958 and 1970 study conducted at the University of Chicago's Billings Hospital on the survival of 306 patients who had undergone surgery for breast cancer. We will use this data set to predict a patients 5-year survival as a function of their age at date of operation, year of the operation, and the number of positive axillary nodes detected.
+
+We first download the data from UCI. When this data is imported, the `Survival` feature is imported as an integer, this needs to be a categorical logical value so we will modify this feature using the mutate() function in the dplyr package. A value of 1 in the Survival feature indicates that the patient survived for at least 5 years after the operation, and a value of 0 indites that the patient died within 5 years.
+
+
+```{r,warning=TRUE,message=TRUE}
+url <- 'http://archive.ics.uci.edu/ml/machine-learning-databases//haberman/haberman.data'
+
+Hab_Data <- read_csv(file = url,col_names = c('Age', 'Operation_Year', 
+                                   'Number_Pos_Nodes','Survival')) 
+
+head(Hab_Data)
+```
+
+```{r}
+dplyr::glimpse(Hab_Data)
+```
+
+We transformed our response variable for ease in the following process. 
+
+```{r}
+Hab_Data <- Hab_Data %>%
+  na.omit() %>%
+  mutate(Survival = ifelse(Survival == 2, "NotSurvive", "Survive"),Survival = factor(Survival))
+```
+
+Check the proportion of your response.
+
+```{r}
+prop.table(table(Hab_Data$Survival))
+```
+
+
+
+To have a quick insight about the data.
+
+```{r}
+ggpairs(Hab_Data, title = "Scatterplot Matrix of the Features of the Haberman's Survival Data Set")
+```
+
+A brief examination of the data sets shows that many more patients survived at least 5 years after the operation. Of the patients that survived (bottom-subplots of the Survival row in the Scatterplot Matrix), we see many of the patients have few numbers of positive axillary nodes detected. Examination of the Age feature shows a few of the most elderly patients died within 5 years, and of the youngest patients we see increased 5-year survivability. We forego any more detailed visual inspection in favor of learning the relationships between the features using our classification ANN.
+
+As in previous example, we **scale** our predictors, then partition data into train and test sets. 
+
+```{r}
+# Split the data into training and test set
+set.seed(123)
+training.samples <- Hab_Data$Survival %>% createDataPartition(p = 0.8, list = FALSE) #createDataPartition helps you define train set index 
+train.data  <- Hab_Data[training.samples, ]
+test.data <- Hab_Data[-training.samples, ]
+```
+
+
+```{r}
+train_data_new_class<- train.data%>%select(-Survival)%>%scaler()%>%cbind(train.data$Survival)%>%as_tibble()%>%mutate(Survival = `train.data$Survival`)%>%select(-`train.data$Survival`)
+```
+
+```{r}
+head(train_data_new_class)
+```
+
+
+After that, follow the same steps for test data.
+
+```{r}
+test_data_new_class<- test.data%>%select(-Survival)%>%scaler()%>%cbind(test.data$Survival)%>%as_tibble()%>%mutate(Survival = `test.data$Survival`)%>%select(-`test.data$Survival`)
+```
+
+```{r}
+head(test_data_new_class)
+```
+
+Check the proportion of the levels of the response variable in your both train and test data.
+
+
+```{r}
+prop.table(table(train_data_new_class$Survival)) #train
+```
+
+
+```{r}
+prop.table(table(test_data_new_class$Survival)) #test
+```
+Since the proportions in train data, test data and raw data are almost equal, we can say that the samples are random.
+
+Both train and test sets are prepared for the training. Now, we will build the structure. In contrast to the previous exercise, we use grid search to tune our parameters. 
+
+
+At first, we determine our training rules.
+
+```{r}
+tr_control_for_class <- trainControl(method = "repeatedcv", number = 10, repeats = 5, classProbs = T, summaryFunction = twoClassSummary, savePredictions = T)
+```
+
+Then, define your grid ranges for your parameters to be tuned; `size` and `decay`.
+
+```{r}
+nnetGrid <- expand.grid(size = seq(1,20,4),decay = seq(0.1,0.5,0.1))
+```
+
+Train the algorithm.
+
+```{r}
+set.seed(123)
+nn_model_class <- train(Survival~.,data = train_data_new_class,method = "nnet", metric = "ROC",trControl =tr_control_for_class, tuneGrid = nnetGrid, verbose = F, savePredictions = T)
+
+```
+
+See the model details.
+
+```{r}
+nn_model_class
+```
+The optimal model parameters are `r nn_model_class$bestTune` which produces the highest ROC, specificity and sensivity. As in the regression task, you can change those metrics in your `trainControl` object.  
+
+
+You can draw your training process across the loss function and parameter values by `plot` function.
+
+
+```{r}
+plot(nn_model_class)
+```
+
+The trained network architecture to be employed is assesed by
+
+```{r}
+nn_model_class$finalModel
+```
+
+You have two layers NN model where the first layer has 3 neurons and the second one has 13 neurons. The network uses 66 weights to produce the final output. 
+
+To get the visual of your model.
+
+```{r}
+library(devtools)
+#get a function
+source_url('https://gist.githubusercontent.com/fawda123/7471137/raw/466c1474d0a505ff044412703516c34f1a4684a5/nnet_plot_update.r')
+plot.nnet(nn_model_class$finalModel)
+```
+
+The model performance on training data is already represented in model summary. Now, calculate the model performance on the test data. Before this, get your predictions using `predict()` function.
+
+```{r}
+nn_predict_resp <- predict(nn_model_class,test_data_new_class)
+nn_predict_resp
+```
+
+`predict` function in `caret` directly returns the predicted classes. If you would like to get the class probabilites use `type ="prob"` argument. 
+
+```{r}
+test_tab = table(predicted = nn_predict_resp, actual = test_data_new_class$Survival)
+confusionMatrix(test_tab)
+```
+The output shows that the model produces a biased result since all predicted classes are Survival. This causes an unsatisfactory accuracy result, $0.74$, high specificity, $1$ and terrible sensitivity, $0$.
+
+In this case, you can change your model architecture , packages or use random search to tune the parameters. 
+
+For example, you can consider `neuralnet` package. This package needs `neuralnet` function to construct the network. In contrast to the `caret`, you can enter your parameters manually, including activation function.
+
+```{r}
+library(neuralnet)
+set.seed(1234) # make your model reproducible
+hab_neural_net<-neuralnet(Survival ~ Age + Operation_Year + Number_Pos_Nodes, 
+                                data = Hab_Data, 
+                                linear.output = FALSE, 
+                                act.fct = "logistic",
+                                err.fct = 'ce', 
+                                likelihood = TRUE, 
+                                hidden = c(2,2))
+```
+
+Get the summary of the network.
+
+```{r}
+summary(hab_neural_net)
+```
+
+You can visualize your network algorithm with `plot` function.
+
+```{r}
+plot(hab_neural_net, rep = 'best')
+```
+
+
+Since this output provides the weights, you can make an interpretation about the featuers. For instance, `Operation_Year` is the most efficient predictor on the `Survival` situation since it has the highest weight. 
+
+To evaluate the performance of your model on test data, get your predictions via `predict` command. 
+
+```{r}
+hab_neural_net_prediction <- predict(hab_neural_net,test_data_new_class)
+head(hab_neural_net_prediction)
+```
+
+`predict` function returns the class probabilities of each class for each individual without specifying the class names. To understand which column corresponds which class, you can extract the `$response` argument from your model object. 
+
+```{r}
+colnames(hab_neural_net$response)
+```
+
+The output shows that the first column is for `Survive`, the second one is for `NotSurvive`. After that we produce a label for prediction vector using class probabilities. If the prob of `Survive` is above the one for `NotSurvive`, assign `Survive` or vice versa.
+
+```{r}
+hab_neural_net_class<-factor(ifelse(hab_neural_net_prediction[,1]>hab_neural_net_prediction[,2],"Survive","NotSurvive"),levels = c("Survive","NotSurvive"))
+head(hab_neural_net_class)
+```
+
+```{r}
+confusionMatrix(data =  hab_neural_net_class, reference = test_data_new_class$Survival)
+```
+
+
+**ANN Classification Example 2**
+
+In this motivating example, we use ```Default``` dataset from ```ILSR```. Remember that we use this data in Recitation 8.
+
+```{r}
+library(ISLR)
+data(Default)
+head(Default)
+```
+Check the structure of the data. 
+
+
+```{r}
+dplyr::glimpse(Default)
+```
+
+Obtain the summary of the data. (Thereby, we also check the missing value.)
+
+```{r}
+summary(Default)
+```
+
+The response variable is `default`. Thus, it is better to check the proportion of the levels. 
+
+```{r}
+prop.table(table(Default$default))
+```
+
+Note that the data has `student` is a categorical variable. Let's include this variable to your model by applying **one hot encoding.**
+
+```{r}
+library(caret)
+#define your one hot encoding function 
+dummy <- dummyVars(" ~ .", data=Default[,-1])
+#perform one-hot encoding on data frame
+final_df <- data.frame(Default$default,predict(dummy, newdata=Default))
+colnames(final_df)[1]<-"default"
+head(final_df)
+```
+
+Then divide your data into train and test sets. 
+
+```{r}
+set.seed(42)
+default_idx = final_df$default %>% createDataPartition(p = 0.8, list = FALSE) #produce index number for train data
+default_trn = final_df[default_idx, ]
+default_tst = final_df[-default_idx, ]
+```
+
+Construct the proportion of response variable.
+
+```{r}
+prop.table(table(default_trn$default))
+```
+
+```{r}
+prop.table(table(default_tst$default))
+```
+
+As seen, the proportion of the levels of the response are close to each other and we kept the original proportion. 
+
+Then, replace your numerical inputs with their scaled versions in both train and test data.
+
+```{r}
+default_trn<-data.frame(default_trn[,1:3],default_trn%>%select(c("balance","income"))%>%scaler())
+head(default_trn)
+```
+
+
+
+```{r}
+default_tst<-data.frame(default_tst[,1:3],default_tst%>%select(c("balance","income"))%>%scaler())
+head(default_tst)
+```
+
+Determine your training criterias. 
+
+```{r}
+ctrl_mlp <- trainControl(method = "cv", number = 5, classProbs = T, summaryFunction = twoClassSummary, savePredictions = T,search = "random")
+```
+
+We train our network algorithm with 10 fold CV and tune the parameters via random search. 
+
+
+```{r, warning=TRUE}
+set.seed(123)
+library(nnet)
+mlpetFit <- caret::train(default ~.,  data =default_trn, method="nnet",
+ metric = "ROC", trControl = ctrl_mlp,  verbose = F, savePredictions = T)
+```
+
+
+See the model details.
+
+```{r}
+mlpetFit
+```
+
+The optimal model parameters are `r mlpetFit$bestTune` which produces the highest ROC, specificity and sensivity. As in the regression task, you can change those metrics in your `trainControl` object.  
+
+
+You can draw your training process across the loss function and parameter values by `plot` function.
+
+
+```{r}
+plot(mlpetFit)
+```
+
+The trained network architecture to be employed is seen by
+
+```{r}
+mlpetFit$finalModel
+```
+
+
+To get the visual of your model.
+
+```{r}
+library(devtools)
+#get a function
+source_url('https://gist.githubusercontent.com/fawda123/7471137/raw/466c1474d0a505ff044412703516c34f1a4684a5/nnet_plot_update.r')
+plot.nnet(mlpetFit$finalModel)
+```
+
+
+The model performance on training data is already represented in model summary. Now, calculate the model performance on the test data. Before this, get your predictions using `predict()` function.
+
+
+```{r}
+mlp_predict_resp <- predict(mlpetFit,default_tst)
+mlp_predict_resp
+```
+
+`predict` function in `caret` directly returns the predicted classes. If you would like to get the class probabilites use `type ="prob"` argument. 
+
+Then, finally evaluate the performance. 
+
+
+```{r}
+caret::confusionMatrix(data = mlp_predict_resp, reference = default_tst$default)
+```
+
+
+**Exercise Time**
+
+Please click [here](https://users.metu.edu.tr/ozancan/r10e1.zip) and download your exercise.
+
+**References:**
+
++ https://topepo.github.io/caret/ 
+
+
+
+
