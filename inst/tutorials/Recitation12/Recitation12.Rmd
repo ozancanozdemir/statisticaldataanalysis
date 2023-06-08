@@ -1,0 +1,1515 @@
+---
+title: "STAT 412-Recitation 12"
+output: learnr::tutorial
+author: "Ozancan Ozdemir"
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## <span style=color:darkred>**Reminder**</span>
+
+![](https://media.tenor.com/Xl-paI3WxIAAAAAM/good-bye-simpsons.gif)
+
+Before the lab, you can listen a song from [here.](https://www.youtube.com/watch?v=A_gPDK73fBU)
+
+Please install the following packages or load the following packages.
+
++ `caret`
+
++ `ggplot2`
+
++ `e1071`
+
++ `randomForest`
+
++ `xgboost`
+
++ `gbm`
+
++ `iml`
+
++ `naivebayes`
+
++ `mlbench`
+
++ `GGally`
+
++ `dplyr`
+
+`install.packages(c("randomForest" , "caret" ,"xgboost" ,"GGally","mlbench" ,"caret","dplyr", "e1071","gbm","iml","naivebayes"))`
+
+
+## <span style=color:darkred>**Naive Bayes**</span>
+
+Naive Bayes is a popular supervised learning algorithm that utilizes Bayes Theorem, a well-known probability theorem, to address **classification** problems (Not applicable for regression). It assumes a strong independence among predictor variables, meaning that the classification model relies on **uncorrelated variables**. Some common applications of Naive Bayes include
+
++ email filtering
+    
++ spam detection
+    
++ document categorization
+    
+Despite being surpassed by other techniques at times and its simplistic assumptions, Naive Bayes can perform well in many complex real-world scenarios. Additionally, it is a resource-efficient algorithm known for its speed and scalability, making it a valuable tool in machine learning.
+
+**Why it is called Naive?**
+
+Now, you may wonder why it is called "Naive." Although predictor variables often exhibit some level of correlation, Naive Bayes relies on a strong independence assumption among the predictors, hence the name.
+
+
+**The Maths of Naive Bayes Classifier**
+
+The mathematics behind the Naive Bayes classifier is rooted in Bayes theorem, which calculates conditional probabilities. In its simplest form, the theorem relates two conditional probabilities for events A and B as follows:
+
+$P(A\cap B)=P(A, B)=P(A)P(B|A)=P(B)P(A|B)$
+
+$\implies P(B|A)=\frac{P(B)P(A|B)}{P(A)}$
+
+In a classification problem, we have some predictors (features/covarites/independent variables) and an outcome (target/class/ dependent variable). Each observartion has some values for the predictors and a class. From these predictors and associated classes we want to learn so that if the feature values are given, we can predict the class (that is all about supervised learning!). Now in Naive Bayes, the algorithm evaluates a probability for each class, when the predictor values are given. And intuitively, we can go for the class, that has highest probability.
+
+Suppose there are $n$ predictors, denoted by $X_1, X_2, X_3\dots, X_n$. And we have the outcome variable $y$, coming from one of the $k$ classes, denoted by $C_1, C_2, C_3\dots, C_n$.
+
+Now suppose the predictor values are given as follows:
+
+$X_1=x_1, X_2=x_2, X_3=x_3,\dots , X_n=x_n$
+
+Now what we want to do, to evaluate the probability of the observation coming from any of the $K$ classes, say $C_k$ We can write this in terms of conditional probability notation:
+
+$P(y=C_k|X_1=x_1,\ X_2=x_2,\ X_3=x_3,\dots , X_n=x_n)$
+
+$\text{or in short,}\ P(C_k|x_1, x_2,x_3,\dots ,x_n)$
+
+Now in the above Bayes formula, if we plug in $B=C_k$ and $A=x_1\cap x_2,\dots,\cap x_n=\{x_1, x_2,\dots, x_n\}$ we can write the above conditional probabiltiy as follows:
+
+$P(C_k|x_1, x_2,x_3,\dots , x_n)=\frac{P(C_k)P(x_1, x_2,\dots,x_n|C_k)}{P(x_1, x_2,\dots,x_n)}$
+
+Now the numerator of the above is just the joint probability of $C_k$ and $\{x_1, x_2,\dots,x_n\}$, that is $P(C_k\cap \{ x_1, x_2,\dots,x_n\})=P(C_k, x_1, x_2,\dots,x_n)$ We can apply the Bayes formula repeatively to get the following results:
+
+$P(C_k, x_1, x_2,\dots,x_n)=P(x_1, x_2,\dots,x_n, C_k)=P(x_2,x_3,\dots,x_n,C_k) P(x_1|x_2,x_3,\dots,x_n,C_k)$
+
+$=P(x_3, x_4,\dots,x_n, C_k)=P(x_2|x_3,x_4,\dots,x_n,C_k)) P(x_1|x_2,x_3,\dots,x_n,C_k)$
+
+$=P(x_4,x_5,\dots,x_n,C_k)P(x_3|x_4,x_5,\dots,x_n,C_k) P(x_2|x_3,x_4,\dots,x_n,C_k)P(x_1|x_2,x_3,\dots,x_n,C_k)$
+
+$....$
+
+$=P(C_k)P(x_n|C_k)P(x_{n-1}|x_n,C_k)\dots P(x_1|x_2,x_3, \dots,x_n, C_k)$
+
+**The conditional independence assumption**
+
+The previous expression is indeed lengthy and involves multiple conditional probabilities. However, by making a conditional independence assumption, this complex expression can be simplified significantly. The assumption states that given a specific class, let's say $C_k$, the predictor or feature values are independent of each other. In other words, there is no correlation between the features within a particular class. Mathematically, if events $A$ and $B$ are independent when conditioned on event $C$, the following relationship holds:
+
+$P(A|B,C)=P(A|C)$
+
+Now this formula can be applied for our case. We assumed that all the predictors $x_1, x_2,\dots, x_n$ are independent conditioned on class $C_k$. Therefore,
+
+$P(x_1|x_2,x_3,\dots, x_n,C_k)=P(x_1|C_k)$
+
+$P(x_2|x_3,x_4,\dots, x_n,C_k)=P(x_2|C_k)$
+
+and so on. Soand so on. So the long expression above can be written as:
+
+$P(x_1, x_2,\dots,x_n, C_k)=P(C_k)P(x_n|C_k)P(x_{n-1}|C_k)P(x_{n-2}|C_k)\dots P(x_1|C_k)$
+
+$\implies P(x_1, x_2,\dots,x_n, C_k)=P(C_k)\prod_{j=1}^{n}P(x_j|C_k)$
+
+So, we have
+
+$P(C_k|x_1, x_2,x_3,\dots , x_n)=\frac{P(C_k)\prod_{j=1}^{n}P(x_j|C_k)}{P(x_1, x_2,\dots,x_n)}$
+
+Now we are trying to get the probability of $C_k$ for given feature values. The denominator of above is a constant term for given features. So it will be enough to consider only the numerator part for comparing the probabilities of different class conditioned in fixed feature values. That is, we evaluate the numerator part for every possible values of $k\subset \{1,2,\dots,K\}$ and vote for the one with highest value.
+
+**The Prior and the Likelihood**
+
+$P(C_k)$ and $\prod_{j=1}^{n}P(x_j|C_k)$ in the above expression are known as the prior and the likelihood respectively. The prior can be estimated as $P(C_k)=\frac{n_{class \ k}}{n_{total}}$ For the likelihood, we need the conditional probability distributions, $f(X_j|C_k)$ for $j=1,2,\dots,n$. If $X_j$ is continuous, normality is a common assumption. If $X_j$ is discrete, a common assumption is multinomial distribution. Also we can apply non parametric distributions.
+
+
+
+## <span style=color:darkred>**Application 1-Naive Bayes Classification**<\span>
+
+
+For the example, we will use Pima Indians Diabetes Database dataset from mlbench package as in the previous recitation. The dataset is about prediction of the onset of diabetes in female Pima Indians from medical record data. You can find out more details about the dataset from [here.](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.names)
+
+
+```{r}
+library(mlbench)
+data(PimaIndiansDiabetes)
+head(PimaIndiansDiabetes)
+```
+
+Check the dimension of the data
+
+
+```{r}
+dim(PimaIndiansDiabetes)
+```
+
+Check the variable class of the data
+
+```{r}
+dplyr::glimpse(PimaIndiansDiabetes)
+```
+
+
+As you see, all feaures are numeric and our response variable, diabetes, is binary. In other words, it is a categorical variable with two levels.
+
+Note that the Naive Bayes requires independent features (inputs). Thus, check the correlation between the variables. 
+
+```{r}
+corr=cor(PimaIndiansDiabetes[,-9])#remove the response variable
+corr
+```
+
+Let's visualize it.
+
+```{r}
+library(ggcorrplot)
+ggcorrplot(corr, method = "circle")
+```
+As seen from both correlation matrix and the correlation plot, there is no serious association between the features. The data is suitable for the naive bayes implementation. 
+
+
+As written and known, Naive Bayes is a supervised learning algorithm. Therefore, we are supposed to have train and test data to design the model and predict the unseen objects.
+
+
+```{r}
+library(dplyr)
+library(caret)
+set.seed(123)
+training.samples <- PimaIndiansDiabetes$diabetes %>%createDataPartition(p = 0.8, list = FALSE) #createDataPartition helps you define train set index
+train.data  <- PimaIndiansDiabetes[training.samples, ]
+test.data <- PimaIndiansDiabetes[-training.samples, ]
+```
+
+There are many ways(packages) to construct a naive bayes structure, but we will use `caret` package again. The method we use among the existing ones is `naive_bayes` needing `naivebayes` package to run. This method has 3 parameters to be tuned.
+
++ laplace
+
++ usekernel
+
++ adjust
+
+However, first define your training rules using `trainControl` . 
+
+
+Let's define our training criteria using `trainControl` function.
+
+```{r}
+tr_control<-trainControl(method = "repeatedcv", number =10,repeats  =5,
+classProbs = T, summaryFunction = twoClassSummary, savePredictions = T,search = "random")
+```
+
+We train the classifier with 10 fold CV with 5 repeats and tune the parameters via random search. 
+
+```{r, warning=TRUE}
+set.seed(1)
+nb_model <-train(diabetes ~.,  data =train.data, method = "naive_bayes",  metric = "ROC",preProc =  c("center", "scale"),trControl = tr_control)
+```
+
+Apart from the SVM and ANN, the scaling of the features in NB is not necessary, but they might be efficient. You can apply scaling on your inputs after training and test division manually as we did in Recitation 10 or you can use `preProc` argument in `train` function as seen above.
+
+You can see the details of your model by executing model object name.
+
+```{r}
+nb_model
+```
+
+The optimal model parameters are obtained by extracting `bestTune` argument.
+
+```{r}
+nb_model$bestTune
+```
+
+You can print the details of the best model by extracting `finalModel` argument. 
+
+```{r}
+nb_model$finalModel
+```
+
+You can represent the training process visually. 
+
+```{r}
+plot(nb_model)
+```
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+train_prediction<-predict(nb_model,train.data)
+train.data_with_prediction<-cbind(train.data,train_prediction)
+p1<-ggplot(train.data_with_prediction,aes(triceps,mass,color = train_prediction))+geom_point()+labs(title ="Prediction")+theme(legend.position = "top")
+p2<-ggplot(train.data_with_prediction,aes(triceps,mass,color = diabetes))+geom_point()+labs(title ="Actual")+theme(legend.position = "top")
+grid.arrange(p1,p2,ncol = 2)
+```
+
+The plot above shows that the classification of the individuals with NB seems to the original one. 
+
+fter this representation, the next thing is to evaluate the model performance on the test data. We get the predictions from `predict` command, and evaluate the performance metrics via `confussionMatrix` function.
+
+
+
+```{r}
+nb_test_predict<-predict(nb_model, newdata= test.data)
+head(nb_test_predict)
+```
+
+```{r}
+confusionMatrix(data = nb_test_predict,reference = test.data$diabetes)
+```
+
+The accuracy of the model is 82.35%. This means that the model correctly predicts the class labels for 82.35% of the instances in the dataset.
+
+Sensitivity, also known as recall or true positive rate, measures the proportion of actual positive instances that are correctly identified by the model. In this case, the sensitivity is 0.87, indicating that the model correctly identifies 87% of the positive instances.
+
+Specificity measures the proportion of actual negative instances that are correctly identified by the model. In this case, the specificity is 0.7358, indicating that the model correctly identifies 73.58% of the negative instances.
+
+
+##  <span style=color:darkred>**Decision Trees** <\span>
+
+In the book of Data Science from Scratch, Joel Grus has used very interesting example to explain the concept of Decision Trees. It is a very famous game, the game of twenty questions In this game, one child would think of an animal or a place or a famous personality, etc. Others would ask questions to guess it. The game would go something like this :
+
+* I am thinking of an animal
+    
+* Does it have more than five legs?
+    
+"No"
+
+* Is it delicious?
+
+"No"
+
+* Does it appear on the back of the Australian 5 cent coin?
+
+"Yes"
+
+* Is it an echidna?
+
+"Yes, it is!"
+
+That is the basic idea behind decision trees. At each point, you consider a set of questions that can partition your data set. You choose the question that provides the best split and again find the best questions for the partitions. You stop once all the points you are considering are of the same class. Then the task of classification is easy. You can simply grab a point, and chuck it down the tree. The questions will guide it to its appropriate class.
+
+Now let’s create a little elaborate graph for “Guess the Animal “ game to illustrate the previous explanation.
+
+![](https://users.metu.edu.tr/ozancan/dt1.jpg)
+
+This is exactly how we would create a Decision Tree for any Data Science Problem also.
+
+
+Decision tree is a type of **supervised learning** algorithm that can be used in both **regression and classification problems**. It works for both categorical and continuous input and output variables.
+
+**Some real-life applications of Decision Trees include:**
+
++ Credit scoring models in which the criteria that cause an applicant to be rejected need to be clearly documented and free from bias.
+    
++ Marketing studies of customer behavior such as satisfaction or churn, which will be shared with management or advertising agencies.
+    
++ Diagnosis of medical conditions based on laboratory measurements, symptoms, or the rate of disease progression.
+    
+
+A standard decision tree is illustrated below.
+
+![](https://users.metu.edu.tr/ozancan/dt2.jpg)
+
+As shown, the decision trees have three main parts, Root Node, Decision Node and Terminal Node, and two process, Splitting and Pruning.
+
++ **Root Node** represents the entire population or sample. It further gets divided into two or more homogeneous sets.
+    
++ **Splitting** is a process of dividing a node into two or more sub-nodes.
+    
++ When a sub-node splits into further sub-nodes, it is called a **Decision Node.**
+    
++ Nodes that do not split is called a **Terminal Node** or a **Leaf.**
+    
++ When you remove sub-nodes of a decision node, this process is called **Pruning**. The opposite of pruning is **Splitting.**
+    
+* A sub-section of an entire tree is called **Branch.**
+    
+* A node, which is divided into sub-nodes is called a parent node of the sub-nodes; whereas the sub-nodes are called the child of the parent node.
+    
+
+The algorithm of the decision tree models works by repeatedly partitioning the data into multiple sub-spaces so that the outcomes in each final sub-space is **as homogeneous as possible**. This approach is technically called **recursive partitioning.** The produced result consists of a set of rules used for predicting the outcome variable, which can be either:
+
+* a continuous variable, for regression trees
+    
+* a categorical variable, for classification trees
+    
+
+The decision rules generated by several decision tree algorithms including CART, ID3 etc.
+
+Today, we are mostly interested in the CART (Classification & Regression Trees) which is the predictive model are generally visualized as a binary tree.
+
+Let's look at an example to understand it better. The plot below shows a sample data for two independent variables, x, and y, and each data point is colored by the outcome variable, red or grey.
+
+![](https://users.metu.edu.tr/ozancan/dt3.jpg)
+
+CART tries to split this data into subsets so that each subset is as pure or homogeneous as possible. The first three splits that CART would create are shown here.
+
+![](https://users.metu.edu.tr/ozancan/dt4.jpg)
+
+If a new observation fell into any of the subsets, it would now be decided by the majority of the observations in that particular subset.
+
+![](https://users.metu.edu.tr/ozancan/dt5.jpg)
+
+Let us now see how a Decision Tree algorithm generates a TREE. The tree for the splits we just generated is shown below.
+
+![](https://users.metu.edu.tr/ozancan/dt6.jpg)
+
++ The first split tests whether the variable x is less than 60. If yes, the model says to predict red, and if no, the model moves on to the next split.
+    
++ Then, the second split checks whether or not the variable y is less than 20. If no, the model says to predict gray, but if yes, the model moves on to the next split.
+    
++ The third split checks whether or not the variable x is less than 85. If yes, then the model says to predict red, and if no, the model says to predict grey.
+    
+
+ <span style=color:darkred>**Type of the Trees** </span>
+
+In the above example, we discussed classification trees i.e when the output is a factor/category:red or gray.Trees can also be used for regression where the output at each leaf of the tree is no longer a category, but a number. They are called Regression Trees, as you may guess.
+
+<span style=color:darkred>**Regression Trees** </span>
+
+The image below helps visualize the nature of partitioning carried out by a Regression Tree. This shows an unpruned tree and a regression tree fit to a random dataset. Both the visualizations show a series of splitting rules, starting at the top of the tree. Notice that every split of the domain is aligned with one of the feature axes. The concept of axis parallel splitting generalises straightforwardly to dimensions greater than two. For a feature space of size $p$, a subset of $R^p$, the space is divided into $M$ regions, $R_m$, each of which is a p-dimensional "hyperblock".
+
+![](https://users.metu.edu.tr/ozancan/dt7.jpg)
+
+In order to build a regression tree, you first use recursive binary splitting to grow a large tree on the training data, stopping only when each terminal node has fewer than some minimum number of observations. Recursive Binary Splitting is a greedy and top-down algorithm used to minimize the Residual Sum of Squares (RSS), an error measure also used in linear regression settings. The RSS, in the case of a partitioned feature space with M partitions is given by:
+
+$\mathrm{RSS}=\sum_{m=1}^{M} \sum_{i \in R_{m}}\left(y_{i}-\hat{y}_{R_{m}}\right)^{2}$
+
+Beginning at the top of the tree, you split it into 2 branches, creating a partition of 2 spaces. You then carry out this particular split at the top of the tree multiple times and choose the split of the features that minimizes the (current) RSS.
+
+Next, you apply cost complexity pruning to the large tree in order to obtain a sequence of best subtrees, as a function of $\alpha$. The basic idea here is to introduce an additional tuning parameter, denoted by $\\alpha$ that balances the depth of the tree and its goodness of fit to the training data.
+
+You can use K-fold cross-validation to choose $\alpha$. This technique simply involves dividing the training observations into K folds to estimate the test error rate of the subtrees. Your goal is to select the one that leads to the lowest error rate.
+
+**Example for Regression Tree to understand better**
+
+For example, if we had the values 3, 4, and 5 at one of the leaves, we will just take the average i.e 4. Let us see it graphically.
+
+![](https://users.metu.edu.tr/ozancan/dt8.jpg)
+
+In the above graph:
+
+y = Outcome/target variable i.e variable we are trying to predict
+
+x = Independent variable
+
+Firstly, Let's fit a linear regression to this data set . By doing so , we obtain a line .
+
+![](https://users.metu.edu.tr/ozancan/dt9.jpg)
+
+As is quite evident, linear regression does not do very well on this data set.
+
+![](https://users.metu.edu.tr/ozancan/dt10.jpg)
+
+However, we can notice a very interesting feature. The data lies in three different groups. If we draw lines here, we see x is either less than 10, between 10 and 20, or greater then 20. We recall that Decision Trees can fit in this this kind of of problem easily. So if splits are at:
+
+* x $\leq$10 |output would be the average of those values.
+    
+* 10 $<$ x $\leq$ 20 |output would be the average of those values.
+    
+* 20 $<$ x$\leq$30 |output would be the average of those values.
+    
+
+<span style=color:darkred>**Classification Trees**</span>
+
+A classification tree is very similar to a regression tree, except that it is used to predict a qualitative response rather than a quantitative one.
+
+Recall that for a regression tree, the predicted response for an observation is given by the mean response of the training observations that belong to the same terminal node. In contrast, for a classification tree, you predict that each observation belongs to the most commonly occurring class of training observations in the region to which it belongs.
+
+In interpreting the results of a classification tree, you are often interested not only in the class prediction corresponding to a particular terminal node region, but also in the class proportions among the training observations that fall into that region.
+
+The task of growing a classification tree is quite similar to the task of growing a regression tree. Just as in the regression setting, you use recursive binary splitting to grow a classification tree. However, in the classification setting, Residual Sum of Squares cannot be used as a criterion for making the binary splits. Instead, you can use either of these 3 methods below:
+
+**Classification Error Rate:** Rather than seeing how far a numerical response is away from the mean value, as in the regression setting, you can instead define the "hit rate" as the fraction of training observations in a particular region that don't belong to the most widely occuring class. The error is given by this equation:
+
+$\mathrm{E}=1-\operatorname{argmax}_{\mathrm{c}}\left(\hat{\pi}_{m c}\right)$
+
+in which $\hat{\pi}_{m c}$ represents the fraction of training data in region $R_m$ that belong to class c.
+
+**Gini Index:** The Gini Index is an alternative error metric that is designed to show how "pure" a region is. "Purity" in this case means how much of the training data in a particular region belongs to a single class. If a region $R_m$ contains data that is mostly from a single class c then the Gini Index value will be small. It works with categorical target variable "Success" or "Failure" and performs only Binary splits. CART uses Gini method to create binary splits.
+
+$G=\sum_{c=1}^{C} \hat{\pi}_{m c}\left(1-\hat{\pi}_{m c}\right)$
+
+**Cross-Entropy:** A third alternative, which is similar to the Gini Index, is known as the Cross-Entropy or Deviance:
+
+$Entropy=-\sum_{c=1}^{C} {\pi}_{m c} \log _{2} {\pi}_{m c}$
+
+The cross-entropy will take on a value near zero if the ${\pi}_{m c}$'s are all near 0 or near 1. Therefore, like the Gini index, the cross-entropy will take on a small value if the mth node is pure. In fact, it turns out that the Gini index and the cross-entropy are quite similar numerically.
+
+When building a classification tree, either the Gini index or the cross-entropy are typically used to evaluate the quality of a particular split, since they are more sensitive to node purity than is the classification error rate. Any of these 3 approaches might be used when pruning the tree, but the classification error rate is preferable if prediction accuracy of the final pruned tree is the goal.
+
+<span style=color:darkred>**Advantages and Disadvantages of Decision Tree**</span>
+
+**Advantages**
+
+The major advantage of using decision trees is that they are intuitively very easy to explain. They closely mirror human decision-making compared to other regression and classification approaches. They can be displayed graphically, and they can easily handle qualitative predictors without the need to create dummy variables.
+
+Generally, they don't require a detailed data preparation such as scaling of the features etc.
+
+They can process on both numerical and categorical variable.
+
+They can be used for multiclass problems.
+
+**Disadvantages**
+
+They sometimes suffer from overfitting.
+
+However, decision trees generally do not have the same level of predictive accuracy as other approaches, since they aren't quite robust. A small change in the data can cause a large change in the final estimated tree.
+
+By aggregating many decision trees, using methods like bagging, random forests, and boosting, the predictive performance of decision trees can be substantially improved.
+
+
+
+## <span style=color:darkred>**Ensemble Methods**</span>
+
+Ensemble methods is a machine learning technique that combines several base models in order to produce one optimal predictive model.
+
+### <span style=color:darkred>**Ensemble Methods in Tree Algorithms**</span>
+
+<span style=color:darkred>**Bagging**</span>
+
+A single decision tree suffer from high variance. Although, the prunning is applied to decrease the variance, there are alternatives method to decrease the variance of the single tree and thereby, improve the performance of the model compared to single tree. One of these approach is bagging which is acronym for Bootstrap aggregating proposed by Breiman in 1996.
+
+**What Bagging Does?**
+
+Bagging is a supervised ensemble method which combines and averages the multiple models. In this way, it has less variability rather than a single tree and reduces the risk of overfitting problem resulting in more accurate results. The algorithm of bagging is defined below.
+
++ Create m bootstrap samples from the training data. Bootstrapped samples allow us to create many slightly different data sets but with the same distribution as the overall training set.
+    
++ For each bootstrap sample train a single, unpruned regression tree.
+    
++ Average individual predictions from each tree to create an overall average predicted value.
+    
++ Gives the final rule by applying average rule for regression problem or majority rule for classification problem.
+    
+
+![](https://users.metu.edu.tr/ozancan/rf1.jpg)
+
+* * *
+
+**Bootstrap**
+
+Bootstrap is a resampling method involving repeatedly drawing independent samples with **replacement**, which means that the sample will contain a observation more than once, from our dataset $(B)$ to create bootstrap datasets ($B^{\*1}$,....$B^{\*b}$). The sample size of each bootstrap sample is equal to original dataset $(B)$
+
+![](https://users.metu.edu.tr/ozancan/rf2.jpg)
+
+* * *
+
+This process can actually be applied to any regression or classification model; however, it provides the greatest improvement for models that have high variance. For example, more stable parametric models such as linear regression and multi-adaptive regression splines tend to experience less improvement in predictive performance.
+
+The one advantage of bagging is out-of-bag (OOB) sample. As mentioned above, a bootstrap sample is used in bagging, and it was stated that a bootstrap sample will include 63% of the training data. This leaves about 33% of the data out of the bootstrapped sample. Therefore, the observations being out of the bootstrapped sample is called out-of-bag sample. This sample is used to estimate the model's accuracy, because it can be considered as a cross-validation process.
+
+However, this method will suffer a correlation problem although it produces a model with less variability and more accuracy.
+
+**Why it has a correlation problem?**
+
+The following figure show a four tree created by bagging.
+
+![](https://users.metu.edu.tr/ozancan/rf3.jpg)
+
+The figure shows that trees are created with almost same variables. In other words, the trees are similar to each other and this results in a correlation problem.
+
+<span style=color:darkred>**Random Forests**</span>
+
+Random Forests is a supervised learning technique which can be considered as a modification of bagging explained above. In random forests, a large set of **de-correlated** trees are built by randomly selecting $p$ number of variables among the set of $m$ variables. $(p<m)$
+
+Random forests are built on the same fundamental principles as decision trees and bagging. Bagging trees introduces a random component in to the tree building process that reduces the variance of a single trees prediction and improves predictive performance. However, the trees in bagging are not completely independent of each other since all the original predictors are considered at every split of every tree. Rather, trees from different bootstrap samples typically have similar structure to each other (especially at the top of the tree) due to underlying relationships, as already stated above.
+
+This situtation is known as tree correlation and hinder the bagging to reduce the variance of the predictions optimally. In this case, we need to consider an additonal way to decrease variace more, and this is the minimization of correlation between trees. The random forests complete this process in two ways.
+
+**1\. Bootstrap:** As in the bagging, each tree is grown to a bootstrap resampled data set, which makes them different and somewhat decorrelates them.
+
+**2\. Split-variable randomization:** each time a split is to be performed, the search for the split variable is limited to a random subset of $m$ of the $p$ variables. For regression trees, typical default values are $p=m/3$ but this should be considered a tuning parameter When $m=p$,the randomization amounts to using only step 1 and is the same as bagging.
+
+The basic algorithm for random forest is given below. Given training data set
+
++ Select number of trees to build (ntrees)
+    
++ for i = 1 to ntrees do
+    
+    -Generate a bootstrap sample of the original data.
+    
+    -Grow a regression tree to the bootstrapped data
+    
++ for each split do
+    
+    -Select m variables at random from all p variables
+    
+    -Pick the best variable/split-point among the m
+    
+    -Split the node into two child nodes
+    
+    -end
+    
++ Use typical tree model stopping criteria to determine when a tree is complete (but do not prune)
+    
++ end
+    
+
+At the end of the process, we will have a machine having less variance and de-correlate trees compared to bagging.
+
+<span style=color:darkred>**OOB error vs. test set error**</span>
+
+Since RF uses bootstrapped sample, we can discuss and use OOB sample providing an efficient and reasonable approximation of the test error. OOB can be used as built-in validation set and you don't use any of your training data for validation in this way. This makes identifying the number of trees required to stablize the error rate during tuning more efficient; however, as illustrated below some difference between the OOB error and test error are expected.
+
+![](https://users.metu.edu.tr/ozancan/ref4.jpg)
+
+<span style=color:darkred>**Advantages and Disadvantages of Random Forests**</span>
+
+**Advantages**
+
++ Typically have very good performance
+    
++ Remarkably good "out-of-the box" - very little tuning required
+    
++ Built-in validation set - don't need to sacrifice data for extra validation
+    
++ No pre-processing required
+    
++ Robust to outliers
+
++ Interpretable (SHAP values, importance plot etc.)
+    
+
+**Disadvantages**
+
++ Can become slow on large data sets
+    
++ Although accurate, often cannot compete with advanced boosting algorithms
+  
+  
+  
+<span style=color:darkred>**Boosting**</span>
+
+Several supervised machine learning models are founded on a single predictive model (i.e. linear regression, penalized models, naive Bayes, support vector machines). Alternatively, other approaches such as bagging and random forests are built on the idea of building an ensemble of models where each individual model predicts the outcome and then the ensemble simply averages the predicted values. The family of boosting methods is based on a different, constructive strategy of ensemble formation.
+
+The main idea of boosting is to add new models to the ensemble sequentially. At each particular iteration, a new weak, base-learner model is trained with respect to the error of the whole ensemble learnt so far.
+
+
+```{r, echo=FALSE, out.width="50%"}
+knitr::include_graphics("https://users.metu.edu.tr/ozancan/5.jpg")
+```
+
+
+Let's discuss each component of the previous sentence in closer detail because they are important.
+
+**Base-learning models:** Boosting is a framework that iteratively improves any weak learning model. Many gradient boosting applications allow you to plug in various classes of weak learners at your disposal. In practice however, boosted algorithms almost always use decision trees as the base-learner.
+
+**Training weak models:** A weak model is one whose error rate is only slightly better than random guessing. The idea behind boosting is that each sequential model builds a simple weak model to slightly improve the remaining errors. With regards to decision trees, shallow trees represent a weak learner. Commonly, trees with only 1-6 splits are used. Combining many weak models (versus strong ones) has a few benefits:
+
+* Speed: Constructing weak models is computationally cheap.
+    
+* Accuracy improvement: Weak models allow the algorithm to learn slowly; making minor adjustments in new areas where it does not perform well. In general, statistical approaches that learn slowly tend to perform well.
+    
+* Avoids overfitting: Due to making only small incremental improvements with each model in the ensemble, this allows us to stop the learning process as soon as overfitting has been detected (typically by using cross-validation).
+    
+
+**Sequential training with respect to errors:** Boosted trees are grown sequentially; each tree is grown using information from previously grown trees. The basic algorithm for boosted regression trees can be generalized to the following where x represents our features and y represents our response:
+
+Fit a decision tree to the data $F_1(x)=y$,
+
+We then fit the next decision tree to the residuals of the previous: $h\_1(x) = y - F\_1(x)$
+
+Add this new tree to our algorithm: $F\_2(x) = F\_1(x) + h_1(x)$
+
+Fit the next decision tree to the residuals of $F\_2(x)$: $h\_2(x) = y - F_2(x)$
+
+Add this new tree to our algorithm: $F\_3(x) = F\_2(x) + h_2(x)$
+
+Continue this process until some mechanism (i.e. cross validation) tells us to stop.
+
+The basic algorithm for boosted regression trees can be generalized to the following where the final model is simply a stagewise additive model of b individual regression trees:
+
+$f(x) = \sum^B_{b=1}f^b(x)$
+
+To illustrate the behavior, assume the following x and y observations. The blue sine wave represents the true underlying function and the points represent observations that include some irriducible error (noise). The boosted prediction illustrates the adjusted predictions after each additional sequential tree is added to the algorithm. Initially, there are large errors which the boosted algorithm improves upon immediately but as the predictions get closer to the true underlying function you see each additional tree make small improvements in different areas across the feature space where errors remain. Towards the end of the gif, the predicted values nearly converge to the true underlying function.
+
+![](https://users.metu.edu.tr/ozancan/boosted_stumps.gif)
+
+In general, in terms of model performance, we have the following hierarchy:
+
+$$Boosting > Random Forest > Bagging > Single Tree$$
+
+There are several boosting techniques such as AdaBoost, Gradient Boosting, XGBoost, LightGBM. In this part of the recitation, we'll focus on mainly XGBoost.
+
+<span style=color:darkred>**Gradient Boosting Algorithm**</span>
+
+
+* The idea of gradient boosting originated in the observation by Leo Breiman that boosting can be interpreted as an optimization algorithm on a suitable cost function.
+    
+* Explicit regression gradient boosting algorithms were subsequently developed by Jerome H. Friedman simultaneously with the more general functional gradient boosting perspective of Llew Mason, Jonathan Baxter, Peter Bartlett and Marcus Frean.
+    
+* The latter two papers introduced the abstract view of boosting algorithms as iterative functional gradient descent algorithms. That is, algorithms that optimize a cost function over function space by iteratively choosing a function (weak hypothesis) that points in the negative gradient direction.
+    
+* This functional gradient view of boosting has led to the development of boosting algorithms in many areas of machine learning and statistics beyond regression and classification.
+    
+
+Friedman's Gradient Boosting Algorithm for a generic loss function, $L(y_i,\gamma)$:
+
+```{r, echo=FALSE, out.width="50%"}
+knitr::include_graphics("https://users.metu.edu.tr/ozancan/friedman_gbm.png")
+```
+
+
+Source: Elements of Statistical Learning
+
+**Loss Functions and Gradients**
+
+```{r, echo=FALSE, out.width="50%"}
+knitr::include_graphics("https://users.metu.edu.tr/ozancan/gbm_gradients_loss.png")
+```
+
+Source: Elements of Statistical Learning
+
+The optimal number of iterations, T, and the learning rate, $\lambda$, depend on each other.
+
+<span style=color:darkred>**XGBoost**</span>
+
+
+XGBoost stands for Extreme Gradient Boosting; it is a specific implementation of the Gradient Boosting method which uses more accurate approximations to find the best tree model. It employs a number of nifty tricks that make it exceptionally successful, particularly with structured data. The most important are
+
+* computing second-order gradients, i.e. second partial derivatives of the loss function (similar to Newton's method), which provides more information about the direction of gradients and how to get to the minimum of our loss function. While regular gradient boosting uses the loss function of our base model (e.g. decision tree) as a proxy for minimizing the error of the overall model, XGBoost uses the 2nd order derivative as an approximation.
+    
+* And advanced regularization (L1 & L2), which improves model generalization.
+    
+
+XGBoost has additional advantages: training is very fast and can be parallelized / distributed across clusters.
+
+
+## <span style=color:darkred>**Application 2-Decision Tree-Random Forest-XGBoost Classification**<\span>
+
+In this instance, we will proceed with the `PimaIndianDiabetes` dataset. We have already created train and test datasets. Then, we will construct Decision Tree (CART), Random Forest and XGBoost models for the classification of the diabetes situation of the individuals. 
+
+Here, we build the model via **grid search**, but they can be constructed by random search as well.
+
+Firstly, as we have done so far, we define training rules. 
+
+
+```{r}
+tr_ctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 5,classProbs = T, summaryFunction = twoClassSummary, savePredictions = T)
+```
+
+
+**Decision Tree**
+
+The `caret` package offers several ways to build CART, and among them we will use `treebag` method which needs `e1071` package to be run. The method has no parameters to be tuned. 
+
+
+```{r, warning=TRUE}
+set.seed(1)
+library(e1071)
+dt_model <-train(diabetes ~.,  data =train.data, method = "treebag",
+                 metric = "ROC", savePredictions = T,
+                 trControl = tr_ctrl)
+```
+
+
+You can see the details of your model by executing model object name.
+
+```{r}
+dt_model
+```
+
+
+You can print the details of the best model by extracting `finalModel` argument. 
+
+```{r}
+dt_model$finalModel
+```
+
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+train_prediction<-predict(dt_model,train.data)
+train.data_with_prediction<-cbind(train.data,train_prediction)
+p1<-ggplot(train.data_with_prediction,aes(triceps,mass,color = train_prediction))+geom_point()+labs(title ="Prediction")+theme(legend.position = "top")
+p2<-ggplot(train.data_with_prediction,aes(triceps,mass,color = diabetes))+geom_point()+labs(title ="Actual")+theme(legend.position = "top")
+grid.arrange(p1,p2,ncol = 2)
+```
+
+
+The predicted class and actual class show similar patterns in both plots that indicates the effectiveness of CART. 
+
+
+After this representation, the next thing is to evaluate the model performance on the test data. We get the predictions from `predict` command, and evaluate the performance metrics via `confussionMatrix` function.
+
+
+```{r}
+dt_test_predict<-predict(dt_model, newdata= test.data)
+head(dt_test_predict)
+```
+
+```{r}
+confusionMatrix(data = dt_test_predict,reference = test.data$diabetes)
+```
+
+The accuracy of the model is 79.74%. This means that the model correctly predicts the class labels for 79.74% of the instances in the dataset.
+
+Sensitivity, also known as recall or true positive rate, measures the proportion of actual positive instances that are correctly identified by the model. In this case, the sensitivity is 0.89, indicating that the model correctly identifies 89% of the positive instances.
+
+Specificity measures the proportion of actual negative instances that are correctly identified by the model. In this case, the specificity is 0.6226, indicating that the model correctly identifies 62.26% of the negative instances.
+
+**Random Forest**
+
+We will use `rf` method in `train` funciton which needs `randomForest` package to be run. The method has only one parameter to be tuned; `mtry`, which is the number of variables to randomly sample as candidates at each split.
+
+Hence, create a grid for `mtry` at first using `expand.grid` command. 
+
+```{r}
+mtry_grid <- expand.grid(.mtry = seq(100,120,2)) 
+```
+
+
+```{r, warning=TRUE}
+set.seed(1)
+library(randomForest)
+rf_model <-train(diabetes ~.,  data =train.data, method = "rf",  metric = "ROC",trControl = tr_ctrl,tunegrid = mtry_grid)
+```
+
+**Note that the tree based algorithms does not need scaled or centered inputs. The scaling and centering is up to your choice.**
+
+You can see the details of your model by executing model object name.
+
+```{r}
+rf_model
+```
+
+The optimal model parameters are obtained by extracting `bestTune` argument.
+
+```{r}
+rf_model$bestTune
+```
+
+You can print the details of the best model by extracting `finalModel` argument. 
+
+```{r}
+rf_model$finalModel
+```
+
+You can represent the training process visually. 
+
+```{r}
+plot(rf_model)
+```
+
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+train_prediction<-predict(rf_model,train.data)
+train.data_with_prediction<-cbind(train.data,train_prediction)
+p1<-ggplot(train.data_with_prediction,aes(triceps,mass,color = train_prediction))+geom_point()+labs(title ="Prediction")+theme(legend.position = "top")
+p2<-ggplot(train.data_with_prediction,aes(triceps,mass,color = diabetes))+geom_point()+labs(title ="Actual")+theme(legend.position = "top")
+grid.arrange(p1,p2,ncol = 2)
+```
+
+
+One nice thing about rf in `caret` is to draw a feature importance plot. Variable importance in RF refers to a measure that quantifies the contribution of each input variable (or feature) in the RF model's decision-making process. In `caret`, ROC curve is used to calculate the importance of the variables in RF. 
+
+```{r}
+rf_var_imp<-varImp(rf_model, scale = FALSE)
+rf_var_imp
+```
+
+
+```{r}
+plot(rf_var_imp)
+```
+
+The plot shows that glucose is the most efficient factor to classify the patients as diabetes and not diabetes. It is followed by mass and age.  
+
+After this representation, the next thing is to evaluate the model performance on the test data. We get the predictions from `predict` command, and evaluate the performance metrics via `confussionMatrix` function.
+
+
+```{r}
+rf_test_predict<-predict(rf_model, newdata= test.data)
+head(rf_test_predict)
+```
+
+```{r}
+confusionMatrix(data = rf_test_predict,reference = test.data$diabetes)
+```
+
+
+The accuracy of the model is 81.7%. This means that the model correctly predicts the class labels for 81.7% of the instances in the dataset.
+
+Sensitivity, also known as recall or true positive rate, measures the proportion of actual positive instances that are correctly identified by the model. In this case, the sensitivity is 0.89, indicating that the model correctly identifies 89% of the positive instances.
+
+Specificity measures the proportion of actual negative instances that are correctly identified by the model. In this case, the specificity is 0.6792, indicating that the model correctly identifies 67.92% of the negative instances.
+
+**XGBoost**
+
+Lastly, we will create `XGBoost` model for the classification of the diabetes patients. Among the existing models, `xgbTree` is used in `train` function, and it needs `xgboost` and `plyr` packages. The hyperparameters to be tuned are given below.
+
++ nrounds: The number of rounds for boosting.
+
++ max_depth: Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit. 0 indicates no limit on depth. Beware that XGBoost aggressively consumes memory when training a deep tree. exact tree method requires non-zero value. Range: [0,∞]
+
++ eta: Step size shrinkage used in update to prevents overfitting. Range [0,1]
+
++ gamma: Minimum loss reduction required to make a further partition on a leaf node of the tree. The larger gamma is, the more conservative the algorithm will be. Range: [0,∞]
+
++ colsample_bytree: The subsample ratio of columns when constructing each tree. Subsampling occurs once for every tree constructed.Range: (0,1]
+
+
++ min_child_weight: Minimum sum of instance weight (hessian) needed in a child. If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning. In linear regression task, this simply corresponds to minimum number of instances needed to be in each node. The larger min_child_weight is, the more conservative the algorithm will be. Range: [0,∞]
+
++ subsample: Subsample ratio of the training instances. Setting it to 0.5 means that XGBoost would randomly sample half of the training data prior to growing trees. and this will prevent overfitting. Subsampling will occur once in every boosting iteration. Range: (0,1]
+
+To this end, we will create a grid for the hyperparameter tunning. 
+
+```{r}
+tune.gridxgb <- expand.grid(eta = c(0.05,0.3, 0.075), # 3 
+                            nrounds = c(50, 75, 100),  # 3
+                            max_depth = 4:7,  # 4
+                            min_child_weight = c(2.0, 2.25), #2 
+                            colsample_bytree = c(0.3, 0.4, 0.5), # 3
+                            gamma = 0, #1
+                            subsample = 1)  # 1
+```
+
+
+
+```
+set.seed(1)
+xgb_model <-train(diabetes ~.,  data =train.data, method = "xgbTree",  metric = "ROC",preProc =  c("center", "scale"),trControl = tr_ctrl,tunegrid = tune.gridxgb)
+```
+
+
+```{r, warning=TRUE,include=FALSE}
+set.seed(1)
+xgb_model <-train(diabetes ~.,  data =train.data, method = "xgbTree",  metric = "ROC",preProc =  c("center", "scale"),trControl = tr_ctrl,tunegrid = tune.gridxgb)
+```
+
+You can see the details of your model by executing model object name.
+
+```{r}
+xgb_model
+```
+
+The optimal model parameters are obtained by extracting `bestTune` argument.
+
+```{r}
+xgb_model$bestTune
+```
+
+You can print the details of the best model by extracting `finalModel` argument. 
+
+```{r}
+xgb_model$finalModel
+```
+
+You can represent the training process visually. 
+
+```{r}
+plot(xgb_model)
+```
+
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+train_prediction<-predict(xgb_model,train.data)
+train.data_with_prediction<-cbind(train.data,train_prediction)
+p1<-ggplot(train.data_with_prediction,aes(triceps,mass,color = train_prediction))+geom_point()+labs(title ="Prediction")+theme(legend.position = "top")
+p2<-ggplot(train.data_with_prediction,aes(triceps,mass,color = diabetes))+geom_point()+labs(title ="Actual")+theme(legend.position = "top")
+grid.arrange(p1,p2,ncol = 2)
+```
+
+
+One nice thing about xgb in `caret` is to draw a feature importance plot. Variable importance in xgb refers to a measure that quantifies the contribution of each input variable (or feature) in the xgb model's decision-making process. In `caret`, ROC curve is used to calculate the importance of the variables in xgb. 
+
+```{r}
+xgb_var_imp<-varImp(xgb_model, scale = FALSE)
+xgb_var_imp
+```
+
+
+```{r}
+plot(xgb_var_imp)
+```
+
+The plot shows that glucose is the most efficient factor to classify the patients as diabetes and not diabetes. It is followed by mass, age and soon. 
+
+After this representation, the next thing is to evaluate the model performance on the test data. We get the predictions from `predict` command, and evaluate the performance metrics via `confussionMatrix` function.
+
+
+```{r}
+xgb_test_predict<-predict(xgb_model, newdata= test.data)
+head(xgb_test_predict)
+```
+
+```{r}
+confusionMatrix(data = xgb_test_predict,reference = test.data$diabetes)
+```
+
+
+
+The accuracy of the model is 0.7974. This means that the model correctly predicts the class labels for 79.74% of the instances in the dataset.
+
+Sensitivity, also known as recall or true positive rate, measures the proportion of actual positive instances that are correctly identified by the model. In this case, the sensitivity is 0.89, indicating that the model correctly identifies 89% of the positive instances.
+
+Specificity measures the proportion of actual negative instances that are correctly identified by the model. In this case, the specificity is 0.6226, indicating that the model correctly identifies 62.26% of the negative instances.
+
+
+## <span style=color:darkred>**Application 3-Decision Tree-Random Forest-XGBoost Regression**<\span>
+
+For the regression purpose, we consider `Sacramento` data from `caret` package. This data frame contains house and sale price data for 932 homes in Sacramento CA.
+
+```{r}
+library(caret)
+data("Sacramento")
+head(Sacramento)
+```
+
+We are interested in only the house in Sacramento, so we will apply a data subsetting. 
+
+```{r}
+library(dplyr)
+sacramento_house <- Sacramento%>%subset(city =="SACRAMENTO")
+head(sacramento_house)
+```
+
+Check the structure of the variables.
+
+```{r}
+dplyr::glimpse(sacramento_house)
+```
+
+Here, we have 438 observations measured by 9 variables, 3 of them are factors and rest of them are numeric. 
+
+In the data, we do not need `city` and `zip` variables, so we drop them.
+
+```{r}
+sacramento_house <- sacramento_house%>%select(-c(city,zip)) 
+```
+
+Now, get the numerical and visual summary of the data. 
+
+```{r}
+summary(sacramento_house)
+```
+
+No missing! yey!
+
+```{r}
+library(GGally)
+ggpairs(sacramento_house)
+```
+
+As shown in the variable class check, we have one factor variable that may be included in the analysis; `type`. Let's apply one hot encoding to prepare it for the modeling. 
+
+```{r}
+dummy<-dummyVars(" ~ .", data=sacramento_house)
+sacramento_house<-data.frame(predict(dummy, newdata =sacramento_house))
+head(sacramento_house)
+```
+
+Here, we encode the `type` variable via one-hot encoding. 
+
+After that divide your data as train and test.
+
+```{r}
+set.seed(1104)
+train_index <- createDataPartition(sacramento_house$price, p = .8,list=FALSE)
+train <- sacramento_house[train_index,]
+test <- sacramento_house[-train_index,]
+```
+
+After splitting the data, we build the tree based algorithms via random search. To this end, define your training criteria first.
+
+```{r}
+fitcontrol<- trainControl(method = "repeatedcv",
+             number = 10,
+             repeats = 5,
+             summaryFunction = defaultSummary,
+             search = "random")
+```
+
+
+**Decision Tree**
+
+Here, we would like to construct the tree using `rpart` method which needs `rpart` packages. The method has only one parameter to be tuned; `cp` that is the model complexity. 
+
+```{r}
+set.seed(1104)
+library(rpart)
+cartFit <- train(price~.,data = train,  method = "rpart",trControl = fitcontrol,metric="RMSE")
+```
+
+Now, we would like to train our model by RMSE value rather than $R^2$. 
+
+
+See the model details. 
+
+```{r}
+cartFit
+```
+The optimal parameter value for `cost` is
+
+```{r}
+cartFit$bestTune
+```
+
+Visualize your traning process
+
+```{r}
+plot(cartFit)
+```
+
+You can also visualize your tree using `rpart.plot` function from `rpart.plot` package. 
+
+```{r}
+rpart.plot::rpart.plot(cartFit$finalModel)
+```
+
+To draw a such tree in R, you should put your `finalmodel` object in your function. Basically, we can say that the average of the price is $\$199490$, which is the root node. If $sqft<1868$, which is the decision node with probability $73%$, the expected price is $\$164000$. If not, the expected price is $\$295000$ and soon.
+
+
+You can compare your predictions for train data and actual response in train data visually.
+
+```{r}
+#Predicting
+library(ggplot2)
+numx <- nrow(train)
+x_axis <- seq(numx)
+dt_train_pred<-predict(cartFit,newdata = train)
+df <- data.frame(x_axis, dt_train_pred,train$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=dt_train_pred, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=dt_train_pred, colour="Predicted"))
+g <- g + geom_line(aes(y=train$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=train$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+The matching between actual and predicted values are not good at some points because the algorithm could not catch some outlier points.  Proceed with variable importance then. In default, $R^2$ is used to measure the importance of the variables in calculating the importance. 
+
+```{r}
+dt_var_imp<-varImp(cartFit, scale = FALSE)
+dt_var_imp
+```
+
+
+```{r}
+plot(dt_var_imp)
+```
+
+`sqft` is the most efficient input on predicting price  according to this importance plot. 
+
+Lastly, we evaluate the performance of the test data. 
+
+```{r}
+test_prediction<-predict(cartFit,newdata= test)
+head(test_prediction)
+```
+
+Visually comparison between predicted values on test data and the response in the test data. 
+
+
+```{r}
+numx <- nrow(test)
+x_axis <- seq(numx)
+df <- data.frame(x_axis,test_prediction,test$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=test_prediction, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=test_prediction, colour="Predicted"))
+g <- g + geom_line(aes(y=test$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=test$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+The plot showing the predicted price and the actual price are not parallel to each other, and due to this reason, we should not expect a good performance from the tree. 
+
+
+Measure the performance using the evaluation measures; `RMSE` and `MAE`. 
+
+
+```{r}
+paste("MAE of Model:", MAE(as.numeric(test_prediction),test$price))
+```
+
+```{r}
+paste("RMSE of Model:", RMSE(as.numeric(test_prediction),test$price))
+```
+
+**Random Forest**
+
+Now, we construct a random forest with random search. We have already defined our training criteria; `fitcontrol`.
+
+
+```{r}
+set.seed(1104)
+library(randomForest)
+rfFit <- train(price~.,data = train,  method = "rf",trControl = fitcontrol,metric="RMSE")
+```
+
+Now, we would like to train our model by RMSE value rather than $R^2$. 
+
+
+See the model details. 
+
+```{r}
+rfFit
+```
+
+The optimal parameter value for `mtry` is 
+
+```{r}
+rfFit$bestTune
+```
+
+Visualize your training process
+
+```{r}
+plot(rfFit)
+```
+
+You can compare your predictions for train data and actual response in train data visually.
+
+```{r}
+#Predicting
+library(ggplot2)
+numx <- nrow(train)
+x_axis <- seq(numx)
+dt_train_pred<-predict(rfFit,newdata = train)
+df <- data.frame(x_axis, dt_train_pred,train$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=dt_train_pred, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=dt_train_pred, colour="Predicted"))
+g <- g + geom_line(aes(y=train$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=train$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+The matching between actual and predicted values are not good at some points because the algorithm could not catch some outlier points. Proceed with variable importance then. In default, $R^2$ is used to measure the importance of the variables in calculating the importance. 
+
+```{r}
+rf_var_imp<-varImp(rfFit, scale = FALSE)
+rf_var_imp
+```
+
+
+```{r}
+plot(rf_var_imp)
+```
+
+`sqft` is the most efficient input on predicting price according to this importance plot. 
+
+Lastly, we evaluate the performance of the test data. 
+
+```{r}
+test_prediction<-predict(rfFit,newdata= test)
+head(test_prediction)
+```
+
+Visually comparison between predicted values on test data and the response in the test data. 
+
+
+```{r}
+numx <- nrow(test)
+x_axis <- seq(numx)
+df <- data.frame(x_axis,test_prediction,test$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=test_prediction, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=test_prediction, colour="Predicted"))
+g <- g + geom_line(aes(y=test$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=test$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+The plot showing the predicted price and the actual price are not parallel to each other, but better than the decision tree and so, due to this reason, we can expect a better performance for RF compared to DT. 
+
+
+Measure the performance using the evaluation measures; `RMSE` and `MAE`. 
+
+
+```{r}
+paste("MAE of Model:", MAE(as.numeric(test_prediction),test$price))
+```
+
+```{r}
+paste("RMSE of Model:", RMSE(as.numeric(test_prediction),test$price))
+```
+
+**Gradient Boosting**
+
+Here, we will also include the gradient boosting, that can be applicable to both regression and classification problems. Among the offered methods, `gbm` method will be used to implement the gradient boosting. 
+
+
+Now, we construct a random forest with random search. We have already defined our training criteria; `fitcontrol`.
+
+
+```
+set.seed(1104)
+library(gbm)
+gbmFit <- train(price~.,data = train,  method = "gbm",trControl = fitcontrol,metric="RMSE")
+```
+
+```{r,include=FALSE}
+set.seed(1104)
+library(gbm)
+gbmFit <- train(price~.,data = train,  method = "gbm",trControl = fitcontrol,metric="RMSE")
+```
+
+Now, we would like to train our model by RMSE value rather than $R^2$. 
+
+
+See the model details. 
+
+```{r}
+gbmFit
+```
+
+The optimal parameter values are 
+
+```{r}
+gbmFit$bestTune
+```
+
+Visualize your training process
+
+```{r}
+plot(gbmFit)
+```
+
+You can compare your predictions for train data and actual response in train data visually.
+
+```{r}
+#Predicting
+library(ggplot2)
+numx <- nrow(train)
+x_axis <- seq(numx)
+gbm_train_pred<-predict(gbmFit,newdata = train)
+df <- data.frame(x_axis, gbm_train_pred,train$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=gbm_train_pred, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=gbm_train_pred, colour="Predicted"))
+g <- g + geom_line(aes(y=train$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=train$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+GBM represents better matching with the trained data. 
+
+Proceed with variable importance then. In default, $R^2$ is used to measure the importance of the variables in calculating the importance. 
+
+```{r}
+gbm_var_imp<-varImp(gbmFit, scale = FALSE)
+gbm_var_imp
+```
+
+
+```{r}
+plot(gbm_var_imp)
+```
+
+`sqft` is the most efficient input on predicting price according to this importance plot. 
+
+Lastly, we evaluate the pegbmormance of the test data. 
+
+```{r}
+test_prediction<-predict(gbmFit,newdata= test)
+head(test_prediction)
+```
+
+Visually comparison between predicted values on test data and the response in the test data. 
+
+
+```{r}
+numx <- nrow(test)
+x_axis <- seq(numx)
+df <- data.frame(x_axis,test_prediction,test$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=test_prediction, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=test_prediction, colour="Predicted"))
+g <- g + geom_line(aes(y=test$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=test$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+The plot showing the predicted price and the actual price are not parallel to each other, and not better than the decision RF.
+
+Measure the performance using the evaluation measures; `RMSE` and `MAE`. 
+
+
+```{r}
+paste("MAE of Model:", MAE(as.numeric(test_prediction),test$price))
+```
+
+```{r}
+paste("RMSE of Model:", RMSE(as.numeric(test_prediction),test$price))
+```
+
+**XGBoost**
+
+
+Now, we construct a random forest with random search. We have already defined our training criteria; `fitcontrol`.
+
+
+```
+set.seed(1104)
+library(xgboost)
+xgbFit <- train(price~.,data = train,  method = "xgbTree",trControl = fitcontrol,metric="RMSE")
+```
+
+
+```{r,include=FALSE}
+set.seed(1104)
+library(xgboost)
+xgbFit <- train(price~.,data = train,  method = "xgbTree",trControl = fitcontrol,metric="RMSE")
+```
+
+Now, we would like to train our model by RMSE value rather than $R^2$. 
+
+
+See the model details. 
+
+```{r}
+xgbFit
+```
+
+The optimal parameter values are 
+
+```{r}
+xgbFit$bestTune
+```
+
+Visualize your training process
+
+```{r}
+plot(xgbFit)
+```
+
+You can compare your predictions for train data and actual response in train data visually.
+
+```{r}
+#Predicting
+library(ggplot2)
+numx <- nrow(train)
+x_axis <- seq(numx)
+xgb_train_pred<-predict(xgbFit,newdata = train)
+df <- data.frame(x_axis, xgb_train_pred,train$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=xgb_train_pred, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=xgb_train_pred, colour="Predicted"))
+g <- g + geom_line(aes(y=train$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=train$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+XGB represents almost perfect matching with the trained data. 
+
+Proceed with variable importance then. In default, $R^2$ is used to measure the importance of the variables in calculating the importance. 
+
+```{r}
+xgb_var_imp<-varImp(xgbFit, scale = FALSE)
+xgb_var_imp
+```
+
+
+```{r}
+plot(xgb_var_imp)
+```
+
+`sqft` is the most efficient input on predicting price according to this importance plot. 
+
+Lastly, we evaluate the pexgbormance of the test data. 
+
+```{r}
+test_prediction<-predict(xgbFit,newdata= test)
+head(test_prediction)
+```
+
+Visually comparison between predicted values on test data and the response in the test data. 
+
+
+```{r}
+numx <- nrow(test)
+x_axis <- seq(numx)
+df <- data.frame(x_axis,test_prediction,test$price)
+#Plotting the predicted values against the actual values
+g <- ggplot(df, aes(x=x_axis))
+g <- g + geom_line(aes(y=test_prediction, colour="Predicted"))
+g <- g + geom_point(aes(x=x_axis, y=test_prediction, colour="Predicted"))
+g <- g + geom_line(aes(y=test$price, colour="Actual"))
+g <- g + geom_point(aes(x=x_axis, y=test$price, colour="Actual"))
+g <- g + scale_colour_manual("", values = c(Predicted="red", Actual="blue"))
+g
+```
+
+The plot showing the predicted price and the actual price are not parallel to each other, and we may not expect a good performance from XGBoost.
+
+Measure the performance using the evaluation measures; `RMSE` and `MAE`. 
+
+
+```{r}
+paste("MAE of Model:", MAE(as.numeric(test_prediction),test$price))
+```
+
+```{r}
+paste("RMSE of Model:", RMSE(as.numeric(test_prediction),test$price))
+```
+
+
+**Shapley Plot**
+
+Shapley values are a concept from cooperative game theory that can be applied to systems with multiple participants, such as machine learning models with multiple features or variables. Shapley values measure the contribution of each participant to the system, and it is an efficient way in the **Explainable AI**.
+
+Calculating Shapley values for tree-based algorithms, like decision trees, helps us understand the importance of each feature in the model. Shapley values show how much a feature matters when interacting with other features.
+
+To compute Shapley values, you can follow these steps:
+
++ Initially, set the Shapley value for each feature to 0.
+
++ For each feature, calculate how much the Shapley value increases by considering the participation of other features. This is done by adding and removing the feature in combination with the remaining features.
+
++ Repeat this step for all combinations of features to compute the Shapley value for each feature.
+
++ The resulting Shapley values represent the contribution of each feature to the model prediction.
+
+The obtained Shapley values indicate the importance of each feature in the model prediction. They can be used to create a Shapley Plot by ranking or visually representing the importance of each feature. The Shapley Plot allows us to compare the significance of each feature and enhances our understanding of how the model works.
+
+There are several packages to draw this plot in R but I will use `iml` package. 
+
+```{r}
+library(iml)
+predictor = Predictor$new(xgbFit, data = train[,-7], y = train$price)
+shapley = Shapley$new(predictor, x.interest =  train[,-7])
+plot(shapley)%>%labs(title = "Shap Plot",x = "Variables")
+```
+
+The plot for XGBoost model shows that the baths, sqft, beds, longitude and type.Condo=0 increases the price value as they increase (for the numeric variables.) The rest of them have negative impact on the house price. 
+
+Note that you can draw this plot for **Random Forest**,**Gradient Boosting** and **Decision Tree**.
+
+**Last note:** In real-life applications, you face more complicated datasets and difficult problems. Thus, the best way of learning statistical learning and so forth is to keep studying. 
+
+**References:**
+
++ https://topepo.github.io/caret/ 
+
++ The Elements of Statistical Learning: Data Mining, Inference, and Prediction, Second Edition (Springer Series in Statistics) 2nd Edition by Trevor Hastie, Robert Tibshirani, Jerome Friedman. https://hastie.su.domains/ElemStatLearn/
+
