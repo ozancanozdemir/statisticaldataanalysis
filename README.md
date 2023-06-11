@@ -87,8 +87,8 @@ install.packages(c("interaction"))
 Install the following packages before running the tutorial.
 
 ```
-install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan",
-"naniar","datasets","rcompanion","bestNormalize","MASS","gridExtra")
+install.packages(c("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan",
+"naniar","datasets","rcompanion","bestNormalize","MASS","gridExtra"))
 ```
 
 + Transformation 
@@ -100,7 +100,7 @@ install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan
 Install the following packages before running the tutorial.
 
 ```
-install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
+install.packages(c("caret","dplyr","tidyr","datasets","factoextra","pls"))
 ```
 
 + Model Complexity and Overfitting
@@ -112,7 +112,7 @@ install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
 Install the following packages before running the tutorial.
 
 ```
-install.packages("vcd","ggmosaic","ltm","polycor","ISLR","caret","corrplot","MASS")
+install.packages(c("vcd","ggmosaic","ltm","polycor","ISLR","caret","corrplot","MASS"))
 devools::install_version("InformationValue", version = "1.2.3", repos = "http://cran.us.r-project.org")
 devtools::install_version("DMwR", version = "0.4.1", repos = "http://cran.us.r-project.org"
 ```
