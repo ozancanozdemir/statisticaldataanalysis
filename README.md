@@ -10,13 +10,12 @@ remotes::install_github("ozancanozdemir/statisticaldataanalysis")
 Then, run the following command to open the interactive tutorial page.  For example, 
 
 
-
 ```
 library(statisticaldataanalysis)
 learnr::run_tutorial("Recitation1",package = "statisticaldataanalysis")
 ```
 
-### Recitation 1 
+### Lab 1 
 
 Install the following packages before running the tutorial.
 
@@ -27,7 +26,7 @@ install.packages(c("remotes","learnr","ggplot2","PerformanceAnalytics","lattice"
 
 Exploratory Data Analysis with base R command.
 
-### Recitation 2 
+### Lab 2 
 
 Install the following packages before running the tutorial.
 
@@ -42,7 +41,7 @@ install.packages(c("ggplot2","gridExtra","ggforce","statsExpressions","ggalt","b
 
 + Creating an interactive map with leaflet. 
 
-### Recitation 3 
+### Lab 3 
 
 Install the following packages before running the tutorial.
 
@@ -57,7 +56,7 @@ install.packages(c("dplyr","stringr","editrules","deducorrect","lubridate","asse
 + Example for `editrules`
 
 
-### Recitation 4 
+### Lab 4 
 
 Install the following packages before running the tutorial.
 
@@ -71,7 +70,7 @@ install.packages(c("ISLR","dplyr","corrplot","PerformanceAnalytics","glmnet","GG
 
 + Elastic Net 
 
-### Recitation 5 
+### Lab 5 
 
 Install the following packages before running the tutorial.
 
@@ -83,7 +82,7 @@ install.packages(c("interaction"))
 
 + Interaction
 
-### Recitation 6 
+### Lab 6 
 
 Install the following packages before running the tutorial.
 
@@ -96,7 +95,7 @@ install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan
 
 + Handling with missing data in R
 
-### Recitation 7
+### Lab 7
 
 Install the following packages before running the tutorial.
 
@@ -108,7 +107,7 @@ install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
 
 + Dimension Reduction
 
-### Recitation 8
+### Lab 8
 
 Install the following packages before running the tutorial.
 
@@ -120,3 +119,42 @@ devtools::install_version("DMwR", version = "0.4.1", repos = "http://cran.us.r-p
 + Categorical Data Analysis
 + Logistic Regression 
 + Robust Regression
+
+### Lab 9
+
+```
+install.packages(c("Boruta","plspm")) 
+devtools::install_version("gradDescent", version = "3.0", repos = "http://cran.us.r-project.org")
+```
++ Supervised Learning
+  + Gradient Descent Algorithm
++ Boruta Feature Selection
++ One-Hot Encoding
+
+### Lab 10
+
+```
+install.packages(c("tidyverse","neuralnet","GGally","nnet","caret"))
+```
++ Artificial Neural Network 
+
+### Lab 11
+
+```
+install.packages(c("e1071" , "caret" ,"datarium" ,"GGally","mlbench" ,"caret","dplyr", "kernlab"))
+```
+
++ Support Vector Machines 
+
+### Lab 12
+```
+install.packages(c("randomForest" , "caret" ,"xgboost" ,"GGally","mlbench" ,"caret","dplyr", "e1071","gbm","iml","naivebayes"))
+```
++ Naive Bayes Algorithm 
++ Decision Tree
++ Random Forest
++ Boosting
+  + Gradient Boosting
+  + XGBoost (Extreme Gradient Boosting)
++ Explainable AI Components; Variable Imporance Plot & Shapley Value
+
