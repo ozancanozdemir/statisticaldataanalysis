@@ -31,7 +31,7 @@ Install the packages using the code line given below.
 
 
 ```
-install.packages("caret","dplyr","tidyr","datasets","factoextra","pls")
+install.packages(c("caret","dplyr","tidyr","datasets","factoextra","pls"))
 ```
 
 ## <span style="color:darkred">**Model Complexity and Overfitting**</span>
