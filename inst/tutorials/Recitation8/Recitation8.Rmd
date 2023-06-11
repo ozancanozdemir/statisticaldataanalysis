@@ -31,7 +31,7 @@ Install the packages using the code line given below.
 
 
 ```
-install.packages("vcd","ggmosaic","ltm","polycor","ISLR","caret","corrplot","MASS")
+install.packages(c("vcd","ggmosaic","ltm","polycor","ISLR","caret","corrplot","MASS"))
 ```
 
 Install the `InformationValue` package by executing the following command. 

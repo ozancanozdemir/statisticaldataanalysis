@@ -28,8 +28,8 @@ Install the packages using the code line given below.
 
 
 ```
-install.packages("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan",
-"naniar","datasets","rcompanion","bestNormalize","MASS","gridExtra")
+install.packages(c("simputation","missForest","Hmisc","mice","VIM","tidyr","lavaan",
+"naniar","datasets","rcompanion","bestNormalize","MASS","gridExtra"))
 ```
 
 
